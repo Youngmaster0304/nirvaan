@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailBlock AI - Automatic Block Planning System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-train-subway"></i>
+                    <span class="logo-text">RailBlock<span class="logo-accent">AI</span></span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-section="departments">
+                    <i class="fas fa-building"></i>
+                    <span>Departments</span>
+                </a>
+                <a href="#" class="nav-item" data-section="block-planning">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Block Planning</span>
+                </a>
+                <a href="#" class="nav-item" data-section="ai-optimizer">
+                    <i class="fas fa-brain"></i>
+                    <span>AI Optimizer</span>
+                </a>
+                <a href="#" class="nav-item" data-section="corridors">
+                    <i class="fas fa-route"></i>
+                    <span>Corridors</span>
+                </a>
+                <a href="#" class="nav-item" data-section="defects">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Defects</span>
+                </a>
+                <a href="#" class="nav-item" data-section="reports">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="system-status">
+                    <div class="status-dot online"></div>
+                    <span>System Online</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                    <span class="division-badge">Central Railway - Mumbai Division</span>
+                </div>
+                <div class="topbar-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search blocks, defects...">
+                    </div>
+                    <button class="icon-btn notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">5</span>
+                    </button>
+                    <div class="user-profile">
+                        <div class="avatar">AD</div>
+                        <span>Admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section class="content-section active" id="dashboard">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="totalBlocks">247</span>
+                            <span class="stat-label">Active Blocks</span>
+                        </div>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i> 12%
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value">89%</span>
+                            <span class="stat-label">Asset Availability</span>
+                        </div>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i> 5%
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="pendingDefects">38</span>
+                            <span class="stat-label">Pending Defects</span>
+                        </div>
+                        <div class="stat-trend down">
+                            <i class="fas fa-arrow-down"></i> 8%
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value">94%</span>
+                            <span class="stat-label">AI Efficiency</span>
+                        </div>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i> 3%
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-card wide">
+                        <div class="chart-header">
+                            <h3>Block Utilization Trend</h3>
+                            <div class="chart-actions">
+                                <button class="chart-btn active" data-period="weekly">Weekly</button>
+                                <button class="chart-btn" data-period="monthly">Monthly</button>
+                            </div>
+                        </div>
+                        <canvas id="utilizationChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Department-wise Blocks</h3>
+                        </div>
+                        <canvas id="deptChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Department Status -->
+                <div class="dept-status-row">
+                    <div class="dept-status-card">
+                        <div class="dept-header">
+                            <div class="dept-icon engineering">
+                                <i class="fas fa-hard-hat"></i>
+                            </div>
+                            <h4>Engineering</h4>
+                            <span class="dept-count">112 blocks</span>
+                        </div>
+                        <div class="dept-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill engineering" style="width: 78%"></div>
+                            </div>
+                            <span>78% utilized</span>
+                        </div>
+                    </div>
+                    <div class="dept-status-card">
+                        <div class="dept-header">
+                            <div class="dept-icon traction">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h4>Traction Distribution</h4>
+                            <span class="dept-count">85 blocks</span>
+                        </div>
+                        <div class="dept-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill traction" style="width: 65%"></div>
+                            </div>
+                            <span>65% utilized</span>
+                        </div>
+                    </div>
+                    <div class="dept-status-card">
+                        <div class="dept-header">
+                            <div class="dept-icon signal">
+                                <i class="fas fa-signal"></i>
+                            </div>
+                            <h4>Signal & Telecom</h4>
+                            <span class="dept-count">50 blocks</span>
+                        </div>
+                        <div class="dept-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill signal" style="width: 52%"></div>
+                            </div>
+                            <span>52% utilized</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="activity-card">
+                    <div class="chart-header">
+                        <h3>Recent AI Recommendations</h3>
+                        <button class="btn btn-primary"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
+                    <div class="activity-list" id="activityList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Departments Section -->
+            <section class="content-section" id="departments">
+                <div class="section-header">
+                    <h2>Department Integration Status</h2>
+                    <p>Real-time data sync from TMS, SMMS, TDMS, and COA</p>
+                </div>
+                <div class="dept-integration-grid">
+                    <div class="integration-card">
+                        <div class="integration-header">
+                            <div class="integration-icon tms">
+                                <i class="fas fa-track"></i>
+                            </div>
+                            <div class="integration-info">
+                                <h3>Track Management System</h3>
+                                <span class="sync-status synced">Live Sync</span>
+                            </div>
+                        </div>
+                        <div class="integration-stats">
+                            <div class="int-stat">
+                                <span class="int-value">1,247</span>
+                                <span class="int-label">Track Defects</span>
+                            </div>
+                            <div class="int-stat">
+                                <span class="int-value">312</span>
+                                <span class="int-label">Overdue Tasks</span>
+                            </div>
+                            <div class="int-stat">
+                                <span class="int-value">5.2s</span>
+                                <span class="int-label">Last Sync</span>
+                            </div>
+                        </div>
+                        <div class="integration-features">
+                            <span class="feature-tag"><i class="fas fa-check"></i> Defect Tracking</span>
+                            <span class="feature-tag"><i class="fas fa-check"></i> Maintenance History</span>
+                            <span class="feature-tag"><i class="fas fa-check"></i> Asset Registry</span>
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <div class="integration-header">
+                            <div class="integration-icon smms">
+                                <i class="fas fa-satellite-dish"></i>
+                            </div>
+                            <div class="integration-info">
+                                <h3>Signalling Maintenance & Management</h3>
+                                <span class="sync-status synced">Live Sync</span>
+                            </div>
+                        </div>
+                        <div class="integration-stats">
+                            <div class="int-stat">
+                                <span class="int-value">423</span>
+                                <span class="int-label">Signal Defects</span>
+                            </div>
+                            <div class="int-stat">
+                                <span class="int-value">89</span>
+                                <span class="int-label">Overdue Tasks</span>
+                            </div>
+                            <div class="int-stat">
+                                <span class="int-value">3.1s</span>
+                                <span class="int-label">Last Sync</span>
+                            </div>
+                        </div>
+                        <div class="integration-features">
+                            <span class="feature-tag"><i class="fas fa-check"></i> Signal Health</span>
+                            <span class="feature-tag"><i class="fas fa-check"></i> Circuit Monitoring</span>
+                            <span class="feature-tag"><i class="fas fa-check"></i> Relay Status</span>
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <div class="integration-header">
+                            <div class="integration-icon tdms">
+                                <i class="fas fa-plug"></i>
+                            </div>
+                            <div class="integration-info">
+                                <h3>Traction Distribution Management</h3>
+                                <span class="sync-status synced">Live Sync</span>
+                            </div>
+                        </div>
+                        <div class="integration-stats">
+                            <div class="int-stat">
+                                <span class="int-value">567</span>
+                                <span class="int-label">OHE Defects</span>
+                            </div>
+                            <div class="int-stat">
+                                <span class="int-value">134</span>
+                                <span class="int-label">Overdue Tasks</span>
+                            </div>
+                            <div class="int-stat">
+                                <span class="int-value">4.8s</span>
+                                <span class="int-label">Last Sync</span>
+                            </div>
+                        </div>
+                        <div class="integration-features">
+                            <span class="feature-tag"><i class="fas fa-check"></i> OHE Monitoring</span>
+                            <span class="feature-tag"><i class="fas fa-check"></i> Feeder Status</span>
+                            <span class="feature-tag"><i class="fas fa-check"></i> Power Block</span>
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <div class="integration-header">
+                            <div class="integration-icon coa">
+                                <i class="fas fa-tower-broadcast"></i>
+                            </div>
+                            <div class="integration-info">
+                                <h3>Control Office Application</h3>
+                                <span class="sync-status synced">Live Sync</span>
+                            </div>
+                        </div>
+                        <div class="integration-stats">
+                            <div class="int-stat">
+                                <span class="int-value">892</span>
+                                <span class="int-label">Train Services</span>
+                            </div>
+                            <div class="int-stat">
+                                <span class="int-value">45</span>
+                                <span class="int-label">Goods Trains</span>
+                            </div>
+                            <div class="int-stat">
+                                <span class="int-value">1.2s</span>
+                                <span class="int-label">Last Sync</span>
+                            </div>
+                        </div>
+                        <div class="integration-features">
+                            <span class="feature-tag"><i class="fas fa-check"></i> Train Timetable</span>
+                            <span class="feature-tag"><i class="fas fa-check"></i> Corridor Data</span>
+                            <span class="feature-tag"><i class="fas fa-check"></i> Block Availability</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Block Planning Section -->
+            <section class="content-section" id="block-planning">
+                <div class="section-header">
+                    <h2>AI-Generated Block Plans</h2>
+                    <div class="header-actions">
+                        <div class="plan-horizon-toggle">
+                            <button class="horizon-btn active" data-horizon="weekly">Weekly</button>
+                            <button class="horizon-btn" data-horizon="monthly">Monthly</button>
+                        </div>
+                        <button class="btn btn-primary" id="generatePlanBtn">
+                            <i class="fas fa-magic"></i> Generate AI Plan
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="calendar-container">
+                    <div class="calendar-nav">
+                        <button class="btn btn-icon" id="prevWeek"><i class="fas fa-chevron-left"></i></button>
+                        <span class="calendar-title" id="calendarTitle">Week of Sep 8 - Sep 14, 2026</span>
+                        <button class="btn btn-icon" id="nextWeek"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                <div class="block-legend">
+                    <span class="legend-item"><span class="legend-color engineering"></span> Engineering</span>
+                    <span class="legend-item"><span class="legend-color traction"></span> Traction</span>
+                    <span class="legend-item"><span class="legend-color signal"></span> Signal & Telecom</span>
+                    <span class="legend-item"><span class="legend-color integrated"></span> Integrated Block</span>
+                </div>
+            </section>
+
+            <!-- AI Optimizer Section -->
+            <section class="content-section" id="ai-optimizer">
+                <div class="section-header">
+                    <h2>AI/ML Optimization Engine</h2>
+                    <p>Multi-objective optimization for block scheduling</p>
+                </div>
+                <div class="optimizer-grid">
+                    <div class="optimizer-card">
+                        <h3><i class="fas fa-sliders-h"></i> Optimization Parameters</h3>
+                        <div class="param-group">
+                            <label>Minimize Asset Downtime</label>
+                            <div class="slider-container">
+                                <input type="range" min="0" max="100" value="85" class="slider" id="downtimeWeight">
+                                <span class="slider-value">85%</span>
+                            </div>
+                        </div>
+                        <div class="param-group">
+                            <label>Maximize Train Availability</label>
+                            <div class="slider-container">
+                                <input type="range" min="0" max="100" value="90" class="slider" id="trainWeight">
+                                <span class="slider-value">90%</span>
+                            </div>
+                        </div>
+                        <div class="param-group">
+                            <label>Coordinate Multi-Dept</label>
+                            <div class="slider-container">
+                                <input type="range" min="0" max="100" value="75" class="slider" id="coordWeight">
+                                <span class="slider-value">75%</span>
+                            </div>
+                        </div>
+                        <div class="param-group">
+                            <label>Resource Utilization</label>
+                            <div class="slider-container">
+                                <input type="range" min="0" max="100" value="70" class="slider" id="resourceWeight">
+                                <span class="slider-value">70%</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block" id="runOptimizer">
+                            <i class="fas fa-play"></i> Run AI Optimizer
+                        </button>
+                    </div>
+                    <div class="optimizer-card result-card">
+                        <h3><i class="fas fa-chart-bar"></i> Optimization Results</h3>
+                        <div class="result-metrics" id="resultMetrics">
+                            <div class="result-item">
+                                <span class="result-label">Current Efficiency</span>
+                                <div class="result-bar-container">
+                                    <div class="result-bar current" style="width: 62%">62%</div>
+                                </div>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">AI Optimized</span>
+                                <div class="result-bar-container">
+                                    <div class="result-bar optimized" style="width: 89%">89%</div>
+                                </div>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Projected Uptime</span>
+                                <div class="result-bar-container">
+                                    <div class="result-bar projected" style="width: 94%">94%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ai-insights" id="aiInsights">
+                            <h4><i class="fas fa-lightbulb"></i> AI Insights</h4>
+                            <div class="insight-list">
+                                <div class="insight-item">
+                                    <i class="fas fa-compress-arrows-alt"></i>
+                                    <span>Combine 3 Engineering blocks in Sector A into 1 integrated block to save 4.5 hours</span>
+                                </div>
+                                <div class="insight-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Reschedule OHE maintenance in Corridor B to night slot (01:00-04:00) for 0% train impact</span>
+                                </div>
+                                <div class="insight-item">
+                                    <i class="fas fa-link"></i>
+                                    <span>Link Signal & Traction blocks in Sector C to avoid double corridor closure</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Corridors Section -->
+            <section class="content-section" id="corridors">
+                <div class="section-header">
+                    <h2>Corridor Management</h2>
+                    <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Corridor</button>
+                </div>
+                <div class="corridor-table-container">
+                    <table class="corridor-table">
+                        <thead>
+                            <tr>
+                                <th>Corridor ID</th>
+                                <th>Route</th>
+                                <th>Total Length</th>
+                                <th>Blocks Granted</th>
+                                <th>Availability</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corridorTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Defects Section -->
+            <section class="content-section" id="defects">
+                <div class="section-header">
+                    <h2>Defect Tracking & Prioritization</h2>
+                    <div class="header-actions">
+                        <select class="filter-select" id="defectFilter">
+                            <option value="all">All Departments</option>
+                            <option value="engineering">Engineering</option>
+                            <option value="traction">Traction</option>
+                            <option value="signal">Signal & Telecom</option>
+                        </select>
+                        <select class="filter-select" id="priorityFilter">
+                            <option value="all">All Priorities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="defects-grid" id="defectsGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section class="content-section" id="reports">
+                <div class="section-header">
+                    <h2>Reports & Analytics</h2>
+                    <button class="btn btn-primary"><i class="fas fa-file-export"></i> Generate Report</button>
+                </div>
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-icon"><i class="fas fa-chart-pie"></i></div>
+                        <h3>Weekly Block Utilization</h3>
+                        <p>Department-wise block usage and efficiency metrics</p>
+                        <button class="btn btn-secondary">View Report</button>
+                    </div>
+                    <div class="report-card">
+                        <div class="report-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3>Asset Availability Trend</h3>
+                        <p>Monthly availability of critical infrastructure</p>
+                        <button class="btn btn-secondary">View Report</button>
+                    </div>
+                    <div class="report-card">
+                        <div class="report-icon"><i class="fas fa-robot"></i></div>
+                        <h3>AI Optimization Impact</h3>
+                        <p>Before/after comparison of scheduling efficiency</p>
+                        <button class="btn btn-secondary">View Report</button>
+                    </div>
+                    <div class="report-card">
+                        <div class="report-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <h3>Defect Resolution Report</h3>
+                        <p>Critical defects and resolution timeline</p>
+                        <button class="btn btn-secondary">View Report</button>
+                    </div>
+                    <div class="report-card">
+                        <div class="report-icon"><i class="fas fa-train"></i></div>
+                        <h3>Train Operation Impact</h3>
+                        <p>Impact of maintenance blocks on train services</p>
+                        <button class="btn btn-secondary">View Report</button>
+                    </div>
+                    <div class="report-card">
+                        <div class="report-icon"><i class="fas fa-calendar"></i></div>
+                        <h3>Monthly Planning Summary</h3>
+                        <p>Planned vs actual block execution analysis</p>
+                        <button class="btn btn-secondary">View Report</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for AI Plan Generation -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="aiModal">
+            <div class="modal-header">
+                <h3><i class="fas fa-brain"></i> AI Block Plan Generation</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="generation-progress" id="generationProgress">
+                    <div class="progress-step active" data-step="1">
+                        <div class="step-icon"><i class="fas fa-database"></i></div>
+                        <span>Fetching Data</span>
+                    </div>
+                    <div class="progress-step" data-step="2">
+                        <div class="step-icon"><i class="fas fa-brain"></i></div>
+                        <span>AI Analysis</span>
+                    </div>
+                    <div class="progress-step" data-step="3">
+                        <div class="step-icon"><i class="fas fa-cogs"></i></div>
+                        <span>Optimization</span>
+                    </div>
+                    <div class="progress-step" data-step="4">
+                        <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                        <span>Complete</span>
+                    </div>
+                </div>
+                <div class="generation-status" id="generationStatus">
+                    <p>Integrating data from TMS, SMMS, TDMS, and COA...</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-animated" id="progressBarAnimated"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

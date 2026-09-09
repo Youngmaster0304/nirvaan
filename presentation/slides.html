@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailBlock AI - SIH Presentation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow: hidden;
+        }
+        
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            padding: 60px 80px;
+            position: relative;
+        }
+        
+        .slide.active { display: flex; flex-direction: column; }
+        
+        /* Slide backgrounds */
+        .slide-title { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%); }
+        .slide-problem { background: linear-gradient(135deg, #1a0a0a 0%, #2d1515 100%); }
+        .slide-solution { background: linear-gradient(135deg, #0a1a0a 0%, #152d15 100%); }
+        .slide-architecture { background: linear-gradient(135deg, #0f0a1a 0%, #1a1530 100%); }
+        .slide-tech { background: linear-gradient(135deg, #1a1508 0%, #2d2810 100%); }
+        .slide-demo { background: linear-gradient(135deg, #0a1520 0%, #152535 100%); }
+        .slide-impact { background: linear-gradient(135deg, #0a1a15 0%, #153025 100%); }
+        .slide-team { background: linear-gradient(135deg, #1a100a 0%, #2d2015 100%); }
+        
+        /* Title slide */
+        .slide-title .title-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .slide-title .logo-large {
+            font-size: 72px;
+            margin-bottom: 20px;
+        }
+        
+        .slide-title h1 {
+            font-size: 56px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+        
+        .slide-title .subtitle {
+            font-size: 24px;
+            color: #94a3b8;
+            font-weight: 300;
+            max-width: 800px;
+        }
+        
+        .slide-title .meta {
+            margin-top: 40px;
+            display: flex;
+            gap: 40px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        .slide-title .meta span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Common slide styles */
+        .slide-header {
+            margin-bottom: 40px;
+        }
+        
+        .slide-header .section-tag {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #3b82f6;
+            margin-bottom: 8px;
+        }
+        
+        .slide-header h2 {
+            font-size: 42px;
+            font-weight: 800;
+        }
+        
+        .slide-header p {
+            font-size: 18px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+        
+        .slide-body {
+            flex: 1;
+            display: flex;
+            gap: 40px;
+        }
+        
+        /* Two column layout */
+        .col { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+        
+        /* Content cards */
+        .content-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .content-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .content-card h3 .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .icon-blue { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .icon-red { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .icon-green { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .icon-purple { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+        .icon-orange { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .icon-cyan { background: rgba(6, 182, 212, 0.2); color: #06b6d4; }
+        
+        .content-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .content-card li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 15px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+        
+        .content-card li::before {
+            content: '▸';
+            color: #3b82f6;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        /* Stats */
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-box .value {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-box .label {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        
+        /* Architecture diagram */
+        .arch-diagram {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .arch-layer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .arch-box {
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 140px;
+        }
+        
+        .arch-box.data { background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; }
+        .arch-box.process { background: rgba(139, 92, 246, 0.2); border: 1px solid #8b5cf6; }
+        .arch-box.output { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; }
+        .arch-box.user { background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; }
+        
+        .arch-arrow {
+            text-align: center;
+            color: #64748b;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        
+        .arch-boxes-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .arch-box-small {
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Tech stack */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .tech-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .tech-card .tech-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        
+        .tech-card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        
+        .tech-card p {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        /* Impact */
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .impact-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 28px;
+        }
+        
+        .impact-card .impact-icon {
+            font-size: 36px;
+            margin-bottom: 16px;
+        }
+        
+        .impact-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .impact-card p {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+        
+        /* Navigation */
+        .nav-controls {
+            position: fixed;
+            bottom: 30px;
+            right: 40px;
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-btn:hover {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .slide-counter {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            font-size: 13px;
+            color: #64748b;
+            z-index: 100;
+        }
+        
+        /* Slide decoration */
+        .slide-deco {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+        
+        .deco-1 { background: #3b82f6; top: -100px; right: -100px; }
+        .deco-2 { background: #8b5cf6; bottom: -100px; left: -100px; }
+        .deco-3 { background: #06b6d4; top: 50%; right: -150px; }
+    </style>
+</head>
+<body>
+    <!-- Slide 1: Title -->
+    <div class="slide slide-title active" data-slide="1">
+        <div class="slide-deco deco-1"></div>
+        <div class="slide-deco deco-2"></div>
+        <div class="title-content">
+            <div class="logo-large">🚂</div>
+            <h1>RailBlock AI</h1>
+            <p class="subtitle">AI-Powered Automatic Block Planning to Maximize Asset Availability for Train Operations on Indian Railways</p>
+            <div class="meta">
+                <span>📋 Problem ID: SIH26027</span>
+                <span>🏛️ Ministry of Railways</span>
+                <span>💻 Software Category</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: Problem Statement -->
+    <div class="slide slide-problem" data-slide="2">
+        <div class="slide-deco deco-1"></div>
+        <div class="slide-header">
+            <div class="section-tag">Problem Statement</div>
+            <h2>The Challenge</h2>
+            <p>Decentralized maintenance planning causes inefficiency and safety risks</p>
+        </div>
+        <div class="slide-body">
+            <div class="col">
+                <div class="content-card">
+                    <h3><span class="icon icon-red">⚠️</span> Current Problems</h3>
+                    <ul>
+                        <li>Departments plan maintenance independently - Engineering, Traction, S&T</li>
+                        <li>Data silos across TMS, SMMS, TDMS, and COA systems</li>
+                        <li>Manual block requests via phone calls - no written records</li>
+                        <li>Controllers often refuse blocks, causing maintenance backlog</li>
+                        <li>Maintenance corridors printed in timetables are frequently violated</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3><span class="icon icon-red">📊</span> Impact on Operations</h3>
+                    <ul>
+                        <li>Reduced asset availability and increased downtime</li>
+                        <li>Safety incidents (Khatauli, Kanchanjunga accidents)</li>
+                        <li>Signal defects remaining undetected for 3+ years</li>
+                        <li>Engineers forced to work without proper blocks</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="value">3</div>
+                        <div class="label">Disconnected Systems</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="value">26</div>
+                        <div class="label">Week Rolling Plan (Ideal)</div>
+                    </div>
+                </div>
+                <div class="content-card">
+                    <h3><span class="icon icon-red">🔴</span> Key Statistics</h3>
+                    <ul>
+                        <li>Signal defects found after 3 years without detection</li>
+                        <li>21 days to grant a single disconnection block</li>
+                        <li>Same maintenance hour sold twice - for trains and corridors</li>
+                        <li>No record of block refusals - everything via phone calls</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Solution Overview -->
+    <div class="slide slide-solution" data-slide="3">
+        <div class="slide-deco deco-3"></div>
+        <div class="slide-header">
+            <div class="section-tag">Our Solution</div>
+            <h2>RailBlock AI System</h2>
+            <p>Transforming manual block planning into a data-driven, AI-optimized process</p>
+        </div>
+        <div class="slide-body">
+            <div class="col">
+                <div class="content-card">
+                    <h3><span class="icon icon-green">🤖</span> AI/ML Engine</h3>
+                    <ul>
+                        <li>Multi-objective optimization for block scheduling</li>
+                        <li>Prioritizes based on criticality, urgency, and impact</li>
+                        <li>Minimizes asset downtime and maximizes availability</li>
+                        <li>Coordinates multi-department activities automatically</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3><span class="icon icon-blue">🔗</span> Data Integration</h3>
+                    <ul>
+                        <li>Real-time sync from TMS, SMMS, TDMS systems</li>
+                        <li>Corridor availability from COA</li>
+                        <li>Train timetable and goods train forecasts</li>
+                        <li>Defect tracking and overdue maintenance data</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col">
+                <div class="content-card">
+                    <h3><span class="icon icon-purple">📅</span> Multi-Horizon Planning</h3>
+                    <ul>
+                        <li>Weekly plans for short-term execution</li>
+                        <li>Monthly plans for strategic resource allocation</li>
+                        <li>Rolling 26-week horizon support</li>
+                        <li>Integrated block scheduling across departments</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3><span class="icon icon-cyan">📊</span> Dashboard & Analytics</h3>
+                    <ul>
+                        <li>Real-time department status monitoring</li>
+                        <li>AI-generated recommendations and insights</li>
+                        <li>Corridor utilization and availability tracking</li>
+                        <li>Defect prioritization and resolution tracking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: System Architecture -->
+    <div class="slide slide-architecture" data-slide="4">
+        <div class="slide-deco deco-1"></div>
+        <div class="slide-header">
+            <div class="section-tag">Technical Architecture</div>
+            <h2>System Architecture</h2>
+        </div>
+        <div class="arch-diagram">
+            <div class="arch-layer">
+                <div class="arch-box data">TMS<br><small>Track Management</small></div>
+                <div class="arch-box data">SMMS<br><small>Signal Maintenance</small></div>
+                <div class="arch-box data">TDMS<br><small>Traction Distribution</small></div>
+                <div class="arch-box data">COA<br><small>Control Office</small></div>
+            </div>
+            <div class="arch-arrow">⬇️ Data Ingestion & API Layer ⬇️</div>
+            <div class="arch-layer">
+                <div class="arch-box process">Data Integration<br>Engine</div>
+                <div class="arch-box process">AI/ML<br>Optimizer</div>
+                <div class="arch-box process">Block Scheduler<br>Engine</div>
+                <div class="arch-box process">Predictive<br>Analytics</div>
+            </div>
+            <div class="arch-arrow">⬇️ Processing & Optimization ⬇️</div>
+            <div class="arch-layer">
+                <div class="arch-box output">Weekly Block<br>Plans</div>
+                <div class="arch-box output">Monthly Block<br>Plans</div>
+                <div class="arch-box output">Real-time<br>Alerts</div>
+                <div class="arch-box output">AI<br>Recommendations</div>
+            </div>
+            <div class="arch-arrow">⬇️ User Interface ⬇️</div>
+            <div class="arch-layer">
+                <div class="arch-box user">Dashboard</div>
+                <div class="arch-box user">Calendar View</div>
+                <div class="arch-box user">Reports</div>
+                <div class="arch-box user">Mobile App</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Tech Stack -->
+    <div class="slide slide-tech" data-slide="5">
+        <div class="slide-deco deco-2"></div>
+        <div class="slide-header">
+            <div class="section-tag">Technology</div>
+            <h2>Tech Stack & Implementation</h2>
+        </div>
+        <div class="slide-body">
+            <div class="col">
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <div class="tech-icon">⚛️</div>
+                        <h4>React.js</h4>
+                        <p>Frontend UI with dynamic dashboards</p>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">🐍</div>
+                        <h4>Python/FastAPI</h4>
+                        <p>Backend API and ML services</p>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">🧠</div>
+                        <h4>TensorFlow</h4>
+                        <p>ML models for optimization</p>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">🗄️</div>
+                        <h4>PostgreSQL</h4>
+                        <p>Relational data storage</p>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">📊</div>
+                        <h4>Redis</h4>
+                        <p>Real-time data caching</p>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">☁️</div>
+                        <h4>Docker/K8s</h4>
+                        <p>Containerized deployment</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="content-card">
+                    <h3><span class="icon icon-purple">🔧</span> AI/ML Algorithms Used</h3>
+                    <ul>
+                        <li><strong>Genetic Algorithm:</strong> Multi-objective block scheduling optimization</li>
+                        <li><strong>Constraint Satisfaction:</strong> Time window and resource constraints</li>
+                        <li><strong>Priority Scoring:</strong> Criticality-based defect ranking</li>
+                        <li><strong>Predictive Analytics:</strong> Asset degradation forecasting</li>
+                        <li><strong>Reinforcement Learning:</strong> Adaptive scheduling optimization</li>
+                        <li><strong>Graph Neural Networks:</strong> Network topology-aware planning</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3><span class="icon icon-orange">🔗</span> API Integration</h3>
+                    <ul>
+                        <li>REST APIs for TMS, SMMS, TDMS data ingestion</li>
+                        <li>WebSocket for real-time COA updates</li>
+                        <li>GraphQL for flexible dashboard queries</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 6: Demo -->
+    <div class="slide slide-demo" data-slide="6">
+        <div class="slide-deco deco-3"></div>
+        <div class="slide-header">
+            <div class="section-tag">Live Demo</div>
+            <h2>System Dashboard</h2>
+        </div>
+        <div class="slide-body" style="flex-direction: column; gap: 20px;">
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="value">247</div>
+                    <div class="label">Active Blocks</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">89%</div>
+                    <div class="label">Asset Availability</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">38</div>
+                    <div class="label">Pending Defects</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">94%</div>
+                    <div class="label">AI Efficiency</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 20px; flex: 1;">
+                <div class="content-card" style="flex: 2;">
+                    <h3><span class="icon icon-blue">📅</span> Weekly Block Calendar</h3>
+                    <p style="color: #94a3b8; font-size: 14px; margin-top: 8px;">
+                        AI-generated block plans displayed on an interactive calendar.<br>
+                        Color-coded by department with integrated blocks highlighted.<br>
+                        Click to view details, drag to reschedule, AI recommends optimal slots.
+                    </p>
+                </div>
+                <div class="content-card" style="flex: 1;">
+                    <h3><span class="icon icon-purple">🧠</span> AI Insights</h3>
+                    <ul style="font-size: 13px;">
+                        <li>Merge 3 blocks in Sector A → save 4.5 hours</li>
+                        <li>Reschedule OHE to night → 0% train impact</li>
+                        <li>Link S&T + Traction blocks → avoid double closure</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: Impact -->
+    <div class="slide slide-impact" data-slide="7">
+        <div class="slide-deco deco-1"></div>
+        <div class="slide-header">
+            <div class="section-tag">Expected Impact</div>
+            <h2>Transforming Indian Railways</h2>
+        </div>
+        <div class="slide-body">
+            <div class="impact-grid">
+                <div class="impact-card">
+                    <div class="impact-icon">📈</div>
+                    <h3>30% Increase in Asset Availability</h3>
+                    <p>AI-optimized scheduling ensures maintenance blocks are used efficiently, reducing unnecessary downtime and maximizing infrastructure uptime.</p>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">🚂</div>
+                    <h3>Zero Train Service Disruption</h3>
+                    <p>Integrated block planning coordinates with train timetables to schedule maintenance during off-peak hours and maintenance corridors.</p>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">⚡</div>
+                    <h3>40% Faster Block Approval</h3>
+                    <p>Digital, automated block request and approval process replaces manual phone calls, creating audit trails and reducing delays.</p>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">🛡️</div>
+                    <h3>Enhanced Safety</h3>
+                    <p>Critical defects are prioritized automatically, ensuring safety-critical maintenance is never delayed or refused.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: Team & Thank You -->
+    <div class="slide slide-team" data-slide="8">
+        <div class="slide-deco deco-1"></div>
+        <div class="slide-deco deco-2"></div>
+        <div class="title-content">
+            <div class="logo-large">🙏</div>
+            <h1 style="font-size: 48px;">Thank You</h1>
+            <p class="subtitle" style="margin-top: 16px;">RailBlock AI - Making Indian Railways Safer, Smarter, More Efficient</p>
+            <div style="margin-top: 40px; display: flex; gap: 30px;">
+                <div class="content-card" style="min-width: 200px;">
+                    <h3>Team</h3>
+                    <p style="color: #94a3b8; font-size: 14px;">Team Members</p>
+                </div>
+                <div class="content-card" style="min-width: 200px;">
+                    <h3>Contact</h3>
+                    <p style="color: #94a3b8; font-size: 14px;">team@railblock.ai</p>
+                </div>
+                <div class="content-card" style="min-width: 200px;">
+                    <h3>GitHub</h3>
+                    <p style="color: #94a3b8; font-size: 14px;">github.com/railblock-ai</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="slide-counter">
+        <span id="currentSlide">1</span> / <span id="totalSlides">8</span>
+    </div>
+    <div class="nav-controls">
+        <button class="nav-btn" id="prevBtn">◀</button>
+        <button class="nav-btn" id="nextBtn">▶</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 8;
+        
+        function showSlide(n) {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.querySelector(`[data-slide="${n}"]`).classList.add('active');
+            document.getElementById('currentSlide').textContent = n;
+        }
+        
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentSlide > 1) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                if (currentSlide < totalSlides) {
+                    currentSlide++;
+                    showSlide(currentSlide);
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlide > 1) {
+                    currentSlide--;
+                    showSlide(currentSlide);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
