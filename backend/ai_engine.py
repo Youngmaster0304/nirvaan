@@ -1,5 +1,5 @@
 """
-Yantra Engine - Real optimization algorithms for railway block planning.
+Nirvaan Engine - Real optimization algorithms for railway block planning.
 
 Algorithms implemented:
 1. Constraint-Based Block Scheduler (CSP)

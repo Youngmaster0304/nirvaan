@@ -1,4 +1,4 @@
-// Yantra - Main Application JavaScript
+// Nirvaan - Main Application JavaScript
 
 // ============================================
 // DATA

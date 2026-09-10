@@ -75,7 +75,7 @@ add_textbox(slide1, Inches(1), Inches(0.8), Inches(11), Inches(0.8),
 
 # Main Title
 add_textbox(slide1, Inches(1), Inches(1.8), Inches(11), Inches(1.2),
-            "Yantra", font_size=54, bold=True, color=PRIMARY, alignment=PP_ALIGN.CENTER)
+            "Nirvaan", font_size=54, bold=True, color=PRIMARY, alignment=PP_ALIGN.CENTER)
 
 add_textbox(slide1, Inches(1), Inches(3.0), Inches(11), Inches(0.8),
             "AI-Powered Automatic Block Planning to Maximize\nAsset Availability for Train Operations on Indian Railways",
@@ -103,7 +103,7 @@ add_textbox(slide2, Inches(0.5), Inches(0.3), Inches(12), Inches(0.6),
             "IDEA TITLE", font_size=28, bold=True, color=PRIMARY)
 
 add_textbox(slide2, Inches(0.5), Inches(0.9), Inches(12), Inches(0.5),
-            "Proposed Solution: Yantra - Intelligent Block Planning System",
+            "Proposed Solution: Nirvaan - Intelligent Block Planning System",
             font_size=20, color=WHITE)
 
 # Left column - Problem
@@ -338,10 +338,10 @@ add_bullet_text(slide6, Inches(0.5), Inches(4.3), Inches(12), Inches(2.5), syste
 
 # Thank you
 add_textbox(slide6, Inches(0.5), Inches(6.5), Inches(12), Inches(0.5),
-            "Thank You | Yantra | Team [Your Team Name]",
+            "Thank You | Nirvaan | Team [Your Team Name]",
             font_size=16, bold=True, color=PRIMARY, alignment=PP_ALIGN.CENTER)
 
 # Save
-output_path = r'C:\Users\Abhinav\sih-railways\presentation\SIH26027_Yantra_Presentation.pptx'
+output_path = r'C:\Users\Abhinav\sih-railways\presentation\SIH26027_Nirvaan_Presentation.pptx'
 prs.save(output_path)
 print(f"Presentation saved to: {output_path}")

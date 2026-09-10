@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yantra - Admin Panel</title>
+    <title>Nirvaan - Admin Panel</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -749,7 +749,7 @@
         <div class="login-left">
             <div class="login-brand">
                 <div class="brand-emblem"><i class="fas fa-train-subway"></i></div>
-                <div class="brand-name">Yantra</div>
+                <div class="brand-name">Nirvaan</div>
                 <div class="brand-tagline">Automatic Block Planning System</div>
                 <ul class="brand-features">
                     <li><i class="fas fa-check-circle"></i> AI-powered block scheduling across 15 zones</li>
@@ -792,7 +792,7 @@
             <div class="topbar-left">
                 <a class="topbar-brand" href="#">
                     <div class="topbar-brand-icon"><i class="fas fa-train-subway"></i></div>
-                    <span class="topbar-brand-text">Yantra</span>
+                    <span class="topbar-brand-text">Nirvaan</span>
                 </a>
                 <div class="topbar-divider"></div>
                 <span class="topbar-page" id="topbarPage">Dashboard</span>
@@ -961,8 +961,8 @@
 
     <script>
         const API = window.location.hostname === 'localhost' ? '' : 'https://railblock-ai-k8xm.onrender.com';
-        let TOKEN = localStorage.getItem('yantra_token') || '';
-        let USER = JSON.parse(localStorage.getItem('yantra_user') || 'null');
+        let TOKEN = localStorage.getItem('nirvaan_token') || '';
+        let USER = JSON.parse(localStorage.getItem('nirvaan_user') || 'null');
 
         async function api(p, opts = {}) {
             const headers = { 'Content-Type': 'application/json' };
@@ -997,8 +997,8 @@
             try {
                 const d = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ username: u, password: p }) });
                 TOKEN = d.token; USER = d.user;
-                localStorage.setItem('yantra_token', TOKEN);
-                localStorage.setItem('yantra_user', JSON.stringify(USER));
+                localStorage.setItem('nirvaan_token', TOKEN);
+                localStorage.setItem('nirvaan_user', JSON.stringify(USER));
                 showAdmin();
             } catch (e) {
                 document.getElementById('loginErr').textContent = 'Invalid credentials. Please try again.';
@@ -1009,8 +1009,8 @@
         function doLogout() {
             if (TOKEN) api('/api/auth/logout', { method: 'POST' }).catch(() => {});
             TOKEN = ''; USER = null;
-            localStorage.removeItem('yantra_token');
-            localStorage.removeItem('yantra_user');
+            localStorage.removeItem('nirvaan_token');
+            localStorage.removeItem('nirvaan_user');
             document.getElementById('loginWrap').style.display = 'flex';
             document.getElementById('adminWrap').style.display = 'none';
         }
