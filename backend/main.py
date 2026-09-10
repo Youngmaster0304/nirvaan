@@ -4,13 +4,16 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import random
 from backend.ai_engine import BlockScheduler, GeneticOptimizer, ConflictDetector, ScheduleScorer, MILPSolver, MonthlyPlanner, NetworkGraph, DataHarmonizer
 
-app = FastAPI(title="RailBlock AI", version="4.0.0")
+app = FastAPI(title="RailBlock AI", version="5.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "railblock.db")
+
+# Use /tmp for SQLite on Render (ephemeral disk)
+DB_PATH = os.environ.get("DB_PATH", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "railblock.db"))
 
 def get_db():
     conn = sqlite3.connect(DB_PATH); conn.row_factory = sqlite3.Row; return conn
@@ -924,7 +927,10 @@ def reports():
     conn.close()
     return {"departments":[{"name":r[0],"color":r[1],"total":r[2],"completed":r[3],"planned":r[4]} for r in ds],"defects_by_priority":[{"priority":r[0],"count":r[1]} for r in ps]}
 
+# Serve frontend static files (for local development)
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
-app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+if os.path.exists(frontend_dir):
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+
 if __name__ == "__main__":
     import uvicorn; uvicorn.run(app, host="0.0.0.0", port=8000)

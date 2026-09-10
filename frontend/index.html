@@ -408,7 +408,7 @@
     </div>
 
 <script>
-const API = '';
+const API = window.location.hostname === 'localhost' ? '' : 'https://railblock-ai.onrender.com';
 let token = localStorage.getItem('railblock_token');
 let currentUser = JSON.parse(localStorage.getItem('railblock_user') || 'null');
 let allTrains = [];
