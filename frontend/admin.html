@@ -874,6 +874,10 @@
                     <a class="nav-link" onclick="showSec('admin-users',this)"><i class="fas fa-users-cog"></i> Users</a>
                     <a class="nav-link" onclick="showSec('admin-audit',this)"><i class="fas fa-history"></i> Audit Log</a>
                 </div>
+                <div class="nav-group">
+                    <div class="nav-group-label">AI Engine</div>
+                    <a class="nav-link" onclick="showSec('admin-ai',this)"><i class="fas fa-brain"></i> AI Brain</a>
+                </div>
                 <div class="sidebar-footer">
                     <button class="btn-logout" onclick="doLogout()"><i class="fas fa-right-from-bracket"></i> Sign Out</button>
                 </div>
@@ -952,6 +956,48 @@
                         <div><h1>Audit Log</h1><p>System activity and change history</p></div>
                     </div>
                     <div class="card"><div class="card-body" id="auditLog"></div></div>
+                </div>
+
+                <!-- AI BRAIN -->
+                <div class="sec" id="s-admin-ai">
+                    <div class="page-header">
+                        <div><h1>AI Brain</h1><p>Automated analysis, scheduling, and conflict resolution</p></div>
+                        <button class="btn btn-primary" id="aiThinkBtn" onclick="runAdminAI()"><i class="fas fa-brain"></i> Think & Auto-Schedule</button>
+                    </div>
+
+                    <!-- AI Status Panel -->
+                    <div class="ai-brain-panel" id="aiBrainPanel" style="background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:8px;padding:24px;color:#fff;margin-bottom:20px;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                            <div style="width:42px;height:42px;background:rgba(59,130,246,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center"><i class="fas fa-brain" style="font-size:20px;color:#60a5fa"></i></div>
+                            <div><div style="font-size:16px;font-weight:600">Niravaan AI Engine</div><div style="font-size:12px;color:#94a3b8" id="aiBrainStatus">Ready to analyze</div></div>
+                        </div>
+                        <div id="aiBrainSteps" style="min-height:40px">
+                            <div style="text-align:center;padding:20px;color:#64748b;font-size:13px">
+                                Click <strong>"Think & Auto-Schedule"</strong> to run AI analysis
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Score Gauges -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px" id="aiScoreGauges"></div>
+
+                    <!-- AI Decisions -->
+                    <div id="aiDecisionsArea" style="display:none">
+                        <h3 style="font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px"><i class="fas fa-gavel" style="color:var(--blue-700)"></i> AI Decisions</h3>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;margin-bottom:20px" id="aiDecisionsGrid"></div>
+                    </div>
+
+                    <!-- Scheduled Blocks -->
+                    <div id="aiScheduledArea" style="display:none">
+                        <h3 style="font-size:15px;font-weight:600;margin-bottom:14px"><i class="fas fa-calendar-check" style="color:#16a34a"></i> Auto-Scheduled Blocks</h3>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-bottom:20px" id="aiScheduledGrid"></div>
+                    </div>
+
+                    <!-- Conflicts -->
+                    <div id="aiConflictsArea" style="display:none">
+                        <h3 style="font-size:15px;font-weight:600;margin-bottom:14px"><i class="fas fa-exclamation-triangle" style="color:#d97706"></i> Detected Conflicts</h3>
+                        <div id="aiConflictsList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1033,7 +1079,7 @@
             if (el) el.classList.add('active');
             document.querySelector('.sidebar').classList.remove('open');
             document.getElementById('sidebarOverlay').classList.remove('show');
-            const titles = { 'admin-dash': 'Dashboard', 'admin-blocks': 'Block Management', 'admin-defects': 'Defect Management', 'admin-corridors': 'Corridor Management', 'admin-trains': 'Train Management', 'admin-users': 'User Management', 'admin-audit': 'Audit Log' };
+            const titles = { 'admin-dash': 'Dashboard', 'admin-blocks': 'Block Management', 'admin-defects': 'Defect Management', 'admin-corridors': 'Corridor Management', 'admin-trains': 'Train Management', 'admin-users': 'User Management', 'admin-audit': 'Audit Log', 'admin-ai': 'AI Brain' };
             document.getElementById('topbarPage').textContent = titles[id] || 'Dashboard';
             if (id === 'admin-blocks') loadAdminBlocks();
             if (id === 'admin-defects') loadAdminDefects();

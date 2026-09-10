@@ -202,7 +202,7 @@ class BlockScheduler:
                     'start_time': f'{int(start_h):02d}:00',
                     'end_time': f'{int(end_h):02d}:00',
                     'date': date_str,
-                    'score': round(score, 1),
+                    'score': min(100, round(score, 1)),
                     'violations': violations,
                     'night_window': night_fit > 0.5,
                     'vvip_safe': not any('VVIP' in v for v in violations),

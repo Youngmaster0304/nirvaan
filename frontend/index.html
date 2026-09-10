@@ -589,19 +589,23 @@ function renderScheduled(blocks) {
         const deptName = d.department_id===1?'ENG':d.department_id===3?'SIG':'TRD';
         return `<div class="block-card fade-in">
             <div class="block-top">
-                <span class="block-dept ${deptClass}">${deptName}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted)">${b.block_id||'BLK-????'}</span>
                 <span class="block-score" style="color:${s.score>70?'var(--success)':s.score>40?'var(--warning)':'var(--danger)'}">${Math.round(s.score)}%</span>
             </div>
             <div class="block-title">${d.title}</div>
             <div class="block-meta">
+                <span><i class="fas fa-building"></i>${deptName}</span>
+                <span><i class="fas fa-route"></i>${b.corridor||'N/A'}</span>
+            </div>
+            <div class="block-meta" style="margin-top:6px">
                 <span><i class="fas fa-clock"></i>${s.start_time} - ${s.end_time}</span>
                 <span><i class="fas fa-calendar"></i>${s.date}</span>
                 <span><i class="fas fa-map-marker-alt"></i>${d.location||'N/A'}</span>
             </div>
             <div class="block-tags">
                 ${s.night_window ? '<span class="tag tag-night">NIGHT WINDOW</span>' : ''}
-                ${s.vvip_safe ? '<span class="tag tag-vvip">VVIP SAFE</span>' : '<span class="tag tag-risk">VVIP RISK</span>'}
-                ${s.violations.length===0 ? '<span class="tag tag-safe">NO VIOLATIONS</span>' : `<span class="tag tag-risk">${s.violations.length} ISSUES</span>`}
+                ${s.vvip_safe ? '<span class="tag tag-safe">VVIP SAFE</span>' : '<span class="tag tag-risk">VVIP RISK</span>'}
+                ${s.violations.length===0 ? '<span class="tag tag-safe">NO CONFLICTS</span>' : `<span class="tag tag-risk">${s.violations.length} ISSUES</span>`}
             </div>
         </div>`;
     }).join('');

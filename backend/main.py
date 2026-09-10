@@ -935,8 +935,8 @@ def ai_think():
     1. Scan all pending defects
     2. Analyze constraints per defect
     3. Score each candidate slot
-    4. Detect conflicts
-    5. Auto-schedule best slots
+    4. Auto-schedule blocks in database
+    5. Detect conflicts
     6. Generate recommendations
     """
     conn = get_db()
@@ -949,68 +949,109 @@ def ai_think():
 
     steps = []
     thoughts = []
+    auto_created = []
 
     # Step 1: Scan defects
+    dept_counts = {}
+    for d in defects:
+        did = d.get('department_id')
+        dept_name = next((x['name'] for x in departments if x['id'] == did), 'Unknown')
+        dept_counts[dept_name] = dept_counts.get(dept_name, 0) + 1
+    dept_summary = ', '.join(f'{v} {k}' for k, v in dept_counts.items())
     steps.append({
         'step': 1,
         'title': 'Scanning Defect Database',
         'icon': 'search',
         'status': 'complete',
-        'detail': f'Found {len(defects)} pending defects across {len(set(d.get("department_id") for d in defects))} departments',
+        'detail': f'Found {len(defects)} pending defects: {dept_summary}',
     })
 
     # Step 2: Analyze constraints
     single_line = [c for c in corridors if c.get('single_line')]
     vvip_trains = [t for t in trains if t.get('is_vvip')]
+    corridor_map = {c['id']: c for c in corridors}
     steps.append({
         'step': 2,
         'title': 'Analyzing Network Constraints',
         'icon': 'project-diagram',
         'status': 'complete',
-        'detail': f'{len(corridors)} corridors loaded, {len(single_line)} single-line sections, {len(vvip_trains)} VVIP trains protected',
+        'detail': f'{len(corridors)} corridors, {len(single_line)} single-line sections, {len(vvip_trains)} VVIP trains, {len(trains)} total trains loaded',
     })
 
-    # Step 3: Run CSP scheduler
+    # Step 3: Run CSP scheduler and auto-create blocks
     scheduler = BlockScheduler(corridors, trains, blocks, defects)
     scheduled = []
+    conn = get_db()
+    today = datetime.now().strftime('%Y-%m-%d')
     for defect in defects:
-        date = datetime.now().strftime('%Y-%m-%d')
-        result = scheduler.schedule_block(defect, date)
-        if result and result['score'] > 0:
-            scheduled.append({'defect': defect, 'result': result})
+        result = scheduler.schedule_block(defect, today)
+        if result and result['score'] > 30:
+            dept_id = defect.get('department_id')
+            dept_name = next((d['name'] for d in departments if d['id'] == dept_id), 'Unknown')
+            dept_code = next((d['code'] for d in departments if d['id'] == dept_id), 'UNK')
+
+            # Find best corridor for this defect's zone
+            zone_corridors = [c for c in corridors if c.get('zone_id') == defect.get('zone_id')]
+            corridor = zone_corridors[0] if zone_corridors else (corridors[0] if corridors else None)
+
+            # AUTO-CREATE BLOCK in database
+            block_id = f'BLK-AI-{defect.get("id", 0):04d}'
+            try:
+                conn.execute(
+                    "INSERT INTO blocks(block_id,department_id,corridor_id,block_date,start_time,end_time,block_type,maintenance_category,status,ai_score) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                    (block_id, dept_id, corridor['id'] if corridor else 1, today,
+                     result['start_time'], result['end_time'], defect.get('maintenance_type', 'routine'),
+                     defect.get('priority', 'medium'), 'planned', result['score'])
+                )
+                # Mark defect as scheduled
+                conn.execute("UPDATE defects SET status='scheduled' WHERE id=?", (defect.get('id'),))
+                auto_created.append(block_id)
+            except Exception:
+                pass
+
+            scheduled.append({'defect': defect, 'result': result, 'block_id': block_id, 'corridor': corridor.get('route_name', '') if corridor else ''})
             thoughts.append({
                 'defect': defect.get('title'),
-                'dept': next((d['name'] for d in departments if d['id'] == defect.get('department_id')), 'Unknown'),
+                'dept': dept_name,
+                'dept_code': dept_code,
                 'priority': defect.get('priority'),
                 'decision': f'Schedule at {result["start_time"]}-{result["end_time"]}',
+                'corridor': corridor.get('route_name', '') if corridor else 'N/A',
+                'block_id': block_id,
                 'score': result['score'],
                 'night_window': result.get('night_window', False),
                 'vvip_safe': result.get('vvip_safe', True),
                 'violations': result.get('violations', []),
             })
 
+    conn.commit()
+    conn.close()
+
     steps.append({
         'step': 3,
-        'title': 'CSP Constraint Satisfaction',
+        'title': 'CSP Constraint Satisfaction + Auto-Schedule',
         'icon': 'brain',
         'status': 'complete',
-        'detail': f'Evaluated {len(defects)} defects, scheduled {len(scheduled)} blocks',
+        'detail': f'Evaluated {len(defects)} defects, auto-created {len(auto_created)} blocks in database',
         'thoughts': thoughts,
     })
 
-    # Step 4: Detect conflicts
-    detector = ConflictDetector(corridors, trains, blocks)
+    # Step 4: Detect conflicts on newly created blocks
+    conn = get_db()
+    all_blocks = [dict(r) for r in conn.execute("SELECT * FROM blocks WHERE status='planned'").fetchall()]
+    conn.close()
+    detector = ConflictDetector(corridors, trains, all_blocks)
     conflicts = detector.get_all_conflicts()
     steps.append({
         'step': 4,
-        'title': 'Conflict Detection',
+        'title': 'Conflict Detection on New Blocks',
         'icon': 'exclamation-triangle',
         'status': 'complete',
-        'detail': f'{conflicts["total"]} conflicts detected: {conflicts["by_severity"]}',
+        'detail': f'{conflicts["total"]} conflicts detected across {len(all_blocks)} planned blocks',
     })
 
     # Step 5: Score schedule
-    scorer = ScheduleScorer(corridors, trains, blocks, defects)
+    scorer = ScheduleScorer(corridors, trains, all_blocks, defects)
     score_result = scorer.compute_overall_score()
     steps.append({
         'step': 5,
@@ -1074,7 +1115,8 @@ def ai_think():
         'recommendations': recs,
         'summary': {
             'defects_scanned': len(defects),
-            'blocks_scheduled': len(scheduled),
+            'blocks_auto_created': len(auto_created),
+            'block_ids': auto_created,
             'conflicts_found': conflicts['total'],
             'grade': score_result['grade'],
             'score': score_result['overall_score'],
