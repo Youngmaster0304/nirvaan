@@ -727,6 +727,17 @@ function show(id) {
     if (id==='defects') loadDefects();
     if (id==='tokens') loadTokens();
     if (id==='crew') loadCrew();
+    if (id==='analytics') loadAnalytics();
+    if (id==='whatif') loadWhatIf && loadWhatIf();
+    if (id==='pareto') loadPareto && loadPareto();
+    if (id==='predictive') loadPredictive && loadPredictive();
+    if (id==='digitaltwin') loadDigitalTwin && loadDigitalTwin();
+    if (id==='notifications') loadNotifications && loadNotifications();
+    if (id==='energy') loadEnergy && loadEnergy();
+    if (id==='demand') loadDemand && loadDemand();
+    if (id==='multizone') loadMultiZone && loadMultiZone();
+    if (id==='crewmgmt') loadCrewMgmt && loadCrewMgmt();
+    if (id==='rl') loadRL && loadRL();
 }
 
 // ═══ AI BRAIN ═══
@@ -1231,11 +1242,11 @@ async function loadAnalytics() {
         const sd = d.score_distribution;
         const total = sd.excellent + sd.good + sd.average + sd.poor || 1;
         document.getElementById('analyticsScores').innerHTML = `
-            <div style="display:flex;gap:4px;height:24px;border-radius:4px;overflow:hidden;margin-bottom:12px">
-                <div style="width:${sd.excellent/total*100}%;background:#22c55e" title="Excellent: ${sd.excellent}"></div>
-                <div style="width:${sd.good/total*100}%;background:#3b82f6" title="Good: ${sd.good}"></div>
-                <div style="width:${sd.average/total*100}%;background:#f59e0b" title="Average: ${sd.average}"></div>
-                <div style="width:${sd.poor/total*100}%;background:#ef4444" title="Poor: ${sd.poor}"></div>
+            <div style="display:flex;gap:3px;height:28px;border-radius:6px;overflow:hidden;margin-bottom:14px">
+                <div style="width:${sd.excellent/total*100}%;background:#22c55e;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;min-width:${sd.excellent>0?'30px':'0'}">${sd.excellent>0?sd.excellent:''}</div>
+                <div style="width:${sd.good/total*100}%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;min-width:${sd.good>0?'30px':'0'}">${sd.good>0?sd.good:''}</div>
+                <div style="width:${sd.average/total*100}%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;min-width:${sd.average>0?'30px':'0'}">${sd.average>0?sd.average:''}</div>
+                <div style="width:${sd.poor/total*100}%;background:#ef4444;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;min-width:${sd.poor>0?'30px':'0'}">${sd.poor>0?sd.poor:''}</div>
             </div>
             <div style="display:flex;gap:16px;font-size:11px;color:var(--text-muted)">
                 <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#22c55e;margin-right:4px"></span>Excellent ${sd.excellent}</span>
@@ -1246,12 +1257,15 @@ async function loadAnalytics() {
         `;
         // Zone distribution
         const maxZone = Math.max(...d.zone_distribution.map(z=>z.blocks)) || 1;
-        document.getElementById('analyticsZones').innerHTML = `<div style="display:flex;gap:8px;align-items:end;height:120px;padding-top:10px">
-            ${d.zone_distribution.slice(0,10).map(z => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
-                <span style="font-size:10px;font-weight:600;color:var(--text)">${z.blocks}</span>
-                <div style="width:100%;height:${z.blocks/maxZone*80}px;background:linear-gradient(180deg,#3b82f6,#8b5cf6);border-radius:4px 4px 0 0"></div>
-                <span style="font-size:9px;color:var(--text-muted);writing-mode:vertical-rl;text-orientation:mixed;max-height:60px;overflow:hidden">${z.zone}</span>
-            </div>`).join('')}
+        document.getElementById('analyticsZones').innerHTML = `<div style="display:flex;gap:6px;align-items:end;height:140px;padding-top:10px">
+            ${d.zone_distribution.slice(0,10).map(z => {
+                const shortName = z.zone.replace(' Railway','').replace(' Central',' Ctl').replace(' Eastern',' E').replace(' Western',' W').replace(' Northern',' N').replace(' Southern',' S');
+                return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                    <span style="font-size:10px;font-weight:600;color:var(--text)">${z.blocks}</span>
+                    <div style="width:100%;height:${z.blocks/maxZone*90}px;background:linear-gradient(180deg,#3b82f6,#8b5cf6);border-radius:4px 4px 0 0"></div>
+                    <span style="font-size:8px;color:var(--text-muted);text-align:center;line-height:1.1;max-height:32px;overflow:hidden" title="${z.zone}">${shortName}</span>
+                </div>`;
+            }).join('')}
         </div>`;
     } catch(e) { console.error(e); }
     btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync"></i> Refresh';
