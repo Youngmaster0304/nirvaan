@@ -12,12 +12,12 @@ Indian Railways manages 131,000+ km of track with thousands of daily maintenance
 - Safety incidents from delayed maintenance (Kanchanjunga, Khatauli)
 
 ## Solution
-RailBlock AI automates the entire block planning lifecycle:
+RailBlock AI automates the entire block planning lifecycle using real Indian Railway data.
 
 ### Core Features
-- **Block Planning Calendar** - AI-generated weekly block schedules
+- **Block Planning Calendar** - AI-generated weekly block schedules across 15 zones
 - **Defect Tracking** - Priority-based defect management (critical/high/medium/low)
-- **Corridor Management** - Track utilization across 10 corridors
+- **Corridor Management** - 32 corridors across India with single-line detection
 - **AI Optimizer** - ML-based optimization for downtime reduction
 
 ### Advanced Systems
@@ -26,34 +26,27 @@ RailBlock AI automates the entire block planning lifecycle:
 - **HOER Crew Compliance** - Non-linear penalty engine ensuring crew don't exceed 10-hour duty limits, with automatic reassignment alerts
 - **VVIP & Emergency Protocols** - Auto-protects Rajdhani/special trains through maintenance corridors, triggers critical pushes after 11-hour delays
 
+## Real Data
+- **300 real trains** from Indian Railways (sourced from public NTES dataset covering 11,113 unique trains)
+- **15 railway zones** across India (CR, WR, NR, ER, SR, SCR, NCR, NWR, NER, NFR, ECR, ECoR, SECR, SWR, WCR)
+- **49 divisions** with headquarters
+- **32 corridors** with real route names and distances
+
 ## Tech Stack
 - **Backend**: Python 3.13, FastAPI, SQLite
 - **Frontend**: Vanilla JS, Inter font, Font Awesome icons
-- **Theme**: White IRCTC/government style, no emojis, professional typography
-
-## API Endpoints
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/dashboard/stats` | GET | Dashboard KPIs |
-| `/api/maintenance/engine` | GET | Maintenance categories & rules |
-| `/api/token/locks` | GET | Directional token lock status |
-| `/api/crew/duty` | GET | Crew HOER compliance |
-| `/api/emergency/pushes` | GET | Emergency push history |
-| `/api/emergency/vvip-status` | GET | VVIP protection rules |
-| `/api/ai/optimize` | GET | Run AI optimization |
-| `/api/ai/generate-plan` | GET | Generate weekly block plan |
-| `/api/defects` | GET | Defect list with filters |
-| `/api/blocks` | GET/POST | Block planning |
-| `/api/corridors` | GET | Corridor management |
-| `/api/trains` | GET | Train schedule (COA) |
+- **Theme**: White IRCTC/government style, no dark navy, professional typography
 
 ## Quick Start
 ```bash
 # Install dependencies
 pip install fastapi uvicorn
 
+# Seed database with real Indian Railway data
+python seed_db.py
+
 # Run server
-python run_server.py
+python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
 
 # Open browser
 http://localhost:8000
@@ -65,13 +58,37 @@ sih-railways/
 ├── backend/
 │   └── main.py          # FastAPI application (all endpoints)
 ├── frontend/
-│   └── index.html       # IRCTC-style UI
+│   ├── index.html       # IRCTC-style main dashboard
+│   └── admin.html       # Admin panel
 ├── presentation/
 │   └── SIH26027_RailBlockAI_FILLED.pptx
-├── run_server.py         # Server entry point
-├── fill_template.py      # PPTX template filler
-└── railblock.db          # SQLite database (auto-created)
+├── seed_db.py           # Database seeder (real train data)
+├── real_trains.json     # 300 real Indian Railway trains
+├── download_trains.py   # Data processing script
+├── railblock.db         # SQLite database (auto-created)
+└── README.md
 ```
+
+## API Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auth/login` | POST | User authentication |
+| `/api/auth/register` | POST | Create user (admin only) |
+| `/api/dashboard/stats` | GET | Dashboard KPIs |
+| `/api/zones` | GET | All 15 railway zones |
+| `/api/divisions` | GET | Divisions (filter by zone) |
+| `/api/corridors` | GET | Corridor management |
+| `/api/trains` | GET | Train schedule (300+ trains) |
+| `/api/blocks` | GET | Block planning |
+| `/api/defects` | GET | Defect list with filters |
+| `/api/maintenance/engine` | GET | Maintenance categories & rules |
+| `/api/token/locks` | GET | Directional token lock status |
+| `/api/crew/duty` | GET | Crew HOER compliance |
+| `/api/emergency/pushes` | GET | Emergency push history |
+| `/api/emergency/vvip-status` | GET | VVIP protection rules |
+| `/api/ai/optimize` | GET | Run AI optimization |
+| `/api/ai/generate-plan` | GET | Generate weekly block plan |
+| `/api/admin/*` | GET/POST/PUT/DELETE | Admin CRUD operations |
 
 ## System Architecture
 
@@ -83,7 +100,7 @@ graph TB
         DT[Defect Tracking]
         CM[Corridor Management]
         AO[AI Optimizer]
-        TS[Train Schedule]
+        TS[Train Schedule - 300 Trains]
         ME[Maintenance Engine]
         TL[Token Locks]
         CH[Crew HOER]
@@ -101,11 +118,11 @@ graph TB
     end
 
     subgraph DataSources["External Data"]
-        TMS[TMS - Track Management]
-        SMMS[SMMS - Safety Management]
-        TDMS[TDMS - Traction Distribution]
-        COA[COA - Controller of Operations]
-        TT[Timetable / Train Schedule]
+        NTES[NTES - Train Data]
+        ZONES[15 Railway Zones]
+        DIVS[49 Divisions]
+        TRNS[300 Real Trains]
+        CORS[32 Corridors]
     end
 
     UI --> API
@@ -126,11 +143,11 @@ graph TB
     API --> HC
     API --> VP
 
-    TMS --> DB
-    SMMS --> DB
-    TDMS --> DB
-    COA --> DB
-    TT --> DB
+    NTES --> DB
+    ZONES --> DB
+    DIVS --> DB
+    TRNS --> DB
+    CORS --> DB
 
     AI --> DB
     ME2 --> DB
@@ -202,6 +219,13 @@ sequenceDiagram
     A-->>F: JSON response
     F-->>U: Render dashboard
 
+    U->>F: Select Zone (e.g., CR - Central Railway)
+    F->>A: GET /api/trains?zone_id=1
+    A->>D: Query trains for zone
+    D-->>A: Return zone-specific trains
+    A-->>F: Filtered train list
+    F-->>U: Show trains for selected zone
+
     U->>F: Generate AI Plan
     F->>A: GET /api/ai/generate-plan
     A->>D: Fetch corridors, trains, defects
@@ -218,16 +242,12 @@ sequenceDiagram
     D-->>A: Token status
     A-->>F: UP/DOWN lock status
     F-->>U: Visual lock indicators
-
-    U->>F: Check Crew HOER
-    F->>A: GET /api/crew/duty
-    A->>D: Query crew_duty
-    D-->>A: Hours worked
-    A->>AI: Calculate HOER compliance
-    AI-->>A: Violation/at-risk flags
-    A-->>F: Crew status
-    F-->>U: Violation alerts
 ```
 
+## Credentials
+- **Admin**: admin / admin123
+- **Controller**: controller / ctrl123
+- **Engineer**: engineer / eng123
+
 ## License
-SIH 2026 Submission
+MIT License - SIH 2026 Submission

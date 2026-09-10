@@ -382,6 +382,15 @@
                 <div class="section-header"><h2><i class="fas fa-brain"></i> AI Optimization Recommendations</h2></div>
                 <div class="section-body" id="aiRecs"></div>
             </div>
+            <div class="stats-row" id="aiMilp"></div>
+            <div class="section">
+                <div class="section-header"><h2><i class="fas fa-exclamation-triangle"></i> Schedule Conflicts</h2></div>
+                <div class="section-body" id="aiConflicts"></div>
+            </div>
+            <div class="section">
+                <div class="section-header"><h2><i class="fas fa-database"></i> Data Harmonization (TMS/SMMS/TDMS)</h2></div>
+                <div class="section-body" id="aiHarmonize"></div>
+            </div>
         </div>
     </div>
 
@@ -707,20 +716,59 @@ async function loadEmergency() {
 // AI
 async function loadAI() {
     const data = await (await fetch(API+'/api/ai/optimize')).json();
+    const factors = data.factors || {};
     document.getElementById('aiStats').innerHTML = `
-        <div class="stat-card"><div class="label">Current Efficiency</div><div class="value">${data.current_efficiency}%</div></div>
-        <div class="stat-card success"><div class="label">Optimized Efficiency</div><div class="value">${data.optimized_efficiency}%</div></div>
-        <div class="stat-card info"><div class="label">Projected Uptime</div><div class="value">${data.projected_uptime}%</div></div>
-        <div class="stat-card accent"><div class="label">Blocks Merged</div><div class="value">${data.blocks_merged}</div></div>
-        <div class="stat-card warning"><div class="label">Downtime Saved</div><div class="value">${data.downtime_saved_hours}h</div></div>
+        <div class="stat-card"><div class="label">Schedule Grade</div><div class="value">${data.grade}</div></div>
+        <div class="stat-card success"><div class="label">Overall Score</div><div class="value">${data.overall_score}/100</div></div>
+        <div class="stat-card info"><div class="label">Train Disruption</div><div class="value">${factors.train_disruption||0}%</div></div>
+        <div class="stat-card accent"><div class="label">Night Utilization</div><div class="value">${factors.night_utilization||0}%</div></div>
+        <div class="stat-card warning"><div class="label">VVIP Protection</div><div class="value">${factors.vvip_protection||0}%</div></div>
     `;
     document.getElementById('aiRecs').innerHTML = (data.recommendations||[]).map(r => `
         <div class="rec-item">
-            <div class="rec-icon ${r.type}"><i class="fas fa-${r.type==='merge'?'object-group':'clock'}"></i></div>
+            <div class="rec-icon ${r.type}"><i class="fas fa-${r.type==='merge'?'object-group':r.type==='vvip'?'star':'clock'}"></i></div>
             <div class="rec-text"><div class="title">${r.title}</div><div class="desc">${r.description}</div></div>
             <div class="rec-score">${Math.round(r.impact)}%</div>
         </div>
     `).join('');
+
+    // Load MILP results
+    const milp = await (await fetch(API+'/api/ai/milp-solve')).json();
+    const milpEl = document.getElementById('aiMilp');
+    if (milpEl) {
+        milpEl.innerHTML = `
+            <div class="stat-card success"><div class="label">MILP Blocks Scheduled</div><div class="value">${milp.blocks_scheduled}/${milp.total_defects}</div></div>
+            <div class="stat-card info"><div class="label">Objective Value</div><div class="value">${milp.objective_value}</div></div>
+            <div class="stat-card"><div class="label">Constraints Satisfied</div><div class="value">${milp.constraints_satisfied}</div></div>
+        `;
+    }
+
+    // Load conflicts
+    const conflicts = await (await fetch(API+'/api/ai/conflicts')).json();
+    const confEl = document.getElementById('aiConflicts');
+    if (confEl) {
+        const bySev = conflicts.by_severity || {};
+        confEl.innerHTML = `
+            <div class="stat-card warning"><div class="label">Total Conflicts</div><div class="value">${conflicts.total}</div></div>
+            <div class="stat-card"><div class="label">Critical</div><div class="value">${bySev.critical||0}</div></div>
+            <div class="stat-card info"><div class="label">High</div><div class="value">${bySev.high||0}</div></div>
+            <div class="stat-card success"><div class="label">Low</div><div class="value">${bySev.low||0}</div></div>
+        `;
+    }
+
+    // Load harmonize
+    const harmonized = await (await fetch(API+'/api/ai/harmonize')).json();
+    const harmEl = document.getElementById('aiHarmonize');
+    if (harmEl) {
+        const deptSummary = harmonized.department_summary || {};
+        harmEl.innerHTML = Object.entries(deptSummary).map(([dept, info]) => `
+            <div class="rec-item">
+                <div class="rec-icon merge"><i class="fas fa-database"></i></div>
+                <div class="rec-text"><div class="title">${dept}</div><div class="desc">${info.count} defects | Avg urgency: ${info.avg_urgency} | Sources: ${info.sources.join(', ')}</div></div>
+                <div class="rec-score">${info.critical} critical</div>
+            </div>
+        `).join('');
+    }
 }
 
 // INIT
