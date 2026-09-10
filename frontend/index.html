@@ -198,17 +198,88 @@
         .emergency-info .train { font-weight:600; font-size:13px; }
         .emergency-info .desc { font-size:11.5px; color:var(--text-sec); }
 
-        /* RESPONSIVE */
+        /* HAMBURGER */
+        .hamburger { display:none; background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:8px; border-radius:6px; transition:background 0.15s; }
+        .hamburger:hover { background:rgba(255,255,255,0.1); }
+
+        /* TABLE WRAPPER */
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        .section-body.no-pad table { min-width:700px; }
+
+        /* RESPONSIVE — LAPTOP (≤1200px) */
+        @media(max-width:1200px) {
+            .main { padding:16px 20px; }
+            .stats-row { grid-template-columns:repeat(3,1fr); }
+        }
+
+        /* RESPONSIVE — TABLET (≤900px) */
         @media(max-width:900px) {
             .grid-2, .grid-3 { grid-template-columns:1fr; }
             .stats-row { grid-template-columns:repeat(2,1fr); }
-            .header-nav { overflow-x:auto; }
+            .header-top { padding:10px 16px; }
+            .header-nav { padding:0 16px; }
+            .main { padding:14px 16px; }
+            .zone-bar { padding:10px 14px; gap:10px; }
+            .zone-bar select { min-width:140px; flex:1; }
+            .section-header { flex-wrap:wrap; gap:8px; }
+            .section-header .actions { width:100%; }
+            .section-header .actions input,
+            .section-header .actions select { width:100%; }
         }
-        @media(max-width:600px) {
-            .stats-row { grid-template-columns:1fr; }
+
+        /* RESPONSIVE — MOBILE (≤640px) */
+        @media(max-width:640px) {
+            .hamburger { display:block; }
+            .header-brand h1 { font-size:15px; }
+            .header-brand .tag { display:none; }
+            .header-nav {
+                display:none;
+                position:absolute;
+                top:100%;
+                left:0;
+                right:0;
+                background:var(--primary);
+                flex-direction:column;
+                padding:8px;
+                gap:2px;
+                box-shadow:0 8px 24px rgba(0,0,0,0.2);
+                z-index:99;
+            }
+            .header-nav.open { display:flex; }
+            .header-nav a { padding:12px 16px; border-radius:6px; font-size:13px; }
+            .header-nav a:hover { background:rgba(255,255,255,0.1); }
+            .header-nav a.active { background:rgba(255,255,255,0.15); border-radius:6px; }
+            .header-top { padding:8px 12px; }
+            .header-brand { gap:10px; }
+            .header-brand .logo { width:36px; height:36px; font-size:16px; }
+            .header-user { gap:8px; }
+            .header-user .badge { font-size:10px; padding:3px 6px; }
             .main { padding:12px; }
-            .header-top { padding:10px 14px; }
-            .header-nav { padding:0 14px; }
+            .stats-row { grid-template-columns:1fr 1fr; gap:10px; }
+            .stat-card { padding:12px 14px; }
+            .stat-card .value { font-size:22px; }
+            .zone-bar { flex-direction:column; align-items:stretch; gap:8px; padding:10px 12px; }
+            .zone-bar .divider { display:none; }
+            .zone-bar label { font-size:11px; }
+            .zone-bar select { min-width:100%; }
+            .zone-bar .info { text-align:center; }
+            .section { border-radius:6px; margin-bottom:12px; }
+            .section-header { padding:12px 14px; }
+            .section-header h2 { font-size:13px; }
+            .section-body { padding:12px 14px; }
+            .tabs { padding:0 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+            .tab { padding:10px 12px; font-size:11px; white-space:nowrap; }
+            .table-scroll { margin:0 -14px; padding:0 14px; }
+            .login-box { width:calc(100% - 32px); padding:24px 20px; margin:16px; }
+            .filters { gap:6px; }
+            .filter-group { flex-wrap:wrap; }
+        }
+
+        /* RESPONSIVE — SMALL MOBILE (≤400px) */
+        @media(max-width:400px) {
+            .stats-row { grid-template-columns:1fr; }
+            .stat-card .value { font-size:20px; }
+            .header-brand .logo { width:32px; height:32px; font-size:14px; }
         }
 
         /* ZONE FILTER BAR */
@@ -229,6 +300,7 @@
                     <h1>Nirvaan <span class="tag">Indian Railways</span></h1>
                 </div>
             </div>
+            <button class="hamburger" onclick="document.querySelector('.header-nav').classList.toggle('open')"><i class="fas fa-bars"></i></button>
             <div class="header-user">
                 <div id="userArea">
                     <button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff" onclick="showLogin()">
@@ -463,6 +535,7 @@ function showSection(id) {
     document.getElementById('sec-'+id).style.display = '';
     document.querySelectorAll('.header-nav a').forEach(a => a.classList.remove('active'));
     event.target.closest('a').classList.add('active');
+    document.querySelector('.header-nav').classList.remove('open');
     if (id==='blocks') loadBlocks();
     if (id==='trains') loadTrains();
     if (id==='defects') loadDefects();
