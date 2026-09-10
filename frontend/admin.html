@@ -6,682 +6,556 @@
     <title>RailBlock AI - Admin Panel</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
-            --navy-900: #0c1929;
-            --navy-800: #122240;
-            --navy-700: #1a3058;
-            --navy-600: #1e3a5f;
-            --navy-500: #2a4a73;
-            --blue-500: #3b82f6;
-            --blue-400: #60a5fa;
-            --blue-300: #93c5fd;
-            --amber-500: #f59e0b;
-            --amber-400: #fbbf24;
-            --emerald-500: #10b981;
-            --emerald-400: #34d399;
-            --red-500: #ef4444;
-            --red-400: #f87171;
-            --violet-500: #8b5cf6;
-            --slate-100: #f1f5f9;
-            --slate-200: #e2e8f0;
-            --slate-300: #cbd5e1;
-            --slate-400: #94a3b8;
-            --slate-500: #64748b;
-            --slate-600: #475569;
-            --slate-700: #334155;
-            --slate-800: #1e293b;
+            --blue-900: #0c1d36;
+            --blue-800: #132c52;
+            --blue-700: #1a3a6a;
+            --blue-600: #1e4480;
+            --blue-500: #2563a8;
+            --blue-100: #e8eef6;
+            --blue-50: #f3f7fc;
             --white: #ffffff;
-            --glass-bg: rgba(255,255,255,0.03);
-            --glass-border: rgba(255,255,255,0.08);
-            --glass-hover: rgba(255,255,255,0.06);
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.25);
-            --shadow-lg: 0 12px 40px rgba(0,0,0,0.35);
-            --shadow-xl: 0 25px 60px rgba(0,0,0,0.4);
-            --radius: 12px;
-            --radius-sm: 8px;
-            --radius-lg: 16px;
-            --radius-xl: 20px;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --green-500: #16a34a;
+            --green-100: #dcfce7;
+            --green-700: #15803d;
+            --amber-500: #d97706;
+            --amber-100: #fef3c7;
+            --amber-700: #b45309;
+            --red-500: #dc2626;
+            --red-100: #fee2e2;
+            --red-700: #b91c1c;
+            --violet-500: #7c3aed;
+            --violet-100: #ede9fe;
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+            --radius: 6px;
+            --radius-lg: 8px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--navy-900);
-            color: var(--white);
+            font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-800);
             font-size: 14px;
+            line-height: 1.5;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
         }
 
-        /* ═══════════════════════════════════════════════════ */
-        /*  LOGIN PAGE                                         */
-        /* ═══════════════════════════════════════════════════ */
-        .login-wrap {
+        /* ═══ LOGIN ═══ */
+        .login-page {
             display: flex;
-            align-items: center;
-            justify-content: center;
             min-height: 100vh;
-            position: relative;
-            background: linear-gradient(160deg, var(--navy-900) 0%, var(--navy-800) 40%, var(--navy-700) 100%);
+            background: var(--white);
         }
-
-        /* Animated grid background */
-        .login-wrap::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
-            background-size: 60px 60px;
-            mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
-            -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
-        }
-
-        /* Floating orbs */
-        .login-wrap::after {
-            content: '';
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
-            top: -200px;
-            right: -100px;
-            animation: floatOrb 20s ease-in-out infinite;
-        }
-        .orb-2 {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
-            bottom: -150px;
-            left: -100px;
-            animation: floatOrb 25s ease-in-out infinite reverse;
-        }
-        @keyframes floatOrb {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -20px) scale(1.05); }
-            66% { transform: translate(-20px, 15px) scale(0.95); }
-        }
-
-        .login-container {
-            position: relative;
-            z-index: 10;
-            width: 480px;
-            max-width: 92%;
-            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px) scale(0.96); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* Brand header */
-        .login-brand {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .brand-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 16px 6px 8px;
-            background: rgba(59,130,246,0.1);
-            border: 1px solid rgba(59,130,246,0.2);
-            border-radius: 100px;
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--blue-400);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            animation: fadeIn 1s 0.3s both;
-        }
-        .brand-badge i { font-size: 10px; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .brand-icon {
-            width: 72px;
-            height: 72px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, var(--blue-500) 0%, var(--violet-500) 100%);
-            display: inline-flex;
+        .login-left {
+            flex: 1;
+            background: var(--blue-700);
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 32px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
-            position: relative;
-            animation: iconPulse 3s ease-in-out infinite;
-        }
-        .brand-icon::after {
-            content: '';
-            position: absolute;
-            inset: -3px;
-            border-radius: 23px;
-            background: linear-gradient(135deg, rgba(59,130,246,0.3), rgba(139,92,246,0.3));
-            z-index: -1;
-            filter: blur(12px);
-        }
-        .brand-icon i { color: #fff; font-size: 30px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-        @keyframes iconPulse {
-            0%, 100% { box-shadow: 0 8px 32px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
-            50% { box-shadow: 0 8px 48px rgba(59,130,246,0.5), inset 0 1px 0 rgba(255,255,255,0.15); }
-        }
-
-        .brand-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 36px;
-            font-weight: 800;
-            color: var(--white);
-            letter-spacing: -0.5px;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, #fff 0%, var(--blue-300) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .brand-subtitle {
-            font-size: 14px;
-            color: var(--slate-400);
-            font-weight: 400;
-        }
-
-        /* Login card - glassmorphism */
-        .login-card {
-            background: rgba(255,255,255,0.04);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: var(--radius-xl);
-            padding: 40px;
-            box-shadow: var(--shadow-xl), inset 0 1px 0 rgba(255,255,255,0.05);
+            padding: 48px;
             position: relative;
             overflow: hidden;
         }
-        .login-card::before {
+        .login-left::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            top: -50%;
+            right: -30%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.03);
+        }
+        .login-left::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: -20%;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.02);
+        }
+        .login-brand {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: var(--white);
+        }
+        .brand-emblem {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.15);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+        .brand-emblem i { font-size: 36px; color: var(--white); }
+        .brand-name {
+            font-family: 'Lexend', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+        .brand-tagline {
+            font-size: 15px;
+            color: rgba(255,255,255,0.65);
+            font-weight: 400;
+            margin-bottom: 40px;
+        }
+        .brand-features {
+            list-style: none;
+            text-align: left;
+        }
+        .brand-features li {
+            padding: 8px 0;
+            font-size: 14px;
+            color: rgba(255,255,255,0.75);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .brand-features li i {
+            width: 20px;
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
         }
 
-        .card-header {
-            margin-bottom: 32px;
+        .login-right {
+            width: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px;
+            background: var(--white);
         }
-        .card-header h2 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--white);
+        .login-form-wrap {
+            width: 100%;
+            max-width: 360px;
+        }
+        .login-form-header {
+            margin-bottom: 36px;
+        }
+        .login-form-header h2 {
+            font-family: 'Lexend', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--gray-900);
             margin-bottom: 6px;
         }
-        .card-header p {
-            font-size: 13px;
-            color: var(--slate-400);
-            line-height: 1.5;
+        .login-form-header p {
+            font-size: 14px;
+            color: var(--gray-500);
         }
 
-        /* Form fields */
-        .field {
+        .form-row {
             margin-bottom: 20px;
         }
-        .field label {
+        .form-row label {
             display: block;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
-            color: var(--slate-300);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
+            color: var(--gray-700);
+            margin-bottom: 6px;
         }
-        .field-input {
-            position: relative;
-        }
-        .field-input i {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--slate-500);
-            font-size: 14px;
-            transition: color 0.2s;
-            pointer-events: none;
-        }
-        .field-input input {
+        .form-row input {
             width: 100%;
-            padding: 14px 14px 14px 42px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
             border-radius: var(--radius);
             font-size: 14px;
-            font-family: 'DM Sans', sans-serif;
-            color: var(--white);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Source Sans 3', sans-serif;
+            color: var(--gray-800);
+            background: var(--white);
+            transition: border-color 0.15s, box-shadow 0.15s;
             outline: none;
         }
-        .field-input input::placeholder { color: var(--slate-500); }
-        .field-input input:focus {
+        .form-row input:focus {
             border-color: var(--blue-500);
-            background: rgba(59,130,246,0.06);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+            box-shadow: 0 0 0 3px rgba(37,99,168,0.1);
         }
-        .field-input input:focus + i,
-        .field-input input:focus ~ i {
-            color: var(--blue-400);
-        }
-        .field-input:has(input:focus) i {
-            color: var(--blue-400);
-        }
+        .form-row input::placeholder { color: var(--gray-400); }
 
-        /* Sign in button */
-        .btn-signin {
+        .btn-login {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--blue-500) 0%, var(--violet-500) 100%);
+            padding: 11px 20px;
+            background: var(--blue-700);
             border: none;
             border-radius: var(--radius);
             font-size: 14px;
             font-weight: 600;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Source Sans 3', sans-serif;
             color: var(--white);
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 8px;
+            transition: background 0.15s;
+            margin-top: 4px;
         }
-        .btn-signin::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .btn-signin:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(59,130,246,0.4);
-        }
-        .btn-signin:hover::before { opacity: 1; }
-        .btn-signin:active {
-            transform: translateY(0);
-            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
-        }
+        .btn-login:hover { background: var(--blue-800); }
+        .btn-login:active { background: var(--blue-900); }
 
-        /* Error message */
         .login-error {
-            background: rgba(239,68,68,0.1);
-            border: 1px solid rgba(239,68,68,0.2);
-            color: var(--red-400);
-            padding: 12px 16px;
-            border-radius: var(--radius-sm);
+            background: var(--red-100);
+            color: var(--red-700);
+            padding: 10px 14px;
+            border-radius: var(--radius);
             font-size: 13px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             display: none;
-            animation: shake 0.4s ease;
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-6px); }
-            75% { transform: translateX(6px); }
+            border: 1px solid rgba(220,38,38,0.15);
         }
 
-        /* Credentials hint */
-        .creds-hint {
-            margin-top: 28px;
-            padding: 16px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: var(--radius);
+        .login-footer {
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-200);
         }
-        .creds-hint-title {
+        .login-footer-title {
             font-size: 11px;
             font-weight: 600;
-            color: var(--slate-400);
+            color: var(--gray-400);
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.5px;
             margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
-        .creds-hint-title i { font-size: 10px; color: var(--amber-400); }
-        .creds-row {
+        .cred-row {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 0;
-            font-size: 12px;
-            color: var(--slate-400);
+            padding: 5px 0;
+            font-size: 13px;
+            color: var(--gray-500);
         }
-        .creds-row + .creds-row { border-top: 1px solid rgba(255,255,255,0.03); }
-        .creds-role {
+        .cred-role {
             font-weight: 600;
-            color: var(--slate-300);
-            min-width: 80px;
+            color: var(--gray-700);
+            min-width: 72px;
         }
-        .creds-pass {
+        .cred-user { color: var(--gray-600); }
+        .cred-pass {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: var(--blue-400);
-            background: rgba(59,130,246,0.08);
-            padding: 2px 8px;
-            border-radius: 4px;
+            font-size: 12px;
+            color: var(--blue-600);
+            background: var(--blue-50);
+            padding: 1px 6px;
+            border-radius: 3px;
         }
 
-        /* ═══════════════════════════════════════════════════ */
-        /*  ADMIN LAYOUT                                       */
-        /* ═══════════════════════════════════════════════════ */
-        .admin-wrap { display: none; min-height: 100vh; background: var(--slate-100); }
+        /* ═══ ADMIN LAYOUT ═══ */
+        .admin-wrap { display: none; min-height: 100vh; background: var(--gray-100); }
 
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 240px;
-            height: 100vh;
-            background: var(--navy-900);
-            display: flex;
-            flex-direction: column;
-            z-index: 100;
-            border-right: 1px solid rgba(255,255,255,0.05);
-        }
-        .sidebar-brand {
-            padding: 24px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+        /* Top bar */
+        .topbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-200);
+            height: 56px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .sidebar-brand-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--blue-500), var(--violet-500));
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .topbar-brand-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: var(--blue-700);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-            color: #fff;
-            flex-shrink: 0;
-        }
-        .sidebar-brand-text h2 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 15px;
-            font-weight: 700;
             color: var(--white);
-            line-height: 1.2;
+            font-size: 14px;
         }
-        .sidebar-brand-text span {
-            font-size: 11px;
-            color: var(--slate-500);
+        .topbar-brand-text {
+            font-family: 'Lexend', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gray-900);
         }
-
-        .sidebar-nav {
-            flex: 1;
-            padding: 16px 12px;
-            overflow-y: auto;
+        .topbar-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--gray-200);
         }
-        .nav-label {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--slate-500);
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            padding: 16px 12px 8px;
+        .topbar-page {
+            font-size: 14px;
+            color: var(--gray-500);
         }
-        .nav-item {
+        .topbar-right {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            color: var(--slate-400);
-            text-decoration: none;
+            gap: 16px;
+        }
+        .topbar-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--gray-400);
+        }
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: var(--radius);
+            transition: background 0.15s;
+        }
+        .topbar-user:hover { background: var(--gray-100); }
+        .topbar-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--blue-100);
+            color: var(--blue-700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Lexend', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .topbar-username {
             font-size: 13px;
             font-weight: 500;
-            transition: all 0.2s;
+            color: var(--gray-700);
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: var(--white);
+            border-right: 1px solid var(--gray-200);
+            padding: 16px 0;
+            flex-shrink: 0;
+        }
+        .nav-group {
+            margin-bottom: 8px;
+        }
+        .nav-group-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 20px 6px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-600);
+            text-decoration: none;
             cursor: pointer;
-            position: relative;
-            margin-bottom: 2px;
+            transition: all 0.12s;
+            border-left: 2px solid transparent;
         }
-        .nav-item:hover {
-            background: rgba(255,255,255,0.05);
-            color: var(--white);
+        .nav-link:hover {
+            background: var(--gray-50);
+            color: var(--gray-800);
         }
-        .nav-item.active {
-            background: rgba(59,130,246,0.12);
-            color: var(--blue-400);
+        .nav-link.active {
+            background: var(--blue-50);
+            color: var(--blue-700);
+            border-left-color: var(--blue-700);
+            font-weight: 600;
         }
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: -12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 20px;
-            border-radius: 0 3px 3px 0;
-            background: var(--blue-500);
-        }
-        .nav-item i {
+        .nav-link i {
             width: 18px;
             text-align: center;
             font-size: 14px;
         }
-
-        .sidebar-user {
+        .sidebar-footer {
+            margin-top: auto;
             padding: 16px 20px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-        .user-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--blue-500), var(--violet-500));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Outfit', sans-serif;
-            font-size: 13px;
-            font-weight: 700;
-            color: #fff;
-            flex-shrink: 0;
-        }
-        .user-meta .user-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--white);
-        }
-        .user-meta .user-role {
-            font-size: 11px;
-            color: var(--slate-500);
+            border-top: 1px solid var(--gray-200);
         }
         .btn-logout {
             width: 100%;
-            padding: 9px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: var(--radius-sm);
-            color: var(--slate-400);
+            padding: 8px;
+            background: none;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
             font-size: 12px;
             font-weight: 500;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Source Sans 3', sans-serif;
+            color: var(--gray-500);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.15s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
         }
         .btn-logout:hover {
-            background: rgba(239,68,68,0.1);
-            border-color: rgba(239,68,68,0.2);
-            color: var(--red-400);
+            background: var(--red-100);
+            border-color: rgba(220,38,38,0.2);
+            color: var(--red-700);
         }
 
-        /* Main content */
-        .main-content {
-            margin-left: 240px;
-            min-height: 100vh;
+        /* Main */
+        .main {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-y: auto;
         }
-        .topbar {
-            background: rgba(255,255,255,0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--slate-200);
-            padding: 0 32px;
-            height: 56px;
+
+        /* Page header */
+        .page-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 50;
+            margin-bottom: 24px;
         }
-        .topbar h3 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 17px;
+        .page-header h1 {
+            font-family: 'Lexend', sans-serif;
+            font-size: 20px;
             font-weight: 600;
-            color: var(--slate-800);
+            color: var(--gray-900);
         }
-        .topbar-time {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            color: var(--slate-400);
-        }
-
-        .content {
-            padding: 28px 32px;
-        }
-
-        /* Sections */
-        .sec { display: none; animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .sec.on { display: block; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Cards */
-        .card {
-            background: var(--white);
-            border: 1px solid var(--slate-200);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            transition: box-shadow 0.25s;
-        }
-        .card:hover { box-shadow: var(--shadow-md); }
-        .card-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .card-head h3 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--slate-800);
+        .page-header p {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 2px;
         }
 
         /* Stats */
-        .stats-grid {
+        .stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px;
             margin-bottom: 24px;
         }
-        .stat-card {
+        .stat {
             background: var(--white);
-            border: 1px solid var(--slate-200);
+            border: 1px solid var(--gray-200);
             border-radius: var(--radius-lg);
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.25s;
+            padding: 18px 20px;
         }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
         }
-        .stat-card.blue::before { background: linear-gradient(90deg, var(--blue-500), var(--blue-400)); }
-        .stat-card.emerald::before { background: linear-gradient(90deg, var(--emerald-500), var(--emerald-400)); }
-        .stat-card.amber::before { background: linear-gradient(90deg, var(--amber-500), var(--amber-400)); }
-        .stat-card.red::before { background: linear-gradient(90deg, var(--red-500), var(--red-400)); }
-
+        .stat-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-500);
+        }
         .stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-            margin-bottom: 14px;
+            font-size: 13px;
         }
-        .stat-card.blue .stat-icon { background: rgba(59,130,246,0.1); color: var(--blue-500); }
-        .stat-card.emerald .stat-icon { background: rgba(16,185,129,0.1); color: var(--emerald-500); }
-        .stat-card.amber .stat-icon { background: rgba(245,158,11,0.1); color: var(--amber-500); }
-        .stat-card.red .stat-icon { background: rgba(239,68,68,0.1); color: var(--red-500); }
+        .stat-icon.blue { background: var(--blue-100); color: var(--blue-700); }
+        .stat-icon.green { background: var(--green-100); color: var(--green-700); }
+        .stat-icon.amber { background: var(--amber-100); color: var(--amber-700); }
+        .stat-icon.red { background: var(--red-100); color: var(--red-700); }
+        .stat-value {
+            font-family: 'Lexend', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
 
-        .stat-label { font-size: 12px; color: var(--slate-500); font-weight: 500; margin-bottom: 4px; }
-        .stat-val { font-family: 'Outfit', sans-serif; font-size: 30px; font-weight: 700; color: var(--slate-800); }
+        /* Cards */
+        .card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            margin-bottom: 16px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .card-header h3 {
+            font-family: 'Lexend', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        .card-body { padding: 20px; }
 
-        /* Grids */
-        .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-        .g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+        /* Grid */
+        .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
         /* Tables */
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         thead th {
-            padding: 12px 16px;
+            padding: 10px 16px;
             text-align: left;
             font-size: 11px;
-            font-weight: 700;
-            color: var(--slate-500);
+            font-weight: 600;
+            color: var(--gray-500);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid var(--slate-200);
-            background: var(--slate-100);
+            letter-spacing: 0.3px;
+            border-bottom: 1px solid var(--gray-200);
+            background: var(--gray-50);
         }
         tbody td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--slate-100);
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--gray-100);
             font-size: 13px;
-            color: var(--slate-600);
+            color: var(--gray-600);
         }
-        tbody tr { transition: background 0.15s; }
-        tbody tr:hover td { background: rgba(59,130,246,0.02); }
+        tbody tr:hover td { background: var(--gray-50); }
+        tbody tr:last-child td { border-bottom: none; }
         td strong {
-            color: var(--slate-800);
-            font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
+            color: var(--gray-800);
         }
 
         /* Badges */
@@ -690,68 +564,68 @@
             align-items: center;
             font-size: 11px;
             font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 100px;
+            padding: 3px 8px;
+            border-radius: 4px;
         }
-        .badge-green { background: rgba(16,185,129,0.1); color: #059669; }
-        .badge-blue { background: rgba(59,130,246,0.1); color: #2563eb; }
-        .badge-amber { background: rgba(245,158,11,0.1); color: #d97706; }
-        .badge-red { background: rgba(239,68,68,0.1); color: #dc2626; }
-        .badge-violet { background: rgba(139,92,246,0.1); color: #7c3aed; }
-        .badge-slate { background: var(--slate-100); color: var(--slate-500); }
+        .badge-green { background: var(--green-100); color: var(--green-700); }
+        .badge-blue { background: var(--blue-100); color: var(--blue-700); }
+        .badge-amber { background: var(--amber-100); color: var(--amber-700); }
+        .badge-red { background: var(--red-100); color: var(--red-700); }
+        .badge-violet { background: var(--violet-100); color: var(--violet-500); }
+        .badge-gray { background: var(--gray-100); color: var(--gray-500); }
 
         /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 10px 18px;
-            border-radius: var(--radius-sm);
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: var(--radius);
             border: none;
-            cursor: pointer;
             font-size: 13px;
             font-weight: 600;
-            font-family: 'DM Sans', sans-serif;
-            transition: all 0.2s;
+            font-family: 'Source Sans 3', sans-serif;
+            cursor: pointer;
+            transition: all 0.15s;
         }
-        .btn-sm { padding: 7px 12px; font-size: 12px; }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--blue-500), var(--violet-500));
-            color: #fff;
-            box-shadow: 0 2px 8px rgba(59,130,246,0.25);
-        }
-        .btn-primary:hover { box-shadow: 0 4px 16px rgba(59,130,246,0.35); transform: translateY(-1px); }
-        .btn-success { background: var(--emerald-500); color: #fff; }
-        .btn-success:hover { background: #059669; }
-        .btn-danger { background: var(--red-500); color: #fff; }
-        .btn-danger:hover { background: #dc2626; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .btn-primary { background: var(--blue-700); color: var(--white); }
+        .btn-primary:hover { background: var(--blue-800); }
+        .btn-success { background: var(--green-500); color: var(--white); }
+        .btn-success:hover { background: var(--green-700); }
+        .btn-danger { background: var(--red-500); color: var(--white); }
+        .btn-danger:hover { background: var(--red-700); }
         .btn-outline {
             background: var(--white);
-            color: var(--slate-600);
-            border: 1px solid var(--slate-200);
+            color: var(--gray-600);
+            border: 1px solid var(--gray-300);
         }
-        .btn-outline:hover { background: var(--slate-100); }
+        .btn-outline:hover { background: var(--gray-50); }
+
+        /* Sections */
+        .sec { display: none; }
+        .sec.on { display: block; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* Toast */
         .toast {
             position: fixed;
             bottom: 24px;
             right: 24px;
-            background: var(--navy-900);
-            color: #fff;
-            padding: 14px 20px;
+            background: var(--gray-900);
+            color: var(--white);
+            padding: 10px 16px;
             border-radius: var(--radius);
             font-size: 13px;
-            font-weight: 500;
             box-shadow: var(--shadow-lg);
-            transform: translateY(80px);
+            transform: translateY(60px);
             opacity: 0;
-            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.25s ease;
             z-index: 300;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         .toast.show { transform: translateY(0); opacity: 1; }
 
@@ -759,8 +633,7 @@
         .modal-bg {
             position: fixed;
             inset: 0;
-            background: rgba(15,23,42,0.6);
-            backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.3);
             display: none;
             align-items: center;
             justify-content: center;
@@ -769,198 +642,206 @@
         .modal-bg.show { display: flex; }
         .modal {
             background: var(--white);
-            border-radius: var(--radius-xl);
-            width: 520px;
+            border-radius: var(--radius-lg);
+            width: 480px;
             max-width: 95%;
             max-height: 85vh;
             overflow-y: auto;
-            box-shadow: var(--shadow-xl);
-            animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
         }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .modal-head {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--slate-200);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--gray-200);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
         .modal-head h3 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 18px;
+            font-family: 'Lexend', sans-serif;
+            font-size: 16px;
             font-weight: 600;
-            color: var(--slate-800);
+            color: var(--gray-800);
         }
         .modal-close {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
             border: none;
-            background: var(--slate-100);
-            color: var(--slate-500);
-            font-size: 16px;
+            background: none;
+            color: var(--gray-400);
+            font-size: 18px;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.12s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .modal-close:hover { background: var(--slate-200); color: var(--slate-700); }
-        .modal-body { padding: 24px; }
+        .modal-close:hover { background: var(--gray-100); color: var(--gray-600); }
+        .modal-body { padding: 20px; }
 
-        /* Form fields (modal) */
-        .field-modal { margin-bottom: 18px; }
+        .field-modal { margin-bottom: 16px; }
         .field-modal label {
             display: block;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
-            color: var(--slate-600);
-            margin-bottom: 6px;
+            color: var(--gray-700);
+            margin-bottom: 5px;
         }
         .field-modal input,
         .field-modal select {
             width: 100%;
-            padding: 10px 14px;
-            border: 1px solid var(--slate-200);
-            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
             font-size: 13px;
-            font-family: 'DM Sans', sans-serif;
-            color: var(--slate-800);
+            font-family: 'Source Sans 3', sans-serif;
+            color: var(--gray-800);
             background: var(--white);
-            transition: all 0.2s;
             outline: none;
+            transition: border-color 0.15s;
         }
         .field-modal input:focus,
         .field-modal select:focus {
             border-color: var(--blue-500);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            box-shadow: 0 0 0 3px rgba(37,99,168,0.08);
         }
 
-        /* Audit rows */
+        /* Audit */
         .audit-row {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--slate-100);
+            padding: 10px 0;
+            border-bottom: 1px solid var(--gray-100);
             font-size: 13px;
         }
         .audit-row:last-child { border-bottom: none; }
-        .audit-action { min-width: 120px; }
-        .audit-detail { color: var(--slate-500); flex: 1; }
+        .audit-action { min-width: 110px; }
+        .audit-detail { color: var(--gray-500); flex: 1; }
         .audit-time {
-            color: var(--slate-400);
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
-            white-space: nowrap;
+            color: var(--gray-400);
         }
 
         .empty-state {
             text-align: center;
-            padding: 48px;
-            color: var(--slate-400);
+            padding: 40px;
+            color: var(--gray-400);
+            font-size: 13px;
         }
-        .empty-state i { font-size: 36px; margin-bottom: 12px; display: block; opacity: 0.3; }
+        .empty-state i { font-size: 28px; margin-bottom: 8px; display: block; }
 
         @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .g2, .g3 { grid-template-columns: 1fr; }
-            .sidebar { transform: translateX(-100%); }
-            .main-content { margin-left: 0; }
+            .login-left { display: none; }
+            .login-right { width: 100%; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .g2 { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .main { padding: 16px; }
         }
     </style>
 </head>
 <body>
     <!-- LOGIN -->
-    <div class="login-wrap" id="loginWrap">
-        <div class="orb-2"></div>
-        <div class="login-container">
+    <div class="login-page" id="loginWrap">
+        <div class="login-left">
             <div class="login-brand">
-                <div class="brand-badge"><i class="fas fa-shield-halved"></i> Ministry of Railways</div>
-                <div class="brand-icon"><i class="fas fa-train-subway"></i></div>
-                <div class="brand-title">RailBlock AI</div>
-                <div class="brand-subtitle">Intelligent Block Planning System</div>
+                <div class="brand-emblem"><i class="fas fa-train-subway"></i></div>
+                <div class="brand-name">RailBlock AI</div>
+                <div class="brand-tagline">Automatic Block Planning System</div>
+                <ul class="brand-features">
+                    <li><i class="fas fa-check-circle"></i> AI-powered block scheduling across 15 zones</li>
+                    <li><i class="fas fa-check-circle"></i> Multi-department coordination (Engineering, Signal, Traction)</li>
+                    <li><i class="fas fa-check-circle"></i> VVIP train protection & crew compliance</li>
+                    <li><i class="fas fa-check-circle"></i> Real-time conflict detection & resolution</li>
+                    <li><i class="fas fa-check-circle"></i> 300+ real Indian Railway trains</li>
+                </ul>
             </div>
-            <div class="login-card">
-                <div class="card-header">
-                    <h2>Welcome back</h2>
-                    <p>Sign in to access the administration panel</p>
+        </div>
+        <div class="login-right">
+            <div class="login-form-wrap">
+                <div class="login-form-header">
+                    <h2>Sign in</h2>
+                    <p>Enter your credentials to access the admin panel</p>
                 </div>
                 <div class="login-error" id="loginErr"></div>
-                <div class="field">
+                <div class="form-row">
                     <label>Username</label>
-                    <div class="field-input">
-                        <input type="text" id="loginUser" placeholder="Enter your username" value="admin">
-                        <i class="fas fa-user"></i>
-                    </div>
+                    <input type="text" id="loginUser" placeholder="Enter username" value="admin">
                 </div>
-                <div class="field">
+                <div class="form-row">
                     <label>Password</label>
-                    <div class="field-input">
-                        <input type="password" id="loginPass" placeholder="Enter your password" value="admin123">
-                        <i class="fas fa-lock"></i>
-                    </div>
+                    <input type="password" id="loginPass" placeholder="Enter password" value="admin123">
                 </div>
-                <button class="btn-signin" onclick="doLogin()" id="loginBtn">
-                    <i class="fas fa-arrow-right-to-bracket"></i> Sign In
-                </button>
-                <div class="creds-hint">
-                    <div class="creds-hint-title"><i class="fas fa-key"></i> Default Credentials</div>
-                    <div class="creds-row"><span class="creds-role">Admin</span> admin <span class="creds-pass">admin123</span></div>
-                    <div class="creds-row"><span class="creds-role">Controller</span> controller <span class="creds-pass">ctrl123</span></div>
-                    <div class="creds-row"><span class="creds-role">Engineer</span> engineer <span class="creds-pass">eng123</span></div>
+                <button class="btn-login" onclick="doLogin()" id="loginBtn">Sign In</button>
+                <div class="login-footer">
+                    <div class="login-footer-title">Default Credentials</div>
+                    <div class="cred-row"><span class="cred-role">Admin</span> <span class="cred-user">admin</span> <span class="cred-pass">admin123</span></div>
+                    <div class="cred-row"><span class="cred-role">Controller</span> <span class="cred-user">controller</span> <span class="cred-pass">ctrl123</span></div>
+                    <div class="cred-row"><span class="cred-role">Engineer</span> <span class="cred-user">engineer</span> <span class="cred-pass">eng123</span></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ADMIN PANEL -->
+    <!-- ADMIN -->
     <div class="admin-wrap" id="adminWrap">
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="sidebar-brand-icon"><i class="fas fa-train-subway"></i></div>
-                <div class="sidebar-brand-text">
-                    <h2>RailBlock AI</h2>
-                    <span>Admin Panel</span>
+        <div class="topbar">
+            <div class="topbar-left">
+                <a class="topbar-brand" href="#">
+                    <div class="topbar-brand-icon"><i class="fas fa-train-subway"></i></div>
+                    <span class="topbar-brand-text">RailBlock AI</span>
+                </a>
+                <div class="topbar-divider"></div>
+                <span class="topbar-page" id="topbarPage">Dashboard</span>
+            </div>
+            <div class="topbar-right">
+                <span class="topbar-time" id="topTime"></span>
+                <div class="topbar-user" id="topbarUser">
+                    <div class="topbar-avatar" id="userAvatar">A</div>
+                    <span class="topbar-username" id="userName">--</span>
                 </div>
             </div>
-            <nav class="sidebar-nav">
-                <div class="nav-label">Overview</div>
-                <a class="nav-item active" onclick="showSec('admin-dash',this)"><i class="fas fa-chart-pie"></i> Dashboard</a>
-                <div class="nav-label">Management</div>
-                <a class="nav-item" onclick="showSec('admin-blocks',this)"><i class="fas fa-cubes"></i> Blocks</a>
-                <a class="nav-item" onclick="showSec('admin-defects',this)"><i class="fas fa-exclamation-triangle"></i> Defects</a>
-                <a class="nav-item" onclick="showSec('admin-corridors',this)"><i class="fas fa-route"></i> Corridors</a>
-                <a class="nav-item" onclick="showSec('admin-trains',this)"><i class="fas fa-train"></i> Trains</a>
-                <div class="nav-label">Administration</div>
-                <a class="nav-item" onclick="showSec('admin-users',this)"><i class="fas fa-users-cog"></i> Users</a>
-                <a class="nav-item" onclick="showSec('admin-audit',this)"><i class="fas fa-history"></i> Audit Log</a>
-            </nav>
-            <div class="sidebar-user">
-                <div class="user-row">
-                    <div class="user-avatar" id="userAvatar">A</div>
-                    <div class="user-meta">
-                        <div class="user-name" id="userName">--</div>
-                        <div class="user-role" id="userRole">--</div>
-                    </div>
+        </div>
+        <div class="layout">
+            <aside class="sidebar">
+                <div class="nav-group">
+                    <div class="nav-group-label">Overview</div>
+                    <a class="nav-link active" onclick="showSec('admin-dash',this)"><i class="fas fa-chart-pie"></i> Dashboard</a>
                 </div>
-                <button class="btn-logout" onclick="doLogout()"><i class="fas fa-right-from-bracket"></i> Sign Out</button>
-            </div>
-        </aside>
-
-        <div class="main-content">
-            <div class="topbar">
-                <h3 id="pageTitle">Dashboard</h3>
-                <div class="topbar-time" id="topTime"></div>
-            </div>
-            <div class="content">
+                <div class="nav-group">
+                    <div class="nav-group-label">Management</div>
+                    <a class="nav-link" onclick="showSec('admin-blocks',this)"><i class="fas fa-cubes"></i> Blocks</a>
+                    <a class="nav-link" onclick="showSec('admin-defects',this)"><i class="fas fa-exclamation-triangle"></i> Defects</a>
+                    <a class="nav-link" onclick="showSec('admin-corridors',this)"><i class="fas fa-route"></i> Corridors</a>
+                    <a class="nav-link" onclick="showSec('admin-trains',this)"><i class="fas fa-train"></i> Trains</a>
+                </div>
+                <div class="nav-group">
+                    <div class="nav-group-label">Administration</div>
+                    <a class="nav-link" onclick="showSec('admin-users',this)"><i class="fas fa-users-cog"></i> Users</a>
+                    <a class="nav-link" onclick="showSec('admin-audit',this)"><i class="fas fa-history"></i> Audit Log</a>
+                </div>
+                <div class="sidebar-footer">
+                    <button class="btn-logout" onclick="doLogout()"><i class="fas fa-right-from-bracket"></i> Sign Out</button>
+                </div>
+            </aside>
+            <div class="main">
                 <!-- DASHBOARD -->
                 <div class="sec on" id="s-admin-dash">
-                    <div class="stats-grid" id="adminStats"></div>
+                    <div class="page-header">
+                        <div><h1>Dashboard</h1><p>Overview of your block planning system</p></div>
+                    </div>
+                    <div class="stats" id="adminStats"></div>
                     <div class="g2">
-                        <div class="card"><div class="card-head"><h3>Recent Activity</h3></div><div id="recentAudit"></div></div>
-                        <div class="card"><div class="card-head"><h3>Quick Actions</h3></div>
-                            <div style="display:flex;flex-direction:column;gap:10px;">
+                        <div class="card">
+                            <div class="card-header"><h3>Recent Activity</h3></div>
+                            <div class="card-body" id="recentAudit"></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><h3>Quick Actions</h3></div>
+                            <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
                                 <button class="btn btn-primary btn-sm" onclick="showSec('admin-blocks',null)"><i class="fas fa-plus"></i> Create New Block</button>
                                 <button class="btn btn-outline btn-sm" onclick="showSec('admin-defects',null)"><i class="fas fa-plus"></i> Report Defect</button>
                                 <button class="btn btn-outline btn-sm" onclick="showSec('admin-users',null)"><i class="fas fa-user-plus"></i> Add User</button>
@@ -971,38 +852,55 @@
 
                 <!-- BLOCKS -->
                 <div class="sec" id="s-admin-blocks">
-                    <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">Block Management</h3><button class="btn btn-primary btn-sm" onclick="openModal('blockModal')"><i class="fas fa-plus"></i> New Block</button></div>
-                    <div class="card"><div class="table-wrap" id="blockTable"></div></div>
+                    <div class="page-header">
+                        <div><h1>Block Management</h1><p>Create and manage maintenance blocks</p></div>
+                        <button class="btn btn-primary" onclick="openModal('blockModal')"><i class="fas fa-plus"></i> New Block</button>
+                    </div>
+                    <div class="card"><div class="card-body"><div class="table-wrap" id="blockTable"></div></div></div>
                 </div>
 
                 <!-- DEFECTS -->
                 <div class="sec" id="s-admin-defects">
-                    <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">Defect Management</h3><button class="btn btn-primary btn-sm" onclick="openModal('defectModal')"><i class="fas fa-plus"></i> Report Defect</button></div>
-                    <div class="card"><div class="table-wrap" id="defectTable"></div></div>
+                    <div class="page-header">
+                        <div><h1>Defect Management</h1><p>Track and resolve maintenance defects</p></div>
+                        <button class="btn btn-primary" onclick="openModal('defectModal')"><i class="fas fa-plus"></i> Report Defect</button>
+                    </div>
+                    <div class="card"><div class="card-body"><div class="table-wrap" id="defectTable"></div></div></div>
                 </div>
 
                 <!-- CORRIDORS -->
                 <div class="sec" id="s-admin-corridors">
-                    <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">Corridor Management</h3><button class="btn btn-primary btn-sm" onclick="openModal('corridorModal')"><i class="fas fa-plus"></i> Add Corridor</button></div>
-                    <div class="card"><div class="table-wrap" id="corridorTable"></div></div>
+                    <div class="page-header">
+                        <div><h1>Corridor Management</h1><p>Manage railway corridors and sections</p></div>
+                        <button class="btn btn-primary" onclick="openModal('corridorModal')"><i class="fas fa-plus"></i> Add Corridor</button>
+                    </div>
+                    <div class="card"><div class="card-body"><div class="table-wrap" id="corridorTable"></div></div></div>
                 </div>
 
                 <!-- TRAINS -->
                 <div class="sec" id="s-admin-trains">
-                    <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">Train Management</h3><button class="btn btn-primary btn-sm" onclick="openModal('trainModal')"><i class="fas fa-plus"></i> Add Train</button></div>
-                    <div class="card"><div class="table-wrap" id="trainTable"></div></div>
+                    <div class="page-header">
+                        <div><h1>Train Management</h1><p>View and manage train schedules</p></div>
+                        <button class="btn btn-primary" onclick="openModal('trainModal')"><i class="fas fa-plus"></i> Add Train</button>
+                    </div>
+                    <div class="card"><div class="card-body"><div class="table-wrap" id="trainTable"></div></div></div>
                 </div>
 
                 <!-- USERS -->
                 <div class="sec" id="s-admin-users">
-                    <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">User Management</h3><button class="btn btn-primary btn-sm" onclick="openModal('userModal')"><i class="fas fa-user-plus"></i> Add User</button></div>
-                    <div class="card"><div class="table-wrap" id="userTable"></div></div>
+                    <div class="page-header">
+                        <div><h1>User Management</h1><p>Manage system users and roles</p></div>
+                        <button class="btn btn-primary" onclick="openModal('userModal')"><i class="fas fa-user-plus"></i> Add User</button>
+                    </div>
+                    <div class="card"><div class="card-body"><div class="table-wrap" id="userTable"></div></div></div>
                 </div>
 
                 <!-- AUDIT -->
                 <div class="sec" id="s-admin-audit">
-                    <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">Audit Log</h3></div>
-                    <div class="card"><div id="auditLog"></div></div>
+                    <div class="page-header">
+                        <div><h1>Audit Log</h1><p>System activity and change history</p></div>
+                    </div>
+                    <div class="card"><div class="card-body" id="auditLog"></div></div>
                 </div>
             </div>
         </div>
@@ -1017,7 +915,7 @@
         <div class="field-modal"><label>End Time</label><input type="time" id="blkEnd" value="04:00"></div>
         <div class="field-modal"><label>Block Type</label><select id="blkType"><option>Track Renewal</option><option>OHE Replacement</option><option>Signal Maintenance</option><option>Point Machine</option><option>Rail Grinding</option></select></div>
         <div class="field-modal"><label>Category</label><select id="blkCat"><option value="routine">Routine</option><option value="fault">Fault</option><option value="urgent">Urgent</option></select></div>
-        <button class="btn btn-primary" onclick="createBlock()" style="width:100%;margin-top:8px;"><i class="fas fa-check"></i> Create Block</button>
+        <button class="btn btn-primary" onclick="createBlock()" style="width:100%;margin-top:4px;">Create Block</button>
     </div></div></div>
 
     <div class="modal-bg" id="defectModal"><div class="modal"><div class="modal-head"><h3>Report Defect</h3><button class="modal-close" onclick="closeModal('defectModal')">&times;</button></div><div class="modal-body">
@@ -1027,7 +925,7 @@
         <div class="field-modal"><label>Location</label><input type="text" id="defLoc" placeholder="e.g. Track 2, Km 124+300"></div>
         <div class="field-modal"><label>Priority</label><select id="defPri"><option value="critical">Critical</option><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></div>
         <div class="field-modal"><label>Maintenance Type</label><select id="defType"><option value="fault">Fault</option><option value="routine">Routine</option><option value="urgent">Urgent</option></select></div>
-        <button class="btn btn-primary" onclick="createDefect()" style="width:100%;margin-top:8px;"><i class="fas fa-check"></i> Report Defect</button>
+        <button class="btn btn-primary" onclick="createDefect()" style="width:100%;margin-top:4px;">Report Defect</button>
     </div></div></div>
 
     <div class="modal-bg" id="corridorModal"><div class="modal"><div class="modal-head"><h3>Add Corridor</h3><button class="modal-close" onclick="closeModal('corridorModal')">&times;</button></div><div class="modal-body">
@@ -1035,7 +933,7 @@
         <div class="field-modal"><label>Route Name</label><input type="text" id="corrName" placeholder="e.g. Mumbai - Nashik"></div>
         <div class="field-modal"><label>Length (km)</label><input type="number" id="corrLen" step="0.1" placeholder="e.g. 150.0"></div>
         <div class="field-modal"><label>Single Line Section</label><select id="corrSL"><option value="0">No</option><option value="1">Yes</option></select></div>
-        <button class="btn btn-primary" onclick="createCorridor()" style="width:100%;margin-top:8px;"><i class="fas fa-check"></i> Add Corridor</button>
+        <button class="btn btn-primary" onclick="createCorridor()" style="width:100%;margin-top:4px;">Add Corridor</button>
     </div></div></div>
 
     <div class="modal-bg" id="trainModal"><div class="modal"><div class="modal-head"><h3>Add Train</h3><button class="modal-close" onclick="closeModal('trainModal')">&times;</button></div><div class="modal-body">
@@ -1045,10 +943,10 @@
         <div class="field-modal"><label>Destination</label><input type="text" id="trnDest" placeholder="e.g. Mumbai Central"></div>
         <div class="field-modal"><label>Departure Time</label><input type="time" id="trnDep"></div>
         <div class="field-modal"><label>Arrival Time</label><input type="time" id="trnArr"></div>
-        <div class="field-modal"><label>Days (comma-separated)</label><input type="text" id="trnDays" placeholder="e.g. 1,3,5,7"></div>
-        <div class="field-modal"><label>Type</label><select id="trnType"><option value="express">Express</option><option value="passenger">Passenger</option><option value="goods">Goods</option><option value="maintenance">Maintenance</option></select></div>
+        <div class="field-modal"><label>Days</label><input type="text" id="trnDays" placeholder="e.g. 1,3,5,7"></div>
+        <div class="field-modal"><label>Type</label><select id="trnType"><option value="express">Express</option><option value="passenger">Passenger</option><option value="goods">Goods</option></select></div>
         <div class="field-modal"><label>VVIP</label><select id="trnVvip"><option value="0">No</option><option value="1">Yes</option></select></div>
-        <button class="btn btn-primary" onclick="createTrain()" style="width:100%;margin-top:8px;"><i class="fas fa-check"></i> Add Train</button>
+        <button class="btn btn-primary" onclick="createTrain()" style="width:100%;margin-top:4px;">Add Train</button>
     </div></div></div>
 
     <div class="modal-bg" id="userModal"><div class="modal"><div class="modal-head"><h3>Add User</h3><button class="modal-close" onclick="closeModal('userModal')">&times;</button></div><div class="modal-body">
@@ -1056,9 +954,7 @@
         <div class="field-modal"><label>Password</label><input type="password" id="usrPass" placeholder="Min 6 characters"></div>
         <div class="field-modal"><label>Full Name</label><input type="text" id="usrName" placeholder="e.g. Rajesh Kumar"></div>
         <div class="field-modal"><label>Role</label><select id="usrRole"><option value="viewer">Viewer</option><option value="engineer">Engineer</option><option value="controller">Controller</option><option value="admin">Admin</option></select></div>
-        <div class="field-modal"><label>Division</label><select id="usrDiv"><option>Mumbai Division</option><option>Pune Division</option><option>Nagpur Division</option><option>Bhusawal Division</option></select></div>
-        <div class="field-modal"><label>Department</label><input type="text" id="usrDept" placeholder="e.g. Engineering"></div>
-        <button class="btn btn-primary" onclick="createUser()" style="width:100%;margin-top:8px;"><i class="fas fa-check"></i> Create User</button>
+        <button class="btn btn-primary" onclick="createUser()" style="width:100%;margin-top:4px;">Create User</button>
     </div></div></div>
 
     <div class="toast" id="toast"></div>
@@ -1081,10 +977,10 @@
         function showSec(id, el) {
             document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
             document.getElementById('s-' + id).classList.add('on');
-            document.querySelectorAll('.nav-item').forEach(a => a.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
             if (el) el.classList.add('active');
             const titles = { 'admin-dash': 'Dashboard', 'admin-blocks': 'Block Management', 'admin-defects': 'Defect Management', 'admin-corridors': 'Corridor Management', 'admin-trains': 'Train Management', 'admin-users': 'User Management', 'admin-audit': 'Audit Log' };
-            document.getElementById('pageTitle').textContent = titles[id] || 'Dashboard';
+            document.getElementById('topbarPage').textContent = titles[id] || 'Dashboard';
             if (id === 'admin-blocks') loadAdminBlocks();
             if (id === 'admin-defects') loadAdminDefects();
             if (id === 'admin-corridors') loadAdminCorridors();
@@ -1097,7 +993,7 @@
             const u = document.getElementById('loginUser').value;
             const p = document.getElementById('loginPass').value;
             document.getElementById('loginErr').style.display = 'none';
-            document.getElementById('loginBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+            document.getElementById('loginBtn').textContent = 'Signing in...';
             try {
                 const d = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ username: u, password: p }) });
                 TOKEN = d.token; USER = d.user;
@@ -1108,7 +1004,7 @@
                 document.getElementById('loginErr').textContent = 'Invalid credentials. Please try again.';
                 document.getElementById('loginErr').style.display = 'block';
             }
-            document.getElementById('loginBtn').innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i> Sign In';
+            document.getElementById('loginBtn').textContent = 'Sign In';
         }
         function doLogout() {
             if (TOKEN) api('/api/auth/logout', { method: 'POST' }).catch(() => {});
@@ -1122,7 +1018,6 @@
             document.getElementById('loginWrap').style.display = 'none';
             document.getElementById('adminWrap').style.display = 'block';
             document.getElementById('userName').textContent = USER.full_name;
-            document.getElementById('userRole').textContent = USER.role.charAt(0).toUpperCase() + USER.role.slice(1);
             document.getElementById('userAvatar').textContent = USER.full_name.charAt(0);
             loadAdminDash();
             loadCorridorsForSelect();
@@ -1131,10 +1026,10 @@
         async function loadAdminDash() {
             const d = await api('/api/admin/stats');
             document.getElementById('adminStats').innerHTML = `
-                <div class="stat-card blue"><div class="stat-icon"><i class="fas fa-cubes"></i></div><div class="stat-label">Total Blocks</div><div class="stat-val">${d.total_blocks}</div></div>
-                <div class="stat-card emerald"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-label">Completed</div><div class="stat-val">${d.completed_blocks}</div></div>
-                <div class="stat-card amber"><div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div><div class="stat-label">Pending Defects</div><div class="stat-val">${d.pending_defects}</div></div>
-                <div class="stat-card red"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-label">Active Users</div><div class="stat-val">${d.total_users}</div></div>
+                <div class="stat"><div class="stat-header"><span class="stat-label">Total Blocks</span><div class="stat-icon blue"><i class="fas fa-cubes"></i></div></div><div class="stat-value">${d.total_blocks}</div></div>
+                <div class="stat"><div class="stat-header"><span class="stat-label">Completed</span><div class="stat-icon green"><i class="fas fa-check-circle"></i></div></div><div class="stat-value">${d.completed_blocks}</div></div>
+                <div class="stat"><div class="stat-header"><span class="stat-label">Pending Defects</span><div class="stat-icon amber"><i class="fas fa-exclamation-circle"></i></div></div><div class="stat-value">${d.pending_defects}</div></div>
+                <div class="stat"><div class="stat-header"><span class="stat-label">Active Users</span><div class="stat-icon red"><i class="fas fa-users"></i></div></div><div class="stat-value">${d.total_users}</div></div>
             `;
             const audit = await api('/api/admin/audit?limit=8');
             document.getElementById('recentAudit').innerHTML = audit.length ? audit.map(a => `<div class="audit-row"><span class="audit-action"><span class="badge badge-${a.action.includes('create') ? 'green' : a.action.includes('delete') ? 'red' : 'blue'}">${a.action.replace('_', ' ')}</span></span><span class="audit-detail">${a.details || '--'}</span><span class="audit-time">${a.created_at ? new Date(a.created_at).toLocaleString() : '--'}</span></div>`).join('') : '<div class="empty-state"><i class="fas fa-history"></i>No recent activity</div>';
@@ -1147,27 +1042,16 @@
                 <td><span class="badge badge-${b.dept_code === 'ENG' ? 'blue' : b.dept_code === 'TRD' ? 'amber' : 'green'}">${b.dept_name}</span></td>
                 <td>${b.route_name || '--'}</td><td>${b.block_date}</td><td>${b.start_time} - ${b.end_time}</td>
                 <td>${b.block_type}</td><td><span class="badge badge-${b.maintenance_category === 'urgent' ? 'red' : b.maintenance_category === 'fault' ? 'amber' : 'blue'}">${b.maintenance_category}</span></td>
-                <td><span class="badge badge-${b.status === 'completed' ? 'green' : b.status === 'approved' ? 'blue' : b.status === 'in_progress' ? 'amber' : b.status === 'cancelled' ? 'red' : 'slate'}">${b.status}</span></td>
+                <td><span class="badge badge-${b.status === 'completed' ? 'green' : b.status === 'approved' ? 'blue' : b.status === 'in_progress' ? 'amber' : b.status === 'cancelled' ? 'red' : 'gray'}">${b.status}</span></td>
                 <td><div style="display:flex;gap:4px;">
                     ${b.status === 'planned' ? `<button class="btn btn-success btn-sm" onclick="updateBlock(${b.id},'approved')"><i class="fas fa-check"></i></button>` : ''}
                     ${b.status !== 'completed' && b.status !== 'cancelled' ? `<button class="btn btn-danger btn-sm" onclick="updateBlock(${b.id},'cancelled')"><i class="fas fa-times"></i></button>` : ''}
                 </div></td>
             </tr>`).join('')}</tbody></table>`;
         }
-        async function updateBlock(id, status) {
-            await api(`/api/admin/blocks/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
-            toast('Block ' + status); loadAdminBlocks();
-        }
+        async function updateBlock(id, status) { await api(`/api/admin/blocks/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }); toast('Block ' + status); loadAdminBlocks(); }
         async function createBlock() {
-            await api('/api/admin/blocks', { method: 'POST', body: JSON.stringify({
-                department_id: parseInt(document.getElementById('blkDept').value),
-                corridor_id: parseInt(document.getElementById('blkCorr').value),
-                block_date: document.getElementById('blkDate').value,
-                start_time: document.getElementById('blkStart').value,
-                end_time: document.getElementById('blkEnd').value,
-                block_type: document.getElementById('blkType').value,
-                maintenance_category: document.getElementById('blkCat').value
-            })});
+            await api('/api/admin/blocks', { method: 'POST', body: JSON.stringify({ department_id: parseInt(document.getElementById('blkDept').value), corridor_id: parseInt(document.getElementById('blkCorr').value), block_date: document.getElementById('blkDate').value, start_time: document.getElementById('blkStart').value, end_time: document.getElementById('blkEnd').value, block_type: document.getElementById('blkType').value, maintenance_category: document.getElementById('blkCat').value })});
             closeModal('blockModal'); toast('Block created'); loadAdminBlocks();
         }
 
@@ -1179,25 +1063,13 @@
                 <td style="font-size:11px;">${x.location}</td>
                 <td><span class="badge badge-${x.priority === 'critical' ? 'red' : x.priority === 'high' ? 'amber' : x.priority === 'medium' ? 'blue' : 'green'}">${x.priority}</span></td>
                 <td><span class="badge badge-${x.maintenance_type === 'urgent' ? 'red' : x.maintenance_type === 'fault' ? 'amber' : 'blue'}">${x.maintenance_type}</span></td>
-                <td><span class="badge badge-${x.status === 'resolved' ? 'green' : 'slate'}">${x.status}</span></td>
-                <td><div style="display:flex;gap:4px;">
-                    ${x.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="updateDefect(${x.id},'resolved')"><i class="fas fa-check"></i></button>` : ''}
-                </div></td>
+                <td><span class="badge badge-${x.status === 'resolved' ? 'green' : 'gray'}">${x.status}</span></td>
+                <td>${x.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="updateDefect(${x.id},'resolved')"><i class="fas fa-check"></i></button>` : ''}</td>
             </tr>`).join('')}</tbody></table>`;
         }
-        async function updateDefect(id, status) {
-            await api(`/api/admin/defects/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
-            toast('Defect resolved'); loadAdminDefects();
-        }
+        async function updateDefect(id, status) { await api(`/api/admin/defects/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }); toast('Defect resolved'); loadAdminDefects(); }
         async function createDefect() {
-            await api('/api/admin/defects', { method: 'POST', body: JSON.stringify({
-                department_id: parseInt(document.getElementById('defDept').value),
-                title: document.getElementById('defTitle').value,
-                description: document.getElementById('defDesc').value,
-                location: document.getElementById('defLoc').value,
-                priority: document.getElementById('defPri').value,
-                maintenance_type: document.getElementById('defType').value
-            })});
+            await api('/api/admin/defects', { method: 'POST', body: JSON.stringify({ department_id: parseInt(document.getElementById('defDept').value), title: document.getElementById('defTitle').value, description: document.getElementById('defDesc').value, location: document.getElementById('defLoc').value, priority: document.getElementById('defPri').value, maintenance_type: document.getElementById('defType').value })});
             closeModal('defectModal'); toast('Defect reported'); loadAdminDefects();
         }
 
@@ -1205,17 +1077,12 @@
             const d = await api('/api/admin/corridors');
             document.getElementById('corridorTable').innerHTML = `<table><thead><tr><th>ID</th><th>Route</th><th>Length</th><th>Single Line</th><th>Blocks</th><th>Status</th></tr></thead><tbody>${d.map(c => `<tr>
                 <td><strong>${c.corridor_id}</strong></td><td>${c.route_name}</td><td>${c.length_km} km</td>
-                <td>${c.single_line ? '<span class="badge badge-amber">Yes</span>' : '<span class="badge badge-slate">No</span>'}</td>
+                <td>${c.single_line ? '<span class="badge badge-amber">Yes</span>' : '<span class="badge badge-gray">No</span>'}</td>
                 <td>${c.blocks || 0}</td><td><span class="badge badge-green">${c.status}</span></td>
             </tr>`).join('')}</tbody></table>`;
         }
         async function createCorridor() {
-            await api('/api/admin/corridors', { method: 'POST', body: JSON.stringify({
-                corridor_id: document.getElementById('corrId').value,
-                route_name: document.getElementById('corrName').value,
-                length_km: parseFloat(document.getElementById('corrLen').value),
-                single_line_section: parseInt(document.getElementById('corrSL').value)
-            })});
+            await api('/api/admin/corridors', { method: 'POST', body: JSON.stringify({ corridor_id: document.getElementById('corrId').value, route_name: document.getElementById('corrName').value, length_km: parseFloat(document.getElementById('corrLen').value), single_line_section: parseInt(document.getElementById('corrSL').value) })});
             closeModal('corridorModal'); toast('Corridor added'); loadAdminCorridors();
         }
 
@@ -1229,17 +1096,7 @@
             </tr>`).join('')}</tbody></table>`;
         }
         async function createTrain() {
-            await api('/api/admin/trains', { method: 'POST', body: JSON.stringify({
-                train_number: document.getElementById('trnNum').value,
-                train_name: document.getElementById('trnName').value,
-                origin: document.getElementById('trnOrig').value,
-                destination: document.getElementById('trnDest').value,
-                departure_time: document.getElementById('trnDep').value || null,
-                arrival_time: document.getElementById('trnArr').value || null,
-                days_of_week: document.getElementById('trnDays').value || null,
-                train_type: document.getElementById('trnType').value,
-                is_vvip: parseInt(document.getElementById('trnVvip').value)
-            })});
+            await api('/api/admin/trains', { method: 'POST', body: JSON.stringify({ train_number: document.getElementById('trnNum').value, train_name: document.getElementById('trnName').value, origin: document.getElementById('trnOrig').value, destination: document.getElementById('trnDest').value, departure_time: document.getElementById('trnDep').value || null, arrival_time: document.getElementById('trnArr').value || null, days_of_week: document.getElementById('trnDays').value || null, train_type: document.getElementById('trnType').value, is_vvip: parseInt(document.getElementById('trnVvip').value) })});
             closeModal('trainModal'); toast('Train added'); loadAdminTrains();
         }
 
@@ -1247,19 +1104,14 @@
             const d = await api('/api/admin/users');
             document.getElementById('userTable').innerHTML = `<table><thead><tr><th>Username</th><th>Full Name</th><th>Role</th><th>Division</th><th>Status</th><th>Last Login</th></tr></thead><tbody>${d.map(u => `<tr>
                 <td><strong>${u.username}</strong></td><td>${u.full_name}</td>
-                <td><span class="badge badge-${u.role === 'admin' ? 'red' : u.role === 'controller' ? 'blue' : u.role === 'engineer' ? 'amber' : 'slate'}">${u.role}</span></td>
+                <td><span class="badge badge-${u.role === 'admin' ? 'red' : u.role === 'controller' ? 'blue' : u.role === 'engineer' ? 'amber' : 'gray'}">${u.role}</span></td>
                 <td>${u.division || u.div_name || '--'}</td>
                 <td><span class="badge badge-${u.is_active ? 'green' : 'red'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
                 <td style="font-size:11px;">${u.last_login ? new Date(u.last_login).toLocaleString() : 'Never'}</td>
             </tr>`).join('')}</tbody></table>`;
         }
         async function createUser() {
-            await api('/api/auth/register', { method: 'POST', body: JSON.stringify({
-                username: document.getElementById('usrUser').value,
-                password: document.getElementById('usrPass').value,
-                full_name: document.getElementById('usrName').value,
-                role: document.getElementById('usrRole').value
-            })});
+            await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ username: document.getElementById('usrUser').value, password: document.getElementById('usrPass').value, full_name: document.getElementById('usrName').value, role: document.getElementById('usrRole').value })});
             closeModal('userModal'); toast('User created'); loadAdminUsers();
         }
 
@@ -1274,15 +1126,14 @@
 
         async function loadCorridorsForSelect() {
             const d = await api('/api/admin/corridors');
-            const sel = document.getElementById('blkCorr');
-            sel.innerHTML = d.map(c => `<option value="${c.id}">${c.corridor_id} - ${c.route_name}</option>`).join('');
+            document.getElementById('blkCorr').innerHTML = d.map(c => `<option value="${c.id}">${c.corridor_id} - ${c.route_name}</option>`).join('');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            if (TOKEN && USER) { showAdmin(); } else { doLogout(); }
-            setInterval(() => { document.getElementById('topTime').textContent = new Date().toLocaleString(); }, 1000);
+            if (TOKEN && USER) showAdmin(); else doLogout();
+            setInterval(() => { const el = document.getElementById('topTime'); if (el) el.textContent = new Date().toLocaleString(); }, 1000);
         });
-        document.querySelectorAll('.field-input input').forEach(inp => { inp.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); }); });
+        document.querySelectorAll('.form-row input').forEach(inp => { inp.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); }); });
     </script>
 </body>
 </html>
