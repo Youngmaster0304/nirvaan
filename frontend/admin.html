@@ -6,30 +6,33 @@
     <title>RailBlock AI - Admin Panel</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
-            --navy: #0f172a; --navy-light: #1e293b; --navy-mid: #334155;
-            --slate: #64748b; --slate-light: #94a3b8;
-            --border: #e2e8f0; --border-soft: #f1f5f9;
-            --bg: #f8fafc; --white: #ffffff;
-            --text: #0f172a; --text-sec: #475569; --text-muted: #94a3b8;
-            --blue: #3b82f6; --blue-deep: #1d4ed8; --blue-light: #eff6ff;
-            --amber: #f59e0b; --amber-light: #fffbeb;
-            --emerald: #10b981; --emerald-light: #ecfdf5;
-            --red: #ef4444; --red-light: #fef2f2;
-            --violet: #8b5cf6; --violet-light: #f5f3ff;
+            --primary: #1a3a6a; --primary-light: #2c5299; --primary-lighter: #e8edf4;
+            --accent: #e8590c; --accent-light: #fff3e0;
+            --border: #e0e3ea; --border-soft: #f5f6fa;
+            --bg: #f5f6fa; --white: #ffffff;
+            --text: #1a1a2e; --text-sec: #5a5a7a; --text-muted: #9a9ab5;
+            --blue: #1a3a6a; --blue-light: #e8edf4;
+            --amber: #f57f17; --amber-light: #fff8e1;
+            --emerald: #2e7d32; --emerald-light: #e8f5e9;
+            --red: #c62828; --red-light: #ffebee;
+            --violet: #7b1fa2; --violet-light: #f3e5f5;
+            --slate: #5a5a7a; --slate-light: #9a9ab5;
+            --navy: #1a3a6a; --navy-light: #2c5299; --navy-mid: #3d5a8a;
+            --blue-deep: #1a3a6a;
             --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.06);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.06);
-            --radius: 10px; --radius-sm: 6px; --radius-lg: 14px;
+            --radius: 8px; --radius-sm: 6px; --radius-lg: 10px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; -webkit-font-smoothing: antialiased; }
 
         /* LOGIN */
-        .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); }
+        .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1a3a6a 0%, #2c5299 50%, #3d5a8a 100%); }
         .login-box { width: 420px; max-width: 95%; }
         .login-brand { text-align: center; margin-bottom: 32px; }
         .login-brand .brand-icon { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, var(--blue) 0%, var(--blue-deep) 100%); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 8px 24px rgb(59 130 246 / 0.3); }
@@ -146,7 +149,7 @@
         .loading i { display: block; font-size: 20px; margin-bottom: 8px; animation: spin 1s linear infinite; color: var(--blue); }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .modal-bg { position: fixed; inset: 0; background: rgb(15 23 42 / 0.5); display: none; align-items: center; justify-content: center; z-index: 200; backdrop-filter: blur(4px); }
+        .modal-bg { position: fixed; inset: 0; background: rgb(26 58 106 / 0.5); display: none; align-items: center; justify-content: center; z-index: 200; backdrop-filter: blur(4px); }
         .modal-bg.show { display: flex; }
         .modal { background: var(--white); border-radius: var(--radius-lg); width: 520px; max-width: 95%; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); animation: modalIn 0.25s ease; }
         @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }

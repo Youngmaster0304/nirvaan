@@ -3,1112 +3,733 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RailBlock AI - Automatic Block Planning</title>
+    <title>RailBlock AI - Indian Railways Block Planning</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
-            --navy: #0f172a;
-            --navy-light: #1e293b;
-            --navy-mid: #334155;
-            --slate: #64748b;
-            --slate-light: #94a3b8;
-            --border: #e2e8f0;
-            --border-soft: #f1f5f9;
-            --bg: #f8fafc;
+            --primary: #1a3a6a;
+            --primary-light: #2c5299;
+            --primary-lighter: #e8edf4;
+            --accent: #e8590c;
+            --accent-light: #fff3e0;
+            --bg: #f5f6fa;
             --white: #ffffff;
-            --text: #0f172a;
-            --text-sec: #475569;
-            --text-muted: #94a3b8;
-            --blue: #3b82f6;
-            --blue-deep: #1d4ed8;
-            --blue-light: #eff6ff;
-            --amber: #f59e0b;
-            --amber-light: #fffbeb;
-            --emerald: #10b981;
-            --emerald-light: #ecfdf5;
-            --red: #ef4444;
-            --red-light: #fef2f2;
-            --violet: #8b5cf6;
-            --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
-            --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.06), 0 4px 6px -4px rgb(0 0 0 / 0.04);
-            --shadow-glow: 0 0 20px rgb(59 130 246 / 0.15);
-            --radius: 10px;
-            --radius-sm: 6px;
-            --radius-lg: 14px;
+            --text: #1a1a2e;
+            --text-sec: #5a5a7a;
+            --text-muted: #9a9ab5;
+            --border: #e0e3ea;
+            --success: #2e7d32;
+            --success-light: #e8f5e9;
+            --warning: #f57f17;
+            --warning-light: #fff8e1;
+            --danger: #c62828;
+            --danger-light: #ffebee;
+            --info: #1565c0;
+            --info-light: #e3f2fd;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+            --radius: 8px;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            font-size: 14px;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); font-size:13.5px; line-height:1.55; }
 
-        /* ============ SIDEBAR ============ */
-        .sidebar {
-            position: fixed; top: 0; left: 0; width: 240px; height: 100vh;
-            background: var(--navy);
-            display: flex; flex-direction: column;
-            z-index: 100;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .sidebar-brand {
-            padding: 20px 20px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .sidebar-brand .brand-icon {
-            width: 42px; height: 42px; border-radius: 10px;
-            background: linear-gradient(135deg, var(--blue) 0%, var(--blue-deep) 100%);
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgb(59 130 246 / 0.3);
-        }
-        .sidebar-brand .brand-icon i { color: #fff; font-size: 18px; }
-        .sidebar-brand h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 17px; font-weight: 700; color: #fff; letter-spacing: -0.3px;
-        }
-        .sidebar-brand span { font-size: 11px; color: var(--slate-light); display: block; margin-top: 2px; }
-
-        .sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
-        .sidebar-section {
-            font-size: 10px; font-weight: 600; color: var(--slate);
-            text-transform: uppercase; letter-spacing: 1px;
-            padding: 12px 10px 6px; margin-top: 4px;
-        }
-        .sidebar-nav a {
-            display: flex; align-items: center; gap: 10px;
-            padding: 9px 12px; border-radius: var(--radius-sm);
-            color: var(--slate-light); text-decoration: none;
-            font-size: 13px; font-weight: 400;
-            transition: all 0.15s ease;
-            position: relative;
-        }
-        .sidebar-nav a:hover {
-            background: rgba(255,255,255,0.06);
-            color: #fff;
-        }
-        .sidebar-nav a.active {
-            background: rgba(59, 130, 246, 0.15);
-            color: var(--blue);
-            font-weight: 500;
-        }
-        .sidebar-nav a.active::before {
-            content: '';
-            position: absolute; left: -10px; top: 50%; transform: translateY(-50%);
-            width: 3px; height: 20px; border-radius: 0 3px 3px 0;
-            background: var(--blue);
-        }
-        .sidebar-nav a i { width: 18px; text-align: center; font-size: 14px; }
-
-        .sidebar-footer {
-            padding: 16px 20px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-        }
-        .sidebar-footer .signal-row {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 11px; color: var(--slate-light);
-        }
-        .signal-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            animation: pulse-signal 2s infinite;
-        }
-        .signal-dot.green { background: var(--emerald); box-shadow: 0 0 8px rgb(16 185 129 / 0.5); }
-        .signal-dot.amber { background: var(--amber); box-shadow: 0 0 8px rgb(245 158 11 / 0.5); }
-        .signal-dot.red { background: var(--red); box-shadow: 0 0 8px rgb(239 68 68 / 0.5); }
-
-        @keyframes pulse-signal {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* ============ MAIN CONTENT ============ */
-        .main-wrap {
-            margin-left: 240px;
-            min-height: 100vh;
-        }
-
-        /* TOP BAR */
-        .topbar {
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-            padding: 0 28px;
-            height: 52px;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 50;
-            backdrop-filter: blur(12px);
-            background: rgba(255,255,255,0.85);
-        }
-        .topbar-left { display: flex; align-items: center; gap: 12px; }
-        .topbar-left .breadcrumb { font-size: 13px; color: var(--text-muted); }
-        .topbar-left .breadcrumb strong { color: var(--text); font-weight: 600; }
-        .topbar-right { display: flex; align-items: center; gap: 16px; }
-        .topbar-right .division-select {
-            padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-            font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text);
-            background: var(--white); cursor: pointer;
-            transition: border-color 0.15s;
-        }
-        .topbar-right .division-select:focus { border-color: var(--blue); outline: none; }
-        .topbar-right .user-pill {
-            display: flex; align-items: center; gap: 8px;
-            padding: 5px 12px 5px 5px;
-            background: var(--border-soft); border-radius: 20px;
-            font-size: 12px; color: var(--text-sec); font-weight: 500;
-        }
-        .topbar-right .user-avatar {
-            width: 28px; height: 28px; border-radius: 50%;
-            background: var(--navy); color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 600; font-family: 'Outfit', sans-serif;
-        }
+        /* HEADER */
+        .header { background:linear-gradient(135deg,#1a3a6a 0%,#2c5299 100%); color:#fff; padding:0; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.15); }
+        .header-top { display:flex; align-items:center; justify-content:space-between; padding:10px 28px; }
+        .header-brand { display:flex; align-items:center; gap:14px; }
+        .header-brand .logo { width:42px; height:42px; background:rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; color:#fff; border:2px solid rgba(255,255,255,0.25); }
+        .header-brand h1 { font-size:18px; font-weight:700; letter-spacing:0.3px; }
+        .header-brand .tag { font-size:11px; background:rgba(255,255,255,0.15); padding:2px 8px; border-radius:4px; margin-left:6px; font-weight:500; }
+        .header-user { display:flex; align-items:center; gap:16px; }
+        .header-user select { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:6px 10px; border-radius:6px; font-size:12px; cursor:pointer; }
+        .header-user select option { color:#333; background:#fff; }
+        .header-user .badge { background:rgba(255,255,255,0.15); padding:4px 10px; border-radius:6px; font-size:12px; }
+        .header-nav { display:flex; padding:0 28px; gap:2px; }
+        .header-nav a { color:rgba(255,255,255,0.7); text-decoration:none; padding:10px 16px; font-size:12.5px; font-weight:500; border-radius:6px 6px 0 0; transition:all 0.2s; }
+        .header-nav a:hover { color:#fff; background:rgba(255,255,255,0.1); }
+        .header-nav a.active { color:#fff; background:rgba(255,255,255,0.15); }
 
         /* CONTENT */
-        .content { padding: 24px 28px; }
+        .main { padding:20px 28px; max-width:1400px; margin:0 auto; }
+
+        /* STATS */
+        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:20px; }
+        .stat-card { background:#fff; border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow); border-left:4px solid var(--primary); transition:transform 0.15s; }
+        .stat-card:hover { transform:translateY(-1px); box-shadow:var(--shadow-md); }
+        .stat-card.accent { border-left-color:var(--accent); }
+        .stat-card.success { border-left-color:var(--success); }
+        .stat-card.warning { border-left-color:var(--warning); }
+        .stat-card.danger { border-left-color:var(--danger); }
+        .stat-card.info { border-left-color:var(--info); }
+        .stat-card .label { font-size:11.5px; color:var(--text-muted); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+        .stat-card .value { font-size:26px; font-weight:700; color:var(--primary); margin:4px 0 2px; font-family:'JetBrains Mono',monospace; }
+        .stat-card.accent .value { color:var(--accent); }
+        .stat-card.success .value { color:var(--success); }
+        .stat-card.warning .value { color:var(--warning); }
+        .stat-card.danger .value { color:var(--danger); }
+        .stat-card.info .value { color:var(--info); }
+        .stat-card .sub { font-size:11px; color:var(--text-muted); }
 
         /* SECTIONS */
-        .sec { display: none; animation: fadeUp 0.35s ease; }
-        .sec.on { display: block; }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .section { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:18px; overflow:hidden; }
+        .section-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); }
+        .section-header h2 { font-size:14px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:8px; }
+        .section-header h2 i { color:var(--primary); font-size:15px; }
+        .section-header .actions { display:flex; gap:8px; }
+        .section-body { padding:16px 18px; }
+        .section-body.no-pad { padding:0; }
 
-        /* ============ CARDS ============ */
-        .card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            transition: box-shadow 0.2s ease, border-color 0.2s ease;
-        }
-        .card:hover {
-            box-shadow: var(--shadow-md);
-            border-color: var(--border);
-        }
-        .card-head {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        .card-head h3 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 15px; font-weight: 600; color: var(--text);
-        }
+        /* TABLE */
+        table { width:100%; border-collapse:collapse; font-size:12.5px; }
+        thead th { background:#f8f9fc; color:var(--text-sec); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; padding:10px 12px; text-align:left; border-bottom:2px solid var(--border); white-space:nowrap; }
+        tbody td { padding:9px 12px; border-bottom:1px solid #f0f1f5; vertical-align:middle; }
+        tbody tr:hover { background:#f8f9fc; }
+        tbody tr:last-child td { border-bottom:none; }
 
         /* BADGES */
-        .badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            font-size: 11px; font-weight: 500; padding: 3px 10px;
-            border-radius: 20px; letter-spacing: 0.2px;
-        }
-        .badge-green { background: var(--emerald-light); color: #047857; }
-        .badge-blue { background: var(--blue-light); color: var(--blue-deep); }
-        .badge-amber { background: var(--amber-light); color: #92400e; }
-        .badge-red { background: var(--red-light); color: #b91c1c; }
-        .badge-violet { background: #f5f3ff; color: #6d28d9; }
-        .badge-navy { background: var(--navy); color: #fff; }
+        .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+        .badge-critical { background:var(--danger-light); color:var(--danger); }
+        .badge-high { background:var(--warning-light); color:var(--warning); }
+        .badge-medium { background:var(--info-light); color:var(--info); }
+        .badge-low { background:#f5f5f5; color:#757575; }
+        .badge-locked { background:var(--danger-light); color:var(--danger); }
+        .badge-available { background:var(--success-light); color:var(--success); }
+        .badge-on_duty { background:var(--success-light); color:var(--success); }
+        .badge-violation { background:var(--danger-light); color:var(--danger); }
+        .badge-rest { background:#f5f5f5; color:#757575; }
+        .badge-active { background:var(--info-light); color:var(--info); }
+        .badge-completed { background:var(--success-light); color:var(--success); }
+        .badge-planned { background:#f3e5f5; color:#7b1fa2; }
+        .badge-approved { background:var(--info-light); color:var(--info); }
+        .badge-in_progress { background:var(--warning-light); color:var(--warning); }
+        .badge-vvip { background:var(--accent-light); color:var(--accent); }
+        .badge-routine { background:var(--info-light); color:var(--info); }
+        .badge-fault { background:var(--warning-light); color:var(--warning); }
+        .badge-urgent { background:var(--danger-light); color:var(--danger); }
+        .badge-dot { width:6px; height:6px; border-radius:50%; display:inline-block; }
+        .dot-red { background:var(--danger); }
+        .dot-green { background:var(--success); }
+        .dot-yellow { background:var(--warning); }
 
-        /* ============ STATS ============ */
-        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-        .stat-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.25s ease;
-        }
-        .stat-card::before {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0; height: 3px;
-            border-radius: var(--radius) var(--radius) 0 0;
-        }
-        .stat-card.blue::before { background: linear-gradient(90deg, var(--blue), #60a5fa); }
-        .stat-card.emerald::before { background: linear-gradient(90deg, var(--emerald), #34d399); }
-        .stat-card.amber::before { background: linear-gradient(90deg, var(--amber), #fbbf24); }
-        .stat-card.red::before { background: linear-gradient(90deg, var(--red), #f87171); }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .stat-icon {
-            width: 40px; height: 40px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 16px; margin-bottom: 14px;
-        }
-        .stat-card.blue .stat-icon { background: var(--blue-light); color: var(--blue); }
-        .stat-card.emerald .stat-icon { background: var(--emerald-light); color: var(--emerald); }
-        .stat-card.amber .stat-icon { background: var(--amber-light); color: var(--amber); }
-        .stat-card.red .stat-icon { background: var(--red-light); color: var(--red); }
-        .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
-        .stat-val {
-            font-family: 'Outfit', sans-serif;
-            font-size: 30px; font-weight: 700; color: var(--text);
-            line-height: 1;
-        }
-        .stat-change { font-size: 11px; margin-top: 8px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
-        .stat-change.up { color: var(--emerald); }
-        .stat-change.down { color: var(--red); }
+        /* BUTTONS */
+        .btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s; }
+        .btn-primary { background:var(--primary); color:#fff; }
+        .btn-primary:hover { background:var(--primary-light); }
+        .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text-sec); }
+        .btn-outline:hover { border-color:var(--primary); color:var(--primary); }
+        .btn-sm { padding:4px 10px; font-size:11px; }
+        .btn-success { background:var(--success); color:#fff; }
+        .btn-danger { background:var(--danger); color:#fff; }
 
-        /* ============ GRID ============ */
-        .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-        .g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
-        .g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+        /* FORMS */
+        select, input { padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:12px; font-family:inherit; color:var(--text); background:#fff; }
+        select:focus, input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,58,106,0.1); }
 
-        /* ============ TABLE ============ */
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        thead th {
-            padding: 10px 14px; text-align: left;
-            font-size: 11px; font-weight: 600; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: 0.5px;
-            border-bottom: 2px solid var(--border);
-            background: var(--border-soft);
-            font-family: 'DM Sans', sans-serif;
-        }
-        tbody td {
-            padding: 12px 14px; border-bottom: 1px solid var(--border-soft);
-            font-size: 13px; color: var(--text-sec);
-            transition: background 0.1s;
-        }
-        tbody tr:hover td { background: var(--border-soft); }
-        tbody tr:last-child td { border-bottom: none; }
-        td strong { color: var(--text); font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+        /* TABS */
+        .tabs { display:flex; gap:2px; padding:0 18px; background:#f8f9fc; border-bottom:1px solid var(--border); }
+        .tab { padding:10px 16px; font-size:12px; font-weight:500; color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.15s; }
+        .tab:hover { color:var(--text-sec); }
+        .tab.active { color:var(--primary); border-bottom-color:var(--primary); background:#fff; }
 
-        /* ============ PROGRESS ============ */
-        .prog { height: 6px; background: var(--border-soft); border-radius: 10px; overflow: hidden; }
-        .prog-fill { height: 100%; border-radius: 10px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* GRID */
+        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+        .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; }
 
-        /* ============ BUTTONS ============ */
-        .btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 8px 16px; border-radius: var(--radius-sm);
-            border: none; cursor: pointer;
-            font-size: 12px; font-weight: 500;
-            font-family: 'DM Sans', sans-serif;
-            transition: all 0.15s ease;
-        }
-        .btn-primary {
-            background: var(--navy); color: #fff;
-            box-shadow: 0 1px 3px rgb(15 23 42 / 0.2);
-        }
-        .btn-primary:hover { background: var(--navy-light); box-shadow: var(--shadow-md); transform: translateY(-1px); }
-        .btn-outline {
-            background: var(--white); color: var(--text-sec);
-            border: 1px solid var(--border);
-        }
-        .btn-outline:hover { background: var(--border-soft); border-color: var(--slate-light); }
-        .btn-sm { padding: 5px 10px; font-size: 11px; }
-        .btn-ghost { background: transparent; color: var(--text-sec); padding: 6px 10px; }
-        .btn-ghost:hover { background: var(--border-soft); }
+        /* FILTERS */
+        .filters { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+        .filter-group { display:flex; align-items:center; gap:6px; }
+        .filter-group label { font-size:11.5px; font-weight:500; color:var(--text-sec); }
 
-        /* ============ FORMS ============ */
-        select.form {
-            padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-            font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text);
-            background: var(--white); cursor: pointer; transition: border-color 0.15s;
-        }
-        select.form:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1); }
+        /* TRAIN ROW */
+        .train-type-badge { padding:2px 6px; border-radius:3px; font-size:10px; font-weight:600; text-transform:uppercase; }
+        .type-express { background:#e3f2fd; color:#1565c0; }
+        .type-passenger { background:#f3e5f5; color:#7b1fa2; }
+        .type-goods { background:#fff3e0; color:#e65100; }
+        .type-maintenance { background:#fce4ec; color:#c62828; }
 
-        /* ============ CALENDAR ============ */
-        .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-        .cal-nav .week-label {
-            font-family: 'Outfit', sans-serif;
-            font-size: 16px; font-weight: 600; color: var(--text);
-        }
-        .cal-legend { display: flex; gap: 14px; font-size: 11px; color: var(--text-muted); }
-        .cal-legend span { display: flex; align-items: center; gap: 5px; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .cal-dh {
-            text-align: center; font-size: 11px; font-weight: 600;
-            color: var(--text-muted); padding: 8px 0;
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .cal-day {
-            background: var(--white); border: 1px solid var(--border);
-            border-radius: var(--radius-sm); padding: 8px;
-            min-height: 100px; transition: all 0.15s;
-        }
-        .cal-day:hover { border-color: var(--blue); box-shadow: var(--shadow-sm); }
-        .cal-day.today { border-color: var(--blue); background: var(--blue-light); }
-        .cal-day .day-num {
-            font-size: 12px; font-weight: 600; color: var(--text-sec);
-            margin-bottom: 6px; font-family: 'Outfit', sans-serif;
-        }
-        .cal-day.today .day-num { color: var(--blue); }
-        .blk {
-            display: block; padding: 3px 6px; border-radius: 4px;
-            font-size: 9px; font-weight: 500; margin-bottom: 3px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            font-family: 'JetBrains Mono', monospace;
-            border-left: 3px solid;
-            transition: transform 0.1s;
-        }
-        .blk:hover { transform: translateX(2px); }
-        .blk.eng { background: var(--blue-light); color: var(--blue-deep); border-left-color: var(--blue); }
-        .blk.trd { background: var(--amber-light); color: #92400e; border-left-color: var(--amber); }
-        .blk.sig { background: var(--emerald-light); color: #047857; border-left-color: var(--emerald); }
-        .blk.intg { background: #f5f3ff; color: #6d28d9; border-left-color: var(--violet); }
+        /* PROGRESS BAR */
+        .progress-bar { height:6px; background:#e0e3ea; border-radius:3px; overflow:hidden; }
+        .progress-fill { height:100%; border-radius:3px; transition:width 0.3s; }
 
-        /* ============ DEPT ============ */
-        .dept-card {
-            border-left: 4px solid; padding: 16px;
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-            background: var(--white); transition: all 0.15s;
-        }
-        .dept-card:hover { box-shadow: var(--shadow-sm); }
-        .dept-card.eng { border-left-color: var(--blue); }
-        .dept-card.trd { border-left-color: var(--amber); }
-        .dept-card.sig { border-left-color: var(--emerald); }
-        .dept-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .dept-name { font-size: 13px; font-weight: 600; font-family: 'Outfit', sans-serif; }
-        .dept-cnt { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+        /* RECOMMENDATION */
+        .rec-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #f0f1f5; }
+        .rec-item:last-child { border-bottom:none; }
+        .rec-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+        .rec-icon.merge { background:#e8f5e9; color:#2e7d32; }
+        .rec-icon.reschedule { background:#e3f2fd; color:#1565c0; }
+        .rec-icon.prioritize { background:#ffebee; color:#c62828; }
+        .rec-icon.optimize { background:#fff3e0; color:#e65100; }
+        .rec-icon.vvip { background:#fce4ec; color:#ad1457; }
+        .rec-icon.hoger { background:#f3e5f5; color:#7b1fa2; }
+        .rec-text { flex:1; }
+        .rec-text .title { font-size:12.5px; font-weight:600; color:var(--text); }
+        .rec-text .desc { font-size:11.5px; color:var(--text-muted); }
+        .rec-score { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--success); }
 
-        /* ============ DEFECTS ============ */
-        .defect-card {
-            border-left: 4px solid; padding: 16px;
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-            background: var(--white); transition: all 0.15s;
-        }
-        .defect-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
-        .defect-card.critical { border-left-color: var(--red); }
-        .defect-card.high { border-left-color: var(--amber); }
-        .defect-card.medium { border-left-color: var(--blue); }
-        .defect-card.low { border-left-color: var(--emerald); }
-        .defect-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .defect-id { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
-        .defect-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; font-family: 'Outfit', sans-serif; }
-        .defect-desc { font-size: 12px; color: var(--text-sec); margin-bottom: 10px; line-height: 1.5; }
-        .defect-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 14px; }
-        .defect-meta i { margin-right: 3px; }
+        /* CORRIDOR */
+        .corridor-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--border); border-radius:6px; margin-bottom:8px; transition:all 0.15s; }
+        .corridor-item:hover { border-color:var(--primary); box-shadow:0 1px 4px rgba(26,58,106,0.1); }
+        .corridor-line { width:4px; height:36px; border-radius:2px; background:var(--primary); flex-shrink:0; }
+        .corridor-line.single { background:var(--warning); }
+        .corridor-info { flex:1; }
+        .corridor-info .name { font-size:12.5px; font-weight:600; color:var(--text); }
+        .corridor-info .meta { font-size:11px; color:var(--text-muted); }
 
-        /* ============ RECOMMENDATIONS ============ */
-        .rec-card {
-            display: flex; gap: 12px; padding: 12px;
-            background: var(--border-soft); border-radius: var(--radius-sm);
-            margin-bottom: 8px; transition: all 0.15s;
-            border: 1px solid transparent;
+        /* EMP LOGIN */
+        .login-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; }
+        .login-overlay.show { display:flex; }
+        .login-box { background:#fff; border-radius:12px; padding:32px; width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+        .login-box h2 { font-size:18px; font-weight:700; color:var(--primary); margin-bottom:4px; }
+        .login-box p { font-size:12px; color:var(--text-muted); margin-bottom:20px; }
+        .login-box .field { margin-bottom:14px; }
+        .login-box .field label { display:block; font-size:11.5px; font-weight:500; color:var(--text-sec); margin-bottom:4px; }
+        .login-box .field input { width:100%; padding:9px 12px; }
+        .login-box .btn { width:100%; justify-content:center; padding:10px; font-size:13px; }
+        .login-box .error { color:var(--danger); font-size:12px; margin-top:8px; display:none; }
+
+        /* EMERGENCY */
+        .emergency-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--danger-light); border-radius:6px; margin-bottom:8px; background:var(--danger-light); }
+        .emergency-item .pulse { width:10px; height:10px; border-radius:50%; background:var(--danger); animation:pulse 1.5s infinite; flex-shrink:0; }
+        @keyframes pulse { 0%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} 100%{opacity:1;transform:scale(1)} }
+        .emergency-info { flex:1; }
+        .emergency-info .train { font-weight:600; font-size:13px; }
+        .emergency-info .desc { font-size:11.5px; color:var(--text-sec); }
+
+        /* RESPONSIVE */
+        @media(max-width:900px) {
+            .grid-2, .grid-3 { grid-template-columns:1fr; }
+            .stats-row { grid-template-columns:repeat(2,1fr); }
+            .header-nav { overflow-x:auto; }
         }
-        .rec-card:hover { background: var(--white); border-color: var(--border); box-shadow: var(--shadow-xs); }
-        .rec-icon {
-            width: 36px; height: 36px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; font-size: 14px;
-        }
-        .rec-icon.merge { background: var(--blue-light); color: var(--blue); }
-        .rec-icon.resched { background: var(--amber-light); color: var(--amber); }
-        .rec-icon.priority { background: var(--red-light); color: var(--red); }
-        .rec-icon.opt { background: var(--emerald-light); color: var(--emerald); }
-        .rec-icon.vvip { background: #f5f3ff; color: var(--violet); }
-        .rec-icon.hoger { background: var(--amber-light); color: #92400e; }
-        .rec-icon.token { background: var(--navy); color: #fff; }
-        .rec-body h4 { font-size: 12px; font-weight: 600; font-family: 'Outfit', sans-serif; }
-        .rec-body p { font-size: 11px; color: var(--text-sec); margin-top: 2px; line-height: 1.4; }
-        .rec-score {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px; font-weight: 600; color: var(--emerald);
-            margin-left: auto; white-space: nowrap;
+        @media(max-width:600px) {
+            .stats-row { grid-template-columns:1fr; }
+            .main { padding:12px; }
+            .header-top { padding:10px 14px; }
+            .header-nav { padding:0 14px; }
         }
 
-        /* ============ RANGE ============ */
-        .range-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-        .range-row label { font-size: 12px; color: var(--text-sec); min-width: 200px; font-weight: 500; }
-        .range-row input[type=range] { flex: 1; accent-color: var(--blue); }
-        .range-row .rv {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px; font-weight: 600; min-width: 36px; text-align: right;
-        }
-
-        /* ============ MODAL ============ */
-        .modal-bg {
-            position: fixed; inset: 0; background: rgb(15 23 42 / 0.5);
-            display: none; align-items: center; justify-content: center;
-            z-index: 200; backdrop-filter: blur(4px);
-        }
-        .modal-bg.show { display: flex; }
-        .modal {
-            background: var(--white); border-radius: var(--radius-lg);
-            width: 520px; max-width: 95%;
-            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-            animation: modalIn 0.25s ease;
-        }
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .modal-head {
-            padding: 18px 20px; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .modal-head h3 { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 600; }
-        .modal-x { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); padding: 4px; }
-        .modal-x:hover { color: var(--text); }
-        .modal-body { padding: 24px; }
-
-        /* ============ STEPS ============ */
-        .steps { display: flex; justify-content: space-between; margin-bottom: 24px; }
-        .step { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .step-ico {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: var(--border-soft); display: flex; align-items: center; justify-content: center;
-            font-size: 14px; color: var(--text-muted);
-            transition: all 0.3s ease;
-        }
-        .step.on .step-ico { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgb(59 130 246 / 0.3); }
-        .step.done .step-ico { background: var(--emerald); color: #fff; }
-        .step span { font-size: 10px; color: var(--text-muted); font-weight: 500; }
-        .step.on span, .step.done span { color: var(--text); font-weight: 600; }
-
-        /* ============ WORKFLOW ============ */
-        .workflow { display: flex; align-items: center; gap: 4px; margin: 16px 0; flex-wrap: wrap; }
-        .wf-step {
-            padding: 10px 16px; background: var(--border-soft);
-            border: 1px solid var(--border); border-radius: var(--radius-sm);
-            font-size: 11px; font-weight: 500; text-align: center;
-            min-width: 110px; transition: all 0.15s;
-        }
-        .wf-step:hover { background: var(--white); box-shadow: var(--shadow-sm); }
-        .wf-step.current {
-            background: var(--navy); color: #fff; border-color: var(--navy);
-            box-shadow: 0 4px 12px rgb(15 23 42 / 0.2);
-        }
-        .wf-step small { display: block; font-size: 9px; opacity: 0.7; margin-top: 2px; }
-        .wf-arrow { color: var(--text-muted); font-size: 12px; }
-
-        /* ============ TOKEN CARD ============ */
-        .token-card {
-            display: flex; align-items: center; gap: 14px;
-            padding: 14px; border-bottom: 1px solid var(--border-soft);
-            transition: background 0.1s;
-        }
-        .token-card:hover { background: var(--border-soft); }
-        .token-card:last-child { border-bottom: none; }
-        .token-icon {
-            width: 44px; height: 44px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center; font-size: 18px;
-            flex-shrink: 0;
-        }
-        .token-icon.locked { background: var(--red-light); color: var(--red); }
-        .token-icon.available { background: var(--emerald-light); color: var(--emerald); }
-        .token-info { flex: 1; }
-        .token-info .token-section { font-size: 13px; font-weight: 600; font-family: 'Outfit', sans-serif; }
-        .token-info .token-route { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .token-meta { text-align: right; }
-
-        /* ============ CREW ============ */
-        .crew-card {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 14px; border-bottom: 1px solid var(--border-soft);
-            transition: background 0.1s;
-        }
-        .crew-card:hover { background: var(--border-soft); }
-        .crew-card:last-child { border-bottom: none; }
-        .crew-avatar {
-            width: 40px; height: 40px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 600; font-family: 'Outfit', sans-serif;
-            flex-shrink: 0;
-        }
-        .crew-avatar.ok { background: var(--emerald-light); color: var(--emerald); }
-        .crew-avatar.risk { background: var(--amber-light); color: #92400e; }
-        .crew-avatar.violation { background: var(--red-light); color: var(--red); }
-        .crew-info { flex: 1; }
-        .crew-info .crew-name { font-size: 13px; font-weight: 600; font-family: 'Outfit', sans-serif; }
-        .crew-info .crew-role { font-size: 11px; color: var(--text-muted); }
-        .crew-hours { text-align: right; }
-        .crew-hours .hours-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; }
-
-        /* ============ EMERGENCY ============ */
-        .emergency-card {
-            display: flex; align-items: center; gap: 14px;
-            padding: 14px; border-bottom: 1px solid var(--border-soft);
-            transition: background 0.1s;
-        }
-        .emergency-card:hover { background: var(--border-soft); }
-        .emergency-card:last-child { border-bottom: none; }
-        .emergency-icon {
-            width: 44px; height: 44px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center; font-size: 18px;
-            flex-shrink: 0;
-        }
-        .emergency-icon.critical { background: var(--red-light); color: var(--red); }
-        .emergency-icon.vvip { background: #f5f3ff; color: var(--violet); }
-        .emergency-icon.rescue { background: var(--amber-light); color: var(--amber); }
-        .emergency-info { flex: 1; }
-        .emergency-info .em-train { font-size: 13px; font-weight: 600; font-family: 'Outfit', sans-serif; }
-        .emergency-info .em-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .emergency-meta { text-align: right; }
-
-        /* ============ LOADING ============ */
-        .loading { text-align: center; padding: 32px; color: var(--text-muted); font-size: 12px; }
-        .loading i {
-            display: block; font-size: 20px; margin-bottom: 8px;
-            animation: spin 1s linear infinite; color: var(--blue);
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ============ TOAST ============ */
-        .toast {
-            position: fixed; bottom: 24px; right: 24px;
-            background: var(--navy); color: #fff;
-            padding: 12px 20px; border-radius: var(--radius-sm);
-            font-size: 13px; font-weight: 500;
-            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.2);
-            transform: translateY(80px); opacity: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 300;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .toast.show { transform: translateY(0); opacity: 1; }
-
-        /* ============ SCROLLBAR ============ */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--slate-light); }
-
-        /* ============ RESPONSIVE ============ */
-        @media (max-width: 1200px) { .stats { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .main-wrap { margin-left: 0; }
-            .stats { grid-template-columns: 1fr; }
-            .g2, .g3 { grid-template-columns: 1fr; }
-        }
+        /* ZONE FILTER BAR */
+        .zone-bar { background:#fff; border-radius:var(--radius); padding:12px 18px; box-shadow:var(--shadow); margin-bottom:16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+        .zone-bar label { font-size:12px; font-weight:600; color:var(--text-sec); white-space:nowrap; }
+        .zone-bar select { min-width:180px; }
+        .zone-bar .divider { width:1px; height:24px; background:var(--border); }
+        .zone-bar .info { font-size:11.5px; color:var(--text-muted); }
     </style>
 </head>
 <body>
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sidebar-brand">
-            <div class="brand-icon"><i class="fas fa-train-subway"></i></div>
-            <h1>RailBlock AI</h1>
-            <span>Automatic Block Planning</span>
-        </div>
-        <nav class="sidebar-nav">
-            <div class="sidebar-section">Overview</div>
-            <a href="#" class="active" onclick="show('dashboard',this)"><i class="fas fa-chart-pie"></i> Dashboard</a>
-
-            <div class="sidebar-section">Planning</div>
-            <a href="#" onclick="show('blocks',this)"><i class="fas fa-calendar-alt"></i> Block Planning</a>
-            <a href="#" onclick="show('defects',this)"><i class="fas fa-exclamation-triangle"></i> Defects</a>
-            <a href="#" onclick="show('corridors',this)"><i class="fas fa-route"></i> Corridors</a>
-            <a href="#" onclick="show('trains',this)"><i class="fas fa-train"></i> Train Schedule</a>
-
-            <div class="sidebar-section">Intelligence</div>
-            <a href="#" onclick="show('optimizer',this)"><i class="fas fa-robot"></i> AI Optimizer</a>
-            <a href="#" onclick="show('maintenance',this)"><i class="fas fa-tools"></i> Maintenance Engine</a>
-
-            <div class="sidebar-section">Safety</div>
-            <a href="#" onclick="show('tokens',this)"><i class="fas fa-lock"></i> Token Locks</a>
-            <a href="#" onclick="show('crew',this)"><i class="fas fa-user-shield"></i> Crew HOER</a>
-            <a href="#" onclick="show('emergency',this)"><i class="fas fa-bell"></i> Emergency</a>
-
-            <div class="sidebar-section">Operations</div>
-            <a href="#" onclick="show('workflow',this)"><i class="fas fa-project-diagram"></i> BDMS Workflow</a>
-        </nav>
-        <div class="sidebar-footer">
-            <div class="signal-row">
-                <div class="signal-dot green"></div>
-                <span>System Operational</span>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-top">
+            <div class="header-brand">
+                <div class="logo"><i class="fas fa-train"></i></div>
+                <div>
+                    <h1>RailBlock AI <span class="tag">Indian Railways</span></h1>
+                </div>
             </div>
-        </div>
-    </aside>
-
-    <!-- MAIN -->
-    <div class="main-wrap">
-        <div class="topbar">
-            <div class="topbar-left">
-                <span class="breadcrumb">Ministry of Railways / <strong>Mumbai Division</strong></span>
-            </div>
-            <div class="topbar-right">
-                <select class="division-select" id="divSelect">
-                    <option>Mumbai Division</option>
-                    <option>Pune Division</option>
-                    <option>Nagpur Division</option>
-                    <option>Bhusawal Division</option>
-                </select>
-                <div class="user-pill">
-                    <div class="user-avatar">CT</div>
-                    <span>Controller</span>
+            <div class="header-user">
+                <div id="userArea">
+                    <button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff" onclick="showLogin()">
+                        <i class="fas fa-user"></i> Login
+                    </button>
                 </div>
             </div>
         </div>
+        <div class="header-nav">
+            <a href="#" class="active" onclick="showSection('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="#" onclick="showSection('blocks')"><i class="fas fa-road"></i> Blocks</a>
+            <a href="#" onclick="showSection('trains')"><i class="fas fa-train"></i> Trains</a>
+            <a href="#" onclick="showSection('defects')"><i class="fas fa-exclamation-triangle"></i> Defects</a>
+            <a href="#" onclick="showSection('maintenance')"><i class="fas fa-wrench"></i> Maintenance</a>
+            <a href="#" onclick="showSection('tokens')"><i class="fas fa-key"></i> Token Locks</a>
+            <a href="#" onclick="showSection('crew')"><i class="fas fa-users"></i> Crew</a>
+            <a href="#" onclick="showSection('emergency')"><i class="fas fa-bell"></i> Emergency</a>
+            <a href="#" onclick="showSection('ai')"><i class="fas fa-brain"></i> AI Engine</a>
+        </div>
+    </div>
 
-        <div class="content">
-            <!-- ============ DASHBOARD ============ -->
-            <div class="sec on" id="s-dashboard">
-                <div class="stats" id="statsBox"><div class="loading"><i class="fas fa-spinner"></i>Loading...</div></div>
-                <div class="g2">
-                    <div class="card">
-                        <div class="card-head"><h3>AI Recommendations</h3><span class="badge badge-blue">Auto-generated</span></div>
-                        <div id="recList"><div class="loading"><i class="fas fa-spinner"></i></div></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-head"><h3>Department Status</h3></div>
-                        <div id="deptList"><div class="loading"><i class="fas fa-spinner"></i></div></div>
-                    </div>
+    <!-- ZONE FILTER -->
+    <div class="main">
+        <div class="zone-bar">
+            <label><i class="fas fa-map-marker-alt"></i> Zone:</label>
+            <select id="zoneFilter" onchange="onZoneChange()">
+                <option value="">All India (15 Zones)</option>
+            </select>
+            <div class="divider"></div>
+            <label>Division:</label>
+            <select id="divisionFilter" onchange="loadData()">
+                <option value="">All Divisions</option>
+            </select>
+            <div class="divider"></div>
+            <span class="info" id="dataInfo">Loading...</span>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="sec-dashboard">
+            <div class="stats-row" id="statsRow"></div>
+            <div class="grid-2">
+                <div class="section">
+                    <div class="section-header"><h2><i class="fas fa-lightbulb"></i> AI Recommendations</h2></div>
+                    <div class="section-body" id="recsList"></div>
+                </div>
+                <div class="section">
+                    <div class="section-header"><h2><i class="fas fa-building"></i> Department Blocks</h2></div>
+                    <div class="section-body" id="deptList"></div>
                 </div>
             </div>
+            <div class="section" style="margin-top:18px">
+                <div class="section-header"><h2><i class="fas fa-train"></i> Recent Trains</h2></div>
+                <div class="section-body no-pad" id="recentTrains"></div>
+            </div>
+        </div>
 
-            <!-- ============ BLOCKS ============ -->
-            <div class="sec" id="s-blocks">
-                <div class="card-head" style="margin-bottom:16px;">
-                    <h3 style="font-size:18px;">Block Planning Calendar</h3>
-                    <div style="display:flex;gap:8px;">
-                        <button class="btn btn-outline btn-sm" onclick="weekNav(-1)"><i class="fas fa-chevron-left"></i></button>
-                        <button class="btn btn-primary btn-sm" onclick="genPlan()"><i class="fas fa-robot"></i> Generate AI Plan</button>
-                        <button class="btn btn-outline btn-sm" onclick="weekNav(1)"><i class="fas fa-chevron-right"></i></button>
+        <!-- BLOCKS -->
+        <div id="sec-blocks" style="display:none">
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-road"></i> Block Planning</h2>
+                    <div class="actions">
+                        <button class="btn btn-outline btn-sm" onclick="loadBlocks()"><i class="fas fa-sync"></i> Refresh</button>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="cal-nav">
-                        <span class="week-label" id="weekLabel">--</span>
-                        <div class="cal-legend">
-                            <span><span class="blk eng" style="display:inline;">ENG</span> Engineering</span>
-                            <span><span class="blk trd" style="display:inline;">TRD</span> Traction</span>
-                            <span><span class="blk sig" style="display:inline;">SIG</span> Signal</span>
-                            <span><span class="blk intg" style="display:inline;">INT</span> Integrated</span>
-                        </div>
+                <div class="tabs" id="blockTabs">
+                    <div class="tab active" onclick="filterBlockStatus('all',this)">All</div>
+                    <div class="tab" onclick="filterBlockStatus('planned',this)">Planned</div>
+                    <div class="tab" onclick="filterBlockStatus('approved',this)">Approved</div>
+                    <div class="tab" onclick="filterBlockStatus('in_progress',this)">In Progress</div>
+                    <div class="tab" onclick="filterBlockStatus('completed',this)">Completed</div>
+                </div>
+                <div class="section-body no-pad" id="blocksTable"></div>
+            </div>
+        </div>
+
+        <!-- TRAINS -->
+        <div id="sec-trains" style="display:none">
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-train"></i> Train Schedule <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px" id="trainCount"></span></h2>
+                    <div class="actions">
+                        <input type="text" id="trainSearch" placeholder="Search train..." style="width:200px" oninput="filterTrains()">
+                        <button class="btn btn-outline btn-sm" onclick="loadTrains()"><i class="fas fa-sync"></i></button>
                     </div>
-                    <div class="cal-grid" id="calGrid"><div class="loading" style="grid-column:1/-1;"><i class="fas fa-spinner"></i></div></div>
+                </div>
+                <div class="section-body no-pad" id="trainsTable"></div>
+            </div>
+        </div>
+
+        <!-- DEFECTS -->
+        <div id="sec-defects" style="display:none">
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-exclamation-triangle"></i> Defect Tracking</h2>
+                    <div class="actions">
+                        <select id="defectFilter" onchange="loadDefects()">
+                            <option value="all">All Priorities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="section-body no-pad" id="defectsTable"></div>
+            </div>
+        </div>
+
+        <!-- MAINTENANCE -->
+        <div id="sec-maintenance" style="display:none">
+            <div class="stats-row" id="maintStats"></div>
+            <div class="grid-3" id="maintCards"></div>
+        </div>
+
+        <!-- TOKENS -->
+        <div id="sec-tokens" style="display:none">
+            <div class="section">
+                <div class="section-header"><h2><i class="fas fa-key"></i> Directional Token Locks</h2></div>
+                <div class="section-body no-pad" id="tokensTable"></div>
+            </div>
+        </div>
+
+        <!-- CREW -->
+        <div id="sec-crew" style="display:none">
+            <div class="stats-row" id="crewStats"></div>
+            <div class="section">
+                <div class="section-header"><h2><i class="fas fa-users"></i> Crew Duty Status (HOER Compliance)</h2></div>
+                <div class="section-body no-pad" id="crewTable"></div>
+            </div>
+        </div>
+
+        <!-- EMERGENCY -->
+        <div id="sec-emergency" style="display:none">
+            <div class="grid-2">
+                <div class="section">
+                    <div class="section-header"><h2><i class="fas fa-bell"></i> Emergency Pushes</h2></div>
+                    <div class="section-body" id="emergencyList"></div>
+                </div>
+                <div class="section">
+                    <div class="section-header"><h2><i class="fas fa-shield-alt"></i> VVIP Protection</h2></div>
+                    <div class="section-body" id="vvipList"></div>
                 </div>
             </div>
+        </div>
 
-            <!-- ============ DEFECTS ============ -->
-            <div class="sec" id="s-defects">
-                <div class="card-head" style="margin-bottom:16px;">
-                    <h3 style="font-size:18px;">Defect Tracking & Prioritization</h3>
-                    <div style="display:flex;gap:8px;">
-                        <select class="form" id="fDept" onchange="loadDefects()"><option value="all">All Departments</option><option value="ENG">Engineering</option><option value="TRD">Traction</option><option value="SIG">Signal</option></select>
-                        <select class="form" id="fPri" onchange="loadDefects()"><option value="all">All Priorities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
-                    </div>
-                </div>
-                <div class="g3" id="defGrid"><div class="loading" style="grid-column:1/-1;"><i class="fas fa-spinner"></i></div></div>
-            </div>
-
-            <!-- ============ CORRIDORS ============ -->
-            <div class="sec" id="s-corridors">
-                <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">Corridor Management</h3></div>
-                <div class="card"><div class="table-wrap" id="corrTbl"><div class="loading"><i class="fas fa-spinner"></i></div></div></div>
-            </div>
-
-            <!-- ============ OPTIMIZER ============ -->
-            <div class="sec" id="s-optimizer">
-                <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">AI/ML Optimization Engine</h3></div>
-                <div class="g2">
-                    <div class="card">
-                        <h4 style="font-size:14px;font-family:'Outfit',sans-serif;margin-bottom:16px;">Optimization Parameters</h4>
-                        <div class="range-row"><label>Minimize Asset Downtime</label><input type="range" min="0" max="100" value="85" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rv">85%</span></div>
-                        <div class="range-row"><label>Maximize Train Availability</label><input type="range" min="0" max="100" value="90" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rv">90%</span></div>
-                        <div class="range-row"><label>Multi-Dept Coordination</label><input type="range" min="0" max="100" value="75" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rv">75%</span></div>
-                        <div class="range-row"><label>Resource Utilization</label><input type="range" min="0" max="100" value="70" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rv">70%</span></div>
-                        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px;" onclick="runOpt()"><i class="fas fa-play"></i> Run AI Optimizer</button>
-                    </div>
-                    <div class="card" id="optResult">
-                        <h4 style="font-size:14px;font-family:'Outfit',sans-serif;margin-bottom:16px;">Optimization Results</h4>
-                        <div class="loading">Click "Run AI Optimizer" to analyze</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ============ TRAINS ============ -->
-            <div class="sec" id="s-trains">
-                <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">Train Schedule (COA Integration)</h3></div>
-                <div class="card"><div class="table-wrap" id="trainTbl"><div class="loading"><i class="fas fa-spinner"></i></div></div></div>
-            </div>
-
-            <!-- ============ WORKFLOW ============ -->
-            <div class="sec" id="s-workflow">
-                <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">BDMS Block Granting Workflow</h3></div>
-                <div class="card">
-                    <h4 style="font-size:14px;font-family:'Outfit',sans-serif;margin-bottom:12px;">Standard Block Demand Lifecycle</h4>
-                    <div class="workflow">
-                        <div class="wf-step">Depot Incharge<small>Initiates Demand</small></div>
-                        <div class="wf-arrow"><i class="fas fa-arrow-right"></i></div>
-                        <div class="wf-step">CTPC<small>Reviews & Confirms</small></div>
-                        <div class="wf-arrow"><i class="fas fa-arrow-right"></i></div>
-                        <div class="wf-step">COA<small>Approves/Rejects</small></div>
-                        <div class="wf-arrow"><i class="fas fa-arrow-right"></i></div>
-                        <div class="wf-step current">Grant<small>PTW + Private No.</small></div>
-                        <div class="wf-arrow"><i class="fas fa-arrow-right"></i></div>
-                        <div class="wf-step">Execution<small>Field Work</small></div>
-                        <div class="wf-arrow"><i class="fas fa-arrow-right"></i></div>
-                        <div class="wf-step">Return<small>Block Released</small></div>
-                    </div>
-
-                    <h4 style="font-size:14px;font-family:'Outfit',sans-serif;margin:20px 0 10px;">Block Types in BDMS</h4>
-                    <table>
-                        <thead><tr><th>Type</th><th>Initiated By</th><th>Approved By</th><th>Use Case</th></tr></thead>
-                        <tbody>
-                            <tr><td><span class="badge badge-blue">Traffic Block</span></td><td>Engineering/S&T</td><td>Section Controller</td><td>Track renewal, point machine repair, signal maintenance</td></tr>
-                            <tr><td><span class="badge badge-amber">Power Block</span></td><td>Traction Distribution</td><td>TPC</td><td>OHE replacement, feeder maintenance, insulator work</td></tr>
-                            <tr><td><span class="badge badge-red">Disconnection Block</span></td><td>S&T Department</td><td>Section Controller</td><td>Signal relay replacement, track circuit repair</td></tr>
-                            <tr><td><span class="badge badge-violet">Integrated Block</span></td><td>Multiple Departments</td><td>DRM/Chief Controller</td><td>Combined maintenance across departments in same section</td></tr>
-                        </tbody>
-                    </table>
-
-                    <h4 style="font-size:14px;font-family:'Outfit',sans-serif;margin:20px 0 10px;">Current Problems (Railway Board Review)</h4>
-                    <div style="background:var(--red-light);border:1px solid #fecaca;border-radius:var(--radius-sm);padding:14px;font-size:12px;color:#991b1b;">
-                        <ul style="margin-left:16px;line-height:2;">
-                            <li>Blocks treated as "favors" - not granted as entitlement</li>
-                            <li>No written record of block refusals - everything via phone calls</li>
-                            <li>Rolling Block Programme not honored by Operating department</li>
-                            <li>Maintenance corridors in Working Time Table violated</li>
-                            <li>Same time slot sold twice - for trains and corridors</li>
-                            <li>Safety incidents (Kanchanjunga, Khatauli) linked to delayed maintenance</li>
-                        </ul>
-                    </div>
-
-                    <h4 style="font-size:14px;font-family:'Outfit',sans-serif;margin:20px 0 10px;">How RailBlock AI Solves This</h4>
-                    <div style="background:var(--emerald-light);border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:14px;font-size:12px;color:#047857;">
-                        <ul style="margin-left:16px;line-height:2;">
-                            <li>Automated block scheduling eliminates manual phone-based requests</li>
-                            <li>AI coordinates multi-department blocks into integrated schedules</li>
-                            <li>Transparent audit trail - every block demand and refusal recorded</li>
-                            <li>Corridor availability checked against real train timetable data</li>
-                            <li>Critical defects auto-prioritized - safety-first approach</li>
-                            <li>Weekly + monthly rolling plans generated by AI optimization</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ============ MAINTENANCE ENGINE ============ -->
-            <div class="sec" id="s-maintenance">
-                <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">Maintenance Engine</h3></div>
-                <div class="g3" id="maintCategories"></div>
-                <div class="card">
-                    <div class="card-head"><h3>Maintenance Rules & SLA</h3></div>
-                    <table>
-                        <thead><tr><th>Category</th><th>SLA</th><th>Can Split</th><th>Auto Schedule</th><th>Emergency Override</th></tr></thead>
-                        <tbody id="maintRules"></tbody>
-                    </table>
-                </div>
-                <div class="card" style="margin-top:16px;">
-                    <div class="card-head"><h3>Pending Defects by Category</h3></div>
-                    <div id="maintDefects"></div>
-                </div>
-            </div>
-
-            <!-- ============ TOKEN LOCKS ============ -->
-            <div class="sec" id="s-tokens">
-                <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">Directional Token Locks</h3></div>
-                <div class="g2">
-                    <div class="card">
-                        <div class="card-head"><h3>Active Token Locks</h3></div>
-                        <div id="tokenList"></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-head"><h3>Deadlock Prevention Rules</h3></div>
-                        <div style="background:var(--blue-light);border:1px solid #bfdbfe;border-radius:var(--radius-sm);padding:14px;font-size:12px;color:var(--blue-deep);">
-                            <ul style="margin-left:16px;line-height:2;">
-                                <li>Only ONE direction can hold a token per single-line section</li>
-                                <li>UP and DOWN tokens are mutually exclusive</li>
-                                <li>Token must be released before opposing direction can acquire</li>
-                                <li>System prevents head-on deadlock by blocking conflicting requests</li>
-                                <li>Real-time token status visible to Section Controller</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ============ CREW HOER ============ -->
-            <div class="sec" id="s-crew">
-                <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">HOER Crew Compliance</h3></div>
-                <div class="g3" id="crewStats"></div>
-                <div class="card">
-                    <div class="card-head"><h3>Crew Duty Status</h3></div>
-                    <div class="table-wrap" id="crewTable"></div>
-                </div>
-                <div class="g2" style="margin-top:16px;">
-                    <div class="card">
-                        <div class="card-head"><h3>HOER Rules</h3></div>
-                        <div style="background:var(--red-light);border:1px solid #fecaca;border-radius:var(--radius-sm);padding:14px;font-size:12px;color:#991b1b;">
-                            <ul style="margin-left:16px;line-height:2;">
-                                <li>Max continuous duty: 10 hours per shift</li>
-                                <li>Minimum rest period: 8 hours between shifts</li>
-                                <li>Non-linear penalty: each extra hour exponentially increases risk</li>
-                                <li>Automatic reassignment when crew approaches duty limit</li>
-                                <li>Controller alerted 1 hour before HOER expiry</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-head"><h3>At-Risk Crew</h3></div>
-                        <div id="crewAtRisk"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ============ EMERGENCY ============ -->
-            <div class="sec" id="s-emergency">
-                <div class="card-head" style="margin-bottom:16px;"><h3 style="font-size:18px;">VVIP & Emergency Protocols</h3></div>
-                <div class="g2">
-                    <div class="card">
-                        <div class="card-head"><h3>VVIP Train Status</h3></div>
-                        <div id="vvipList"></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-head"><h3>Emergency Push History</h3></div>
-                        <div id="emergencyList"></div>
-                    </div>
-                </div>
-                <div class="card" style="margin-top:16px;">
-                    <div class="card-head"><h3>VVIP Protection Rules</h3></div>
-                    <div class="table-wrap" id="vvipRules"></div>
-                </div>
+        <!-- AI -->
+        <div id="sec-ai" style="display:none">
+            <div class="stats-row" id="aiStats"></div>
+            <div class="section">
+                <div class="section-header"><h2><i class="fas fa-brain"></i> AI Optimization Recommendations</h2></div>
+                <div class="section-body" id="aiRecs"></div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL -->
-    <div class="modal-bg" id="planModal">
-        <div class="modal">
-            <div class="modal-head">
-                <h3><i class="fas fa-robot" style="color:var(--blue);margin-right:8px;"></i>AI Plan Generation</h3>
-                <button class="modal-x" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="steps" id="gSteps">
-                    <div class="step on" data-s="1"><div class="step-ico"><i class="fas fa-database"></i></div><span>Data Fetch</span></div>
-                    <div class="step" data-s="2"><div class="step-ico"><i class="fas fa-brain"></i></div><span>AI Analysis</span></div>
-                    <div class="step" data-s="3"><div class="step-ico"><i class="fas fa-cogs"></i></div><span>Optimize</span></div>
-                    <div class="step" data-s="4"><div class="step-ico"><i class="fas fa-check"></i></div><span>Done</span></div>
-                </div>
-                <p id="gStatus" style="text-align:center;color:var(--text-sec);font-size:13px;">Fetching data from TMS, SMMS, TDMS, COA...</p>
-            </div>
+    <!-- LOGIN OVERLAY -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <div style="text-align:center;margin-bottom:16px"><i class="fas fa-train" style="font-size:32px;color:var(--primary)"></i></div>
+            <h2>RailBlock AI Login</h2>
+            <p>Indian Railways Block Planning System</p>
+            <div class="field"><label>Username</label><input type="text" id="loginUser" value="admin"></div>
+            <div class="field"><label>Password</label><input type="password" id="loginPass" value="admin123" onkeypress="if(event.key==='Enter')doLogin()"></div>
+            <div class="error" id="loginError"></div>
+            <button class="btn btn-primary" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
         </div>
     </div>
 
-    <div class="toast" id="toast"></div>
+<script>
+const API = '';
+let token = localStorage.getItem('railblock_token');
+let currentUser = JSON.parse(localStorage.getItem('railblock_user') || 'null');
+let allTrains = [];
+let allBlocks = [];
+let zones = [];
+let divisions = [];
 
-    <script>
-        let wk = 0;
-        const API = '';
-        async function api(p) { const r = await fetch(API + p); return r.json(); }
-        function toast(m) {
-            const t = document.getElementById('toast');
-            t.innerHTML = '<i class="fas fa-check-circle"></i> ' + m;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
-        function show(id, el) {
-            document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
-            document.getElementById('s-' + id).classList.add('on');
-            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
-            if (el) el.classList.add('active');
-        }
-        function closeModal() { document.getElementById('planModal').classList.remove('show'); }
+// AUTH
+function showLogin() { document.getElementById('loginOverlay').classList.add('show'); }
+function hideLogin() { document.getElementById('loginOverlay').classList.remove('show'); }
 
-        // DASHBOARD
-        async function loadDash() {
-            const d = await api('/api/dashboard/stats');
-            document.getElementById('statsBox').innerHTML = `
-                <div class="stat-card blue">
-                    <div class="stat-icon"><i class="fas fa-cubes"></i></div>
-                    <div class="stat-label">Active Blocks</div>
-                    <div class="stat-val">${d.active_blocks}</div>
-                    <div class="stat-change up"><i class="fas fa-arrow-up"></i> +12% from last week</div>
-                </div>
-                <div class="stat-card emerald">
-                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="stat-label">Asset Availability</div>
-                    <div class="stat-val">${d.asset_availability}%</div>
-                    <div class="stat-change up"><i class="fas fa-arrow-up"></i> +5% improvement</div>
-                </div>
-                <div class="stat-card amber">
-                    <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
-                    <div class="stat-label">Pending Defects</div>
-                    <div class="stat-val">${d.pending_defects}</div>
-                    <div class="stat-change down"><i class="fas fa-arrow-down"></i> ${d.critical_defects} critical</div>
-                </div>
-                <div class="stat-card red">
-                    <div class="stat-icon"><i class="fas fa-bolt"></i></div>
-                    <div class="stat-label">AI Efficiency</div>
-                    <div class="stat-val">${d.ai_efficiency}%</div>
-                    <div class="stat-change up"><i class="fas fa-arrow-up"></i> +3% this month</div>
-                </div>
-            `;
+async function doLogin() {
+    const u = document.getElementById('loginUser').value;
+    const p = document.getElementById('loginPass').value;
+    try {
+        const r = await fetch(API+'/api/auth/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:u,password:p})});
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.detail || 'Login failed');
+        token = d.token; currentUser = d.user;
+        localStorage.setItem('railblock_token', token);
+        localStorage.setItem('railblock_user', JSON.stringify(currentUser));
+        updateUserUI(); hideLogin(); loadData();
+    } catch(e) {
+        document.getElementById('loginError').textContent = e.message;
+        document.getElementById('loginError').style.display = 'block';
+    }
+}
 
-            document.getElementById('recList').innerHTML = d.recommendations.map(r => {
-                const icons = { merge: 'object-group', reschedule: 'clock', prioritize: 'exclamation-triangle', optimize: 'chart-line', vvip: 'shield-alt', hoger: 'user-clock', token: 'lock' };
-                const classes = { merge: 'merge', reschedule: 'resched', prioritize: 'priority', optimize: 'opt', vvip: 'vvip', hoger: 'hoger', token: 'token' };
-                return `<div class="rec-card">
-                    <div class="rec-icon ${classes[r.type] || 'opt'}"><i class="fas fa-${icons[r.type] || 'chart-line'}"></i></div>
-                    <div class="rec-body"><h4>${r.title}</h4><p>${r.description}</p></div>
-                    <div class="rec-score">${r.score}%</div>
-                </div>`;
-            }).join('');
+function logout() {
+    token = null; currentUser = null;
+    localStorage.removeItem('railblock_token');
+    localStorage.removeItem('railblock_user');
+    updateUserUI();
+}
 
-            document.getElementById('deptList').innerHTML = d.departments.map(dep => `
-                <div class="dept-card ${dep.code.toLowerCase()}" style="margin-bottom:10px;">
-                    <div class="dept-head"><span class="dept-name">${dep.name}</span><span class="dept-cnt">${dep.blocks} blocks</span></div>
-                    <div class="prog"><div class="prog-fill" style="width:${Math.min(95, 40 + dep.blocks * 3)}%;background:${dep.color};"></div></div>
-                </div>
-            `).join('');
-        }
+function updateUserUI() {
+    const area = document.getElementById('userArea');
+    if (currentUser) {
+        area.innerHTML = `<span class="badge"><i class="fas fa-user"></i> ${currentUser.full_name}</span>
+            <span class="badge" style="background:rgba(255,255,255,0.15)">${currentUser.role}</span>
+            <button class="btn btn-outline btn-sm" style="border-color:rgba(255,255,255,0.3);color:#fff" onclick="logout()">Logout</button>`;
+    } else {
+        area.innerHTML = `<button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff" onclick="showLogin()"><i class="fas fa-user"></i> Login</button>`;
+    }
+}
 
-        // BLOCKS
-        async function loadBlocks() {
-            const today = new Date();
-            const start = new Date(today);
-            start.setDate(today.getDate() - today.getDay() + 1 + (wk * 7));
-            const end = new Date(start); end.setDate(start.getDate() + 6);
-            document.getElementById('weekLabel').textContent = start.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ' - ' + end.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-            const d = await api('/api/blocks?start_date=' + start.toISOString().split('T')[0] + '&end_date=' + end.toISOString().split('T')[0]);
-            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            let h = days.map(x => '<div class="cal-dh">' + x + '</div>').join('');
-            for (let i = 0; i < 7; i++) {
-                const dt = new Date(start); dt.setDate(start.getDate() + i);
-                const isT = dt.toDateString() === today.toDateString();
-                const blks = d.filter(b => b.block_date === dt.toISOString().split('T')[0]);
-                h += `<div class="cal-day${isT ? ' today' : ''}"><div class="day-num">${dt.getDate()}</div>${blks.map(b => `<span class="blk ${b.dept_code.toLowerCase()}">${b.block_id}</span>`).join('')}</div>`;
-            }
-            document.getElementById('calGrid').innerHTML = h;
-        }
-        function weekNav(d) { wk += d; loadBlocks(); }
+function headers() { return token ? {'Authorization':'Bearer '+token,'Content-Type':'application/json'} : {'Content-Type':'application/json'}; }
 
-        async function genPlan() {
-            document.getElementById('planModal').classList.add('show');
-            const steps = document.querySelectorAll('#gSteps .step');
-            const msgs = ['Fetching data from TMS, SMMS, TDMS, COA...', 'Running AI/ML optimization algorithms...', 'Generating optimized block schedule...', 'Plan generated successfully!'];
-            for (let i = 0; i < steps.length; i++) {
-                steps.forEach(s => { s.classList.remove('on', 'done'); });
-                steps[i].classList.add('on');
-                if (i > 0) steps[i - 1].classList.add('done');
-                document.getElementById('gStatus').textContent = msgs[i];
-                await new Promise(r => setTimeout(r, 1000));
-            }
-            steps[3].classList.add('done');
-            await api('/api/ai/generate-plan?week_offset=' + wk);
-            loadBlocks();
-            setTimeout(closeModal, 800);
-            toast('AI block plan generated');
-        }
+// NAVIGATION
+function showSection(id) {
+    document.querySelectorAll('[id^="sec-"]').forEach(s => s.style.display = 'none');
+    document.getElementById('sec-'+id).style.display = '';
+    document.querySelectorAll('.header-nav a').forEach(a => a.classList.remove('active'));
+    event.target.closest('a').classList.add('active');
+    if (id==='blocks') loadBlocks();
+    if (id==='trains') loadTrains();
+    if (id==='defects') loadDefects();
+    if (id==='maintenance') loadMaintenance();
+    if (id==='tokens') loadTokens();
+    if (id==='crew') loadCrew();
+    if (id==='emergency') loadEmergency();
+    if (id==='ai') loadAI();
+}
 
-        // DEFECTS
-        async function loadDefects() {
-            const dept = document.getElementById('fDept').value;
-            const pri = document.getElementById('fPri').value;
-            const d = await api('/api/defects?department=' + dept + '&priority=' + pri);
-            document.getElementById('defGrid').innerHTML = d.map(x => `
-                <div class="defect-card ${x.priority}" style="padding:16px;">
-                    <div class="defect-top"><span class="defect-id">${x.defect_id}</span><span class="badge badge-${x.priority === 'critical' ? 'red' : x.priority === 'high' ? 'amber' : x.priority === 'medium' ? 'blue' : 'green'}">${x.priority}</span></div>
-                    <div class="defect-title">${x.title}</div>
-                    <div class="defect-desc">${x.description}</div>
-                    <div class="defect-meta"><span><i class="fas fa-map-marker-alt"></i> ${x.location}</span><span style="color:${x.dept_color};font-weight:500;">${x.dept_name}</span></div>
-                </div>
-            `).join('');
-        }
+// ZONE/DIVISION FILTERS
+async function loadZones() {
+    zones = await (await fetch(API+'/api/zones')).json();
+    const sel = document.getElementById('zoneFilter');
+    zones.forEach(z => { const o = document.createElement('option'); o.value = z.id; o.textContent = `${z.zone_code} - ${z.zone_name} (${z.hq_city})`; sel.appendChild(o); });
+}
 
-        // CORRIDORS
-        async function loadCorr() {
-            const d = await api('/api/corridors');
-            document.getElementById('corrTbl').innerHTML = `<table><thead><tr><th>ID</th><th>Route</th><th>Length</th><th>Blocks</th><th>Utilization</th><th>Status</th></tr></thead><tbody>${d.map(c => `<tr><td><strong>${c.corridor_id}</strong></td><td>${c.route_name}</td><td>${c.length_km} km</td><td>${c.blocks || 0}</td><td><div class="prog" style="width:100px;display:inline-block;vertical-align:middle;"><div class="prog-fill" style="width:${Math.min(95, (c.blocks || 0) * 12)}%;background:var(--blue);"></div></div> ${Math.min(95, (c.blocks || 0) * 12)}%</td><td><span class="badge badge-green">Active</span></td></tr>`).join('')}</tbody></table>`;
-        }
+async function onZoneChange() {
+    const zid = document.getElementById('zoneFilter').value;
+    const sel = document.getElementById('divisionFilter');
+    sel.innerHTML = '<option value="">All Divisions</option>';
+    if (zid) {
+        divisions = await (await fetch(API+'/api/divisions?zone_id='+zid)).json();
+        divisions.forEach(d => { const o = document.createElement('option'); o.value = d.id; o.textContent = d.div_name; sel.appendChild(o); });
+    }
+    loadData();
+}
 
-        // OPTIMIZER
-        async function runOpt() {
-            document.getElementById('optResult').innerHTML = '<div class="loading"><i class="fas fa-spinner"></i>Running optimization...</div>';
-            const d = await api('/api/ai/optimize');
-            document.getElementById('optResult').innerHTML = `
-                <h4 style="font-size:14px;font-family:'Outfit',sans-serif;margin-bottom:16px;">Results</h4>
-                <div style="margin-bottom:14px;"><span style="font-size:12px;color:var(--text-sec);font-weight:500;">Current Efficiency</span><div class="prog" style="margin-top:6px;"><div class="prog-fill" style="width:${d.current_efficiency}%;background:var(--amber);"></div></div><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;">${d.current_efficiency}%</span></div>
-                <div style="margin-bottom:14px;"><span style="font-size:12px;color:var(--text-sec);font-weight:500;">AI Optimized</span><div class="prog" style="margin-top:6px;"><div class="prog-fill" style="width:${d.optimized_efficiency}%;background:var(--blue);"></div></div><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;">${d.optimized_efficiency}%</span></div>
-                <div style="margin-bottom:18px;"><span style="font-size:12px;color:var(--text-sec);font-weight:500;">Projected Uptime</span><div class="prog" style="margin-top:6px;"><div class="prog-fill" style="width:${d.projected_uptime}%;background:var(--emerald);"></div></div><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;">${d.projected_uptime}%</span></div>
-                <div style="font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;margin-bottom:10px;color:var(--blue);">AI Insights</div>
-                ${d.recommendations.slice(0, 4).map(r => `<div class="rec-card"><div class="rec-icon ${r.type === 'merge' ? 'merge' : r.type === 'priority' ? 'priority' : 'resched'}"><i class="fas fa-${r.type === 'merge' ? 'object-group' : r.type === 'priority' ? 'exclamation-triangle' : 'clock'}"></i></div><div class="rec-body"><h4>${r.title}</h4><p>${r.description}</p></div><div class="rec-score">${Math.round(r.impact)}%</div></div>`).join('')}
-            `;
-            toast('Optimization complete');
-        }
+// LOAD DATA
+async function loadData() {
+    const zid = document.getElementById('zoneFilter').value;
+    const did = document.getElementById('divisionFilter').value;
+    const params = new URLSearchParams();
+    if (zid) params.set('zone_id', zid);
+    if (did) params.set('division_id', did);
+    const qs = params.toString() ? '?'+params.toString() : '';
 
-        // TRAINS
-        async function loadTrains() {
-            const d = await api('/api/trains');
-            document.getElementById('trainTbl').innerHTML = `<table><thead><tr><th>Train No.</th><th>Name</th><th>From</th><th>To</th><th>Departure</th><th>Arrival</th><th>Days</th><th>Type</th></tr></thead><tbody>${d.map(t => `<tr><td><strong>${t.number}</strong></td><td>${t.name}</td><td>${t.origin}</td><td>${t.destination}</td><td>${t.departure}</td><td>${t.arrival}</td><td>${t.days}</td><td><span class="badge badge-${t.type === 'express' ? 'blue' : t.type === 'goods' ? 'amber' : t.type === 'maintenance' ? 'red' : t.type === 'vvip' ? 'violet' : 'green'}">${t.type}</span></td></tr>`).join('')}</tbody></table>`;
-        }
+    const stats = await (await fetch(API+'/api/dashboard/stats'+qs)).json();
+    const zoneLabel = zid ? zones.find(z=>z.id==zid)?.zone_name : 'All India';
+    document.getElementById('dataInfo').textContent = `${zoneLabel} | ${stats.total_blocks} blocks | ${stats.pending_defects} defects | ${stats.active_emergencies} emergencies`;
 
-        // MAINTENANCE ENGINE
-        async function loadMaintenance() {
-            const d = await api('/api/maintenance/engine');
-            const cats = d.categories;
-            document.getElementById('maintCategories').innerHTML = `
-                <div class="card" style="border-left:4px solid var(--blue);">
-                    <div class="stat-label">Routine</div>
-                    <div class="stat-val" style="color:var(--blue);">${cats.routine.count}</div>
-                    <div class="stat-change" style="color:var(--text-sec);">SLA: 168h | Can split</div>
-                </div>
-                <div class="card" style="border-left:4px solid var(--amber);">
-                    <div class="stat-label">Fault</div>
-                    <div class="stat-val" style="color:var(--amber);">${cats.fault.count}</div>
-                    <div class="stat-change" style="color:var(--text-sec);">SLA: 24h | Cannot split</div>
-                </div>
-                <div class="card" style="border-left:4px solid var(--red);">
-                    <div class="stat-label">Urgent</div>
-                    <div class="stat-val" style="color:var(--red);">${cats.urgent.count}</div>
-                    <div class="stat-change" style="color:var(--text-sec);">SLA: 4h | Emergency override</div>
-                </div>
-            `;
-            const rules = d.rules;
-            document.getElementById('maintRules').innerHTML = Object.entries(rules).map(([k, v]) => `<tr><td><strong style="text-transform:capitalize;font-family:'Outfit',sans-serif;">${k}</strong></td><td>${v.sla_hours}h</td><td>${v.can_split ? '<span class="badge badge-green">Yes</span>' : '<span class="badge badge-red">No</span>'}</td><td>${v.auto_schedule ? '<span class="badge badge-green">Yes</span>' : '<span class="badge badge-red">No</span>'}</td><td>${v.emergency_override ? '<span class="badge badge-red">Yes</span>' : '<span class="badge badge-navy">No</span>'}</td></tr>`).join('');
-            const allItems = [...cats.routine.items, ...cats.fault.items, ...cats.urgent.items];
-            document.getElementById('maintDefects').innerHTML = allItems.length ? allItems.map(x => `<div class="defect-card ${x.priority}" style="padding:14px;margin-bottom:8px;"><div class="defect-top"><span class="defect-id">${x.defect_id}</span><span class="badge badge-${x.maintenance_type === 'urgent' ? 'red' : x.maintenance_type === 'fault' ? 'amber' : 'blue'}">${x.maintenance_type}</span></div><div class="defect-title">${x.title}</div><div class="defect-desc">${x.description}</div><div class="defect-meta"><span><i class="fas fa-map-marker-alt"></i> ${x.location}</span></div></div>`).join('') : '<p style="color:var(--text-muted);font-size:12px;">No pending defects</p>';
-        }
+    document.getElementById('statsRow').innerHTML = `
+        <div class="stat-card"><div class="label">Total Blocks</div><div class="value">${stats.total_blocks}</div><div class="sub">${stats.active_blocks} active</div></div>
+        <div class="stat-card accent"><div class="label">Pending Defects</div><div class="value">${stats.pending_defects}</div><div class="sub">${stats.critical_defects} critical</div></div>
+        <div class="stat-card success"><div class="label">Asset Availability</div><div class="value">${stats.asset_availability}%</div><div class="sub">Network average</div></div>
+        <div class="stat-card info"><div class="label">AI Efficiency</div><div class="value">${stats.ai_efficiency}%</div><div class="sub">Optimization gain</div></div>
+        <div class="stat-card warning"><div class="label">Token Locks</div><div class="value">${stats.token_locked}</div><div class="sub">Sections locked</div></div>
+        <div class="stat-card danger"><div class="label">Crew Violations</div><div class="value">${stats.crew_violations}</div><div class="sub">HOER breaches</div></div>
+    `;
 
-        // TOKEN LOCKS
-        async function loadTokens() {
-            const d = await api('/api/token/locks');
-            document.getElementById('tokenList').innerHTML = d.map(t => `<div class="token-card">
-                <div class="token-icon ${t.status}"><i class="fas fa-${t.status === 'locked' ? 'lock' : 'lock-open'}"></i></div>
-                <div class="token-info"><div class="token-section">${t.section} (${t.direction})</div><div class="token-route">${t.route_name} | Token #${t.token}</div></div>
-                <div class="token-meta"><span class="badge badge-${t.status === 'locked' ? 'red' : 'green'}">${t.status}</span>${t.locked_by ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Train: ${t.locked_by}</div>` : ''}</div>
-            </div>`).join('');
-        }
+    document.getElementById('recsList').innerHTML = (stats.recommendations||[]).map(r => `
+        <div class="rec-item">
+            <div class="rec-icon ${r.type}"><i class="fas fa-${r.type==='merge'?'object-group':r.type==='reschedule'?'clock':r.type==='prioritize'?'fire':r.type==='optimize'?'chart-line':r.type==='vvip'?'shield-alt':'users'}"></i></div>
+            <div class="rec-text"><div class="title">${r.title}</div><div class="desc">${r.description}</div></div>
+            <div class="rec-score">${Math.round(r.score)}%</div>
+        </div>
+    `).join('') || '<p style="color:var(--text-muted);font-size:12px">No recommendations</p>';
 
-        // CREW HOER
-        async function loadCrew() {
-            const d = await api('/api/crew/duty');
-            document.getElementById('crewStats').innerHTML = `
-                <div class="card" style="border-left:4px solid var(--red);"><div class="stat-label">HOER Violations</div><div class="stat-val" style="color:var(--red);">${d.total_violations}</div></div>
-                <div class="card" style="border-left:4px solid var(--amber);"><div class="stat-label">At-Risk (within 1h)</div><div class="stat-val" style="color:var(--amber);">${d.at_risk_count}</div></div>
-                <div class="card" style="border-left:4px solid var(--emerald);"><div class="stat-label">Total Crew</div><div class="stat-val">${d.crew.length}</div></div>
-            `;
-            document.getElementById('crewTable').innerHTML = `<table><thead><tr><th>Crew ID</th><th>Name</th><th>Role</th><th>Hours Worked</th><th>Max</th><th>Remaining</th><th>Status</th><th>Train</th></tr></thead><tbody>${d.crew.map(c => `<tr style="${!c.hoer_compliant ? 'background:var(--red-light);' : ''}"><td><strong>${c.crew_id}</strong></td><td>${c.name}</td><td>${c.role.replace('_', ' ')}</td><td>${c.hours_worked}h</td><td>${c.max_hours}h</td><td style="color:${c.remaining_hours <= 0 ? 'var(--red)' : c.remaining_hours <= 1 ? 'var(--amber)' : 'var(--emerald)'};font-weight:600;font-family:'JetBrains Mono',monospace;">${c.remaining_hours}h</td><td><span class="badge badge-${c.status === 'violation' ? 'red' : c.status === 'rest' ? 'blue' : 'green'}">${c.status}</span></td><td>${c.current_train || '--'}</td></tr>`).join('')}</tbody></table>`;
-            document.getElementById('crewAtRisk').innerHTML = d.at_risk.length ? d.at_risk.map(c => `<div class="crew-card">
-                <div class="crew-avatar risk">${c.crew_id.split('-')[1]}</div>
-                <div class="crew-info"><div class="crew-name">${c.name}</div><div class="crew-role">${c.role.replace('_', ' ')} | ${c.current_train || 'No train'}</div></div>
-                <div class="crew-hours"><div class="hours-val" style="color:var(--amber);">${c.remaining_hours}h</div><div style="font-size:10px;color:var(--text-muted);">of ${c.max_hours}h</div></div>
-            </div>`).join('') : '<p style="color:var(--text-muted);font-size:12px;padding:16px;">No crew at immediate risk</p>';
-        }
+    document.getElementById('deptList').innerHTML = (stats.departments||[]).map(d => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f1f5">
+            <div style="width:10px;height:10px;border-radius:3px;background:${d.color};flex-shrink:0"></div>
+            <div style="flex:1"><div style="font-size:12.5px;font-weight:500">${d.name}</div><div style="font-size:11px;color:var(--text-muted)">${d.code}</div></div>
+            <div style="font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px">${d.blocks}</div>
+        </div>
+    `).join('');
 
-        // EMERGENCY
-        async function loadEmergency() {
-            const [pushes, vvip] = await Promise.all([api('/api/emergency/pushes'), api('/api/emergency/vvip-status')]);
-            document.getElementById('emergencyList').innerHTML = pushes.map(p => `<div class="emergency-card">
-                <div class="emergency-icon ${p.type === 'critical_push' ? 'critical' : p.type === 'vvip_protect' ? 'vvip' : 'rescue'}"><i class="fas fa-${p.type === 'critical_push' ? 'exclamation-circle' : p.type === 'vvip_protect' ? 'shield-alt' : 'train'}"></i></div>
-                <div class="emergency-info"><div class="em-train">${p.train_number} - ${p.train_name}</div><div class="em-desc">${p.description}</div></div>
-                <div class="emergency-meta"><span class="badge badge-${p.status === 'active' ? 'red' : 'green'}">${p.status}</span><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:${p.delay_hours >= 11 ? 'var(--red)' : 'var(--amber)'};margin-top:4px;">${p.delay_hours}h delay</div></div>
-            </div>`).join('');
-            document.getElementById('vvipList').innerHTML = vvip.vvip_trains.map(t => `<div class="emergency-card">
-                <div class="emergency-icon vvip"><i class="fas fa-crown"></i></div>
-                <div class="emergency-info"><div class="em-train">${t.number} - ${t.name}</div><div class="em-desc">${t.origin} to ${t.destination}</div></div>
-                <span class="badge badge-violet">Protected</span>
-            </div>`).join('');
-            document.getElementById('vvipRules').innerHTML = `<table><thead><tr><th>Train</th><th>Corridor</th><th>Rule</th><th>Action</th></tr></thead><tbody>${vvip.protection_rules.slice(0, 6).map(r => `<tr><td><strong>${r.train}</strong></td><td>${r.corridor}</td><td style="font-size:11px;">${r.rule}</td><td style="font-size:11px;color:var(--emerald);">${r.action}</td></tr>`).join('')}</tbody></table>`;
-        }
+    const trains = await (await fetch(API+'/api/trains'+qs)).json();
+    document.getElementById('recentTrains').innerHTML = `<table>
+        <thead><tr><th>Train No</th><th>Name</th><th>Route</th><th>Departure</th><th>Arrival</th><th>Type</th><th>VVIP</th></tr></thead>
+        <tbody>${trains.slice(0,10).map(t => `<tr>
+            <td><strong>${t.number}</strong></td><td>${t.name}</td>
+            <td>${t.origin} → ${t.destination}</td><td>${t.departure||'-'}</td><td>${t.arrival||'-'}</td>
+            <td><span class="train-type-badge type-${t.type}">${t.type}</span></td>
+            <td>${t.is_vvip?'<span class="badge badge-vvip"><i class="fas fa-crown"></i> VVIP</span>':''}</td>
+        </tr>`).join('')}</tbody></table>`;
+}
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadDash(); loadBlocks(); loadDefects(); loadCorr(); loadTrains();
-            loadMaintenance(); loadTokens(); loadCrew(); loadEmergency();
-        });
-    </script>
+// BLOCKS
+async function loadBlocks() {
+    const zid = document.getElementById('zoneFilter').value;
+    const qs = zid ? '?zone_id='+zid : '';
+    allBlocks = await (await fetch(API+'/api/blocks'+qs)).json();
+    renderBlocks(allBlocks);
+}
+function renderBlocks(blocks) {
+    document.getElementById('blocksTable').innerHTML = `<table>
+        <thead><tr><th>Block ID</th><th>Corridor</th><th>Department</th><th>Date</th><th>Time</th><th>Category</th><th>AI Score</th><th>Status</th></tr></thead>
+        <tbody>${blocks.map(b => `<tr>
+            <td><strong>${b.block_id}</strong></td><td>${b.route_name||'-'}</td>
+            <td><span style="color:${b.dl}">${b.dn}</span></td><td>${b.block_date}</td>
+            <td><span style="font-family:'JetBrains Mono',monospace">${b.start_time} - ${b.end_time}</span></td>
+            <td><span class="badge badge-${b.maintenance_category}">${b.maintenance_category}</span></td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:${b.ai_score>80?'var(--success)':b.ai_score>60?'var(--warning)':'var(--text-muted)'}">${Math.round(b.ai_score)}%</span></td>
+            <td><span class="badge badge-${b.status}">${b.status}</span></td>
+        </tr>`).join('')}</tbody></table>`;
+}
+function filterBlockStatus(status, el) {
+    document.querySelectorAll('#blockTabs .tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    renderBlocks(status==='all'?allBlocks:allBlocks.filter(b=>b.status===status));
+}
+
+// TRAINS
+async function loadTrains() {
+    const zid = document.getElementById('zoneFilter').value;
+    const qs = zid ? '?zone_id='+zid : '';
+    allTrains = await (await fetch(API+'/api/trains'+qs)).json();
+    renderTrains(allTrains);
+    document.getElementById('trainCount').textContent = `(${allTrains.length} trains)`;
+}
+function renderTrains(trains) {
+    document.getElementById('trainsTable').innerHTML = `<table>
+        <thead><tr><th>Train No</th><th>Name</th><th>Origin</th><th>Destination</th><th>Dep</th><th>Arr</th><th>Days</th><th>Type</th><th>VVIP</th></tr></thead>
+        <tbody>${trains.map(t => `<tr>
+            <td><strong>${t.number}</strong></td><td>${t.name}</td>
+            <td>${t.origin}</td><td>${t.destination}</td>
+            <td><span style="font-family:'JetBrains Mono',monospace">${t.departure||'-'}</span></td>
+            <td><span style="font-family:'JetBrains Mono',monospace">${t.arrival||'-'}</span></td>
+            <td style="font-size:11px">${formatDays(t.days)}</td>
+            <td><span class="train-type-badge type-${t.type}">${t.type}</span></td>
+            <td>${t.is_vvip?'<span class="badge badge-vvip"><i class="fas fa-crown"></i></span>':''}</td>
+        </tr>`).join('')}</tbody></table>`;
+}
+function filterTrains() {
+    const q = document.getElementById('trainSearch').value.toLowerCase();
+    renderTrains(allTrains.filter(t => t.number.includes(q) || t.name.toLowerCase().includes(q) || t.origin.toLowerCase().includes(q) || t.destination.toLowerCase().includes(q)));
+}
+function formatDays(d) {
+    if (!d) return '-';
+    const map = {1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat',7:'Sun'};
+    if (d==='1,2,3,4,5,6,7') return '<span class="badge badge-active">Daily</span>';
+    return d.split(',').map(x=>map[x]||x).join(' ');
+}
+
+// DEFECTS
+async function loadDefects() {
+    const pf = document.getElementById('defectFilter').value;
+    const zid = document.getElementById('zoneFilter').value;
+    let qs = '?priority='+pf;
+    if (zid) qs += '&zone_id='+zid;
+    const data = await (await fetch(API+'/api/defects'+qs)).json();
+    document.getElementById('defectsTable').innerHTML = `<table>
+        <thead><tr><th>Defect ID</th><th>Title</th><th>Department</th><th>Location</th><th>Priority</th><th>Type</th><th>Status</th></tr></thead>
+        <tbody>${data.map(d => `<tr>
+            <td><strong>${d.defect_id}</strong></td><td>${d.title}</td>
+            <td><span style="color:${d.dl}">${d.dc}</span></td><td>${d.location||'-'}</td>
+            <td><span class="badge badge-${d.priority}"><span class="badge-dot dot-${d.priority==='critical'?'red':d.priority==='high'?'yellow':'green'}"></span> ${d.priority}</span></td>
+            <td><span class="badge badge-${d.maintenance_type}">${d.maintenance_type}</span></td>
+            <td>${d.status}</td>
+        </tr>`).join('')}</tbody></table>`;
+}
+
+// MAINTENANCE
+async function loadMaintenance() {
+    const zid = document.getElementById('zoneFilter').value;
+    const qs = zid ? '?zone_id='+zid : '';
+    const data = await (await fetch(API+'/api/maintenance/engine'+qs)).json();
+    const cats = data.categories;
+    document.getElementById('maintStats').innerHTML = `
+        <div class="stat-card"><div class="label">Total Pending</div><div class="value">${data.total_pending}</div></div>
+        <div class="stat-card info"><div class="label">Routine (SLA 7d)</div><div class="value">${cats.routine.count}</div></div>
+        <div class="stat-card warning"><div class="label">Fault (SLA 24h)</div><div class="value">${cats.fault.count}</div></div>
+        <div class="stat-card danger"><div class="label">Urgent (SLA 4h)</div><div class="value">${cats.urgent.count}</div></div>
+    `;
+    document.getElementById('maintCards').innerHTML = ['routine','fault','urgent'].map(cat => `
+        <div class="section">
+            <div class="section-header"><h2><i class="fas fa-${cat==='routine'?'clock':cat==='fault'?'wrench':'bolt'}"></i> ${cat.charAt(0).toUpperCase()+cat.slice(1)}</h2></div>
+            <div class="section-body">
+                ${cats[cat].items.map(i => `<div style="padding:8px 0;border-bottom:1px solid #f0f1f5">
+                    <div style="font-size:12.5px;font-weight:600">${i.title}</div>
+                    <div style="font-size:11px;color:var(--text-muted)">${i.location} | <span class="badge badge-${i.priority}" style="font-size:10px">${i.priority}</span></div>
+                </div>`).join('') || '<p style="color:var(--text-muted);font-size:12px">None</p>'}
+            </div>
+        </div>
+    `).join('');
+}
+
+// TOKENS
+async function loadTokens() {
+    const data = await (await fetch(API+'/api/token/locks')).json();
+    document.getElementById('tokensTable').innerHTML = `<table>
+        <thead><tr><th>Section</th><th>Direction</th><th>Status</th><th>Locked By</th><th>Lock Time</th></tr></thead>
+        <tbody>${data.map(t => `<tr>
+            <td><strong>${t.section}</strong></td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-weight:600">${t.direction}</span></td>
+            <td><span class="badge badge-${t.status}"><span class="badge-dot dot-${t.status==='locked'?'red':'green'}"></span> ${t.status}</span></td>
+            <td>${t.locked_by||'-'}</td>
+            <td style="font-size:11px">${t.lock_time ? new Date(t.lock_time).toLocaleString() : '-'}</td>
+        </tr>`).join('')}</tbody></table>`;
+}
+
+// CREW
+async function loadCrew() {
+    const zid = document.getElementById('zoneFilter').value;
+    const qs = zid ? '?zone_id='+zid : '';
+    const data = await (await fetch(API+'/api/crew/duty'+qs)).json();
+    document.getElementById('crewStats').innerHTML = `
+        <div class="stat-card danger"><div class="label">HOER Violations</div><div class="value">${data.total_violations}</div></div>
+        <div class="stat-card warning"><div class="label">At Risk (&lt;1h left)</div><div class="value">${data.at_risk_count}</div></div>
+        <div class="stat-card success"><div class="label">Compliant Crew</div><div class="value">${data.crew.length - data.total_violations}</div></div>
+    `;
+    document.getElementById('crewTable').innerHTML = `<table>
+        <thead><tr><th>Crew ID</th><th>Name</th><th>Role</th><th>Duty</th><th>Hours</th><th>Remaining</th><th>Status</th><th>Train</th></tr></thead>
+        <tbody>${data.crew.map(c => `<tr style="${c.status==='violation'?'background:#fff5f5':''}">
+            <td><strong>${c.crew_id}</strong></td><td>${c.name}</td>
+            <td style="font-size:11px;text-transform:capitalize">${c.role.replace('_',' ')}</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${c.duty_start} - ${c.duty_end}</td>
+            <td><div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:${Math.min(100,c.hours_worked/c.max_hours*100)}%;background:${c.remaining_hours<=0?'var(--danger)':c.remaining_hours<=1?'var(--warning)':'var(--success)'}"></div></div>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px">${c.hours_worked}/${c.max_hours}h</span>
+            </div></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-weight:600;color:${c.remaining_hours<=0?'var(--danger)':c.remaining_hours<=1?'var(--warning)':'var(--success)'}">${c.remaining_hours}h</td>
+            <td><span class="badge badge-${c.status}">${c.status}</span></td>
+            <td>${c.current_train||'-'}</td>
+        </tr>`).join('')}</tbody></table>`;
+}
+
+// EMERGENCY
+async function loadEmergency() {
+    const [emergencies, vvip] = await Promise.all([
+        fetch(API+'/api/emergency/pushes').then(r=>r.json()),
+        fetch(API+'/api/emergency/vvip-status').then(r=>r.json())
+    ]);
+    document.getElementById('emergencyList').innerHTML = emergencies.map(e => `
+        <div class="emergency-item">
+            <div class="pulse"></div>
+            <div class="emergency-info">
+                <div class="train">${e.train_number} - ${e.train_name}</div>
+                <div class="desc">${e.description}</div>
+                <div style="margin-top:4px"><span class="badge badge-${e.type==='critical_push'?'critical':e.type==='vvip_protect'?'vvip':'medium'}">${e.type}</span>
+                <span class="badge badge-${e.status}" style="margin-left:4px">${e.status}</span>
+                <span style="font-size:11px;color:var(--text-muted);margin-left:4px">Delay: ${e.delay_hours}h</span></div>
+            </div>
+        </div>
+    `).join('') || '<p style="color:var(--text-muted)">No active emergencies</p>';
+
+    document.getElementById('vvipList').innerHTML = `
+        <div style="margin-bottom:12px"><strong style="font-size:13px">Protected VVIP Trains</strong></div>
+        ${vvip.vvip_trains.map(t => `<div style="padding:6px 0;border-bottom:1px solid #f0f1f5;display:flex;align-items:center;gap:8px">
+            <span class="badge badge-vvip"><i class="fas fa-crown"></i></span>
+            <strong>${t.number}</strong> <span style="color:var(--text-sec)">${t.name}</span>
+            <span style="font-size:11px;color:var(--text-muted);margin-left:auto">${t.origin} → ${t.destination}</span>
+        </div>`).join('')}
+        <div style="margin-top:16px"><strong style="font-size:13px">Protection Rules</strong></div>
+        ${vvip.protection_rules.slice(0,5).map(r => `<div style="padding:6px 0;border-bottom:1px solid #f0f1f5;font-size:11.5px;color:var(--text-sec)">
+            <i class="fas fa-shield-alt" style="color:var(--accent)"></i> ${r.rule}
+        </div>`).join('')}
+    `;
+}
+
+// AI
+async function loadAI() {
+    const data = await (await fetch(API+'/api/ai/optimize')).json();
+    document.getElementById('aiStats').innerHTML = `
+        <div class="stat-card"><div class="label">Current Efficiency</div><div class="value">${data.current_efficiency}%</div></div>
+        <div class="stat-card success"><div class="label">Optimized Efficiency</div><div class="value">${data.optimized_efficiency}%</div></div>
+        <div class="stat-card info"><div class="label">Projected Uptime</div><div class="value">${data.projected_uptime}%</div></div>
+        <div class="stat-card accent"><div class="label">Blocks Merged</div><div class="value">${data.blocks_merged}</div></div>
+        <div class="stat-card warning"><div class="label">Downtime Saved</div><div class="value">${data.downtime_saved_hours}h</div></div>
+    `;
+    document.getElementById('aiRecs').innerHTML = (data.recommendations||[]).map(r => `
+        <div class="rec-item">
+            <div class="rec-icon ${r.type}"><i class="fas fa-${r.type==='merge'?'object-group':'clock'}"></i></div>
+            <div class="rec-text"><div class="title">${r.title}</div><div class="desc">${r.description}</div></div>
+            <div class="rec-score">${Math.round(r.impact)}%</div>
+        </div>
+    `).join('');
+}
+
+// INIT
+async function init() {
+    updateUserUI();
+    await loadZones();
+    loadData();
+}
+init();
+</script>
 </body>
 </html>

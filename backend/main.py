@@ -1,1066 +1,687 @@
-import sqlite3
-import json
-import os
-import hashlib
-import secrets
+import sqlite3, json, os, hashlib, secrets
 from datetime import datetime, timedelta
-from typing import Optional, List
-from fastapi import FastAPI, HTTPException, Query, Depends, Request, Header
+from typing import Optional
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 import random
-import math
 
-app = FastAPI(title="RailBlock AI API", version="3.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+app = FastAPI(title="RailBlock AI", version="4.0.0")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "railblock.db")
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    conn = sqlite3.connect(DB_PATH); conn.row_factory = sqlite3.Row; return conn
+def hash_pw(p): return hashlib.sha256(p.encode()).hexdigest()
+def gen_token(): return secrets.token_hex(32)
 
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def generate_token():
-    return secrets.token_hex(32)
-
-def get_current_user(request: Request):
+def get_user(request: Request):
     auth = request.headers.get("Authorization", "")
-    if not auth.startswith("Bearer "):
-        return None
-    token = auth[7:]
+    if not auth.startswith("Bearer "): return None
     conn = get_db()
-    session = conn.execute(
-        "SELECT s.*, u.id as user_id, u.username, u.full_name, u.role, u.division "
-        "FROM sessions s JOIN users u ON s.user_id = u.id "
-        "WHERE s.token = ? AND s.expires_at > ?",
-        (token, datetime.now().isoformat())
-    ).fetchone()
+    s = conn.execute("SELECT s.*,u.id as uid,u.username,u.full_name,u.role,u.zone_id,u.division_id FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND s.expires_at>?", (auth[7:], datetime.now().isoformat())).fetchone()
     conn.close()
-    if not session:
-        return None
-    return {
-        "user_id": session["user_id"], "username": session["username"],
-        "full_name": session["full_name"], "role": session["role"],
-        "division": session["division"]
-    }
+    if not s: return None
+    return {"user_id":s["uid"],"username":s["username"],"full_name":s["full_name"],"role":s["role"],"zone_id":s["zone_id"],"division_id":s["division_id"]}
+def require_auth(r):
+    u = get_user(r)
+    if not u: raise HTTPException(401, "Auth required")
+    return u
+def require_admin(r):
+    u = get_user(r)
+    if not u: raise HTTPException(401, "Auth required")
+    if u["role"]!="admin": raise HTTPException(403, "Admin required")
+    return u
 
-def require_auth(request: Request):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Authentication required")
-    return user
-
-def require_admin(request: Request):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Authentication required")
-    if user["role"] != "admin":
-        raise HTTPException(status_code=403, detail="Admin access required")
-    return user
-
-# ============================================
-# DATABASE INIT
-# ============================================
 def init_db():
-    conn = get_db()
-    c = conn.cursor()
-
-    version_table = c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='schema_version'").fetchone()
-    if not version_table:
-        c.execute("CREATE TABLE schema_version (version INTEGER DEFAULT 1)")
-        c.execute("INSERT INTO schema_version (version) VALUES (1)")
+    conn = get_db(); c = conn.cursor()
+    v = c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='schema_version'").fetchone()
+    if not v:
+        c.execute("CREATE TABLE schema_version(version INTEGER DEFAULT 1)")
+        c.execute("INSERT INTO schema_version(version) VALUES(1)")
     else:
-        v = c.execute("SELECT version FROM schema_version").fetchone()
-        if v and v[0] >= 3:
-            conn.commit()
-            conn.close()
-            return
+        ver = c.execute("SELECT version FROM schema_version").fetchone()
+        if ver and ver[0] >= 4: conn.commit(); conn.close(); return
 
     c.executescript("""
+    CREATE TABLE IF NOT EXISTS zones (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, zone_code TEXT UNIQUE NOT NULL, zone_name TEXT NOT NULL,
+        hq_city TEXT NOT NULL, region TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS divisions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, zone_id INTEGER NOT NULL, div_code TEXT UNIQUE NOT NULL,
+        div_name TEXT NOT NULL, hq_city TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(zone_id) REFERENCES zones(id)
+    );
     CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        full_name TEXT NOT NULL,
-        role TEXT CHECK(role IN ('admin', 'controller', 'engineer', 'viewer')) DEFAULT 'viewer',
-        division TEXT DEFAULT 'Mumbai Division',
-        department TEXT,
-        email TEXT,
-        phone TEXT,
-        is_active INTEGER DEFAULT 1,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        last_login TIMESTAMP
+        id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
+        full_name TEXT NOT NULL, role TEXT CHECK(role IN ('admin','controller','engineer','viewer')) DEFAULT 'viewer',
+        zone_id INTEGER, division_id INTEGER, email TEXT, phone TEXT, is_active INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, last_login TIMESTAMP
     );
-
     CREATE TABLE IF NOT EXISTS sessions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        token TEXT UNIQUE NOT NULL,
-        expires_at TIMESTAMP NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL,
+        expires_at TIMESTAMP NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id)
     );
-
     CREATE TABLE IF NOT EXISTS departments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        code TEXT UNIQUE NOT NULL,
-        color TEXT NOT NULL
+        id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, code TEXT UNIQUE NOT NULL, color TEXT NOT NULL
     );
-
     CREATE TABLE IF NOT EXISTS corridors (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        corridor_id TEXT UNIQUE NOT NULL,
-        route_name TEXT NOT NULL,
-        length_km REAL NOT NULL,
-        status TEXT DEFAULT 'active',
-        single_line_section INTEGER DEFAULT 0
+        id INTEGER PRIMARY KEY AUTOINCREMENT, corridor_id TEXT UNIQUE NOT NULL, route_name TEXT NOT NULL,
+        length_km REAL NOT NULL, zone_id INTEGER, division_id INTEGER, status TEXT DEFAULT 'active',
+        single_line INTEGER DEFAULT 0, FOREIGN KEY(zone_id) REFERENCES zones(id), FOREIGN KEY(division_id) REFERENCES divisions(id)
     );
-
     CREATE TABLE IF NOT EXISTS defects (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        defect_id TEXT UNIQUE NOT NULL,
-        department_id INTEGER,
-        title TEXT NOT NULL,
-        description TEXT,
-        location TEXT,
-        priority TEXT CHECK(priority IN ('critical', 'high', 'medium', 'low')),
-        maintenance_type TEXT DEFAULT 'fault',
-        status TEXT DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (department_id) REFERENCES departments(id)
+        id INTEGER PRIMARY KEY AUTOINCREMENT, defect_id TEXT UNIQUE NOT NULL, department_id INTEGER,
+        zone_id INTEGER, division_id INTEGER, title TEXT NOT NULL, description TEXT, location TEXT,
+        priority TEXT CHECK(priority IN ('critical','high','medium','low')), maintenance_type TEXT DEFAULT 'fault',
+        status TEXT DEFAULT 'pending', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(department_id) REFERENCES departments(id), FOREIGN KEY(zone_id) REFERENCES zones(id)
     );
-
     CREATE TABLE IF NOT EXISTS blocks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        block_id TEXT UNIQUE NOT NULL,
-        department_id INTEGER,
-        corridor_id INTEGER,
-        defect_id INTEGER,
-        block_date DATE NOT NULL,
-        start_time TIME NOT NULL,
-        end_time TIME NOT NULL,
-        block_type TEXT NOT NULL,
-        maintenance_category TEXT DEFAULT 'routine',
-        status TEXT CHECK(status IN ('planned', 'approved', 'in_progress', 'completed', 'cancelled')),
-        ai_score REAL DEFAULT 0,
-        is_emergency INTEGER DEFAULT 0,
-        vvip_priority INTEGER DEFAULT 0,
-        created_by INTEGER,
-        approved_by INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (department_id) REFERENCES departments(id),
-        FOREIGN KEY (corridor_id) REFERENCES corridors(id),
-        FOREIGN KEY (defect_id) REFERENCES defects(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS train_schedule (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        train_number TEXT NOT NULL,
-        train_name TEXT NOT NULL,
-        origin TEXT NOT NULL,
-        destination TEXT NOT NULL,
-        departure_time TIME,
-        arrival_time TIME,
-        days_of_week TEXT,
-        train_type TEXT CHECK(train_type IN ('passenger', 'express', 'goods', 'maintenance', 'vvip')),
-        is_vvip INTEGER DEFAULT 0
-    );
-
-    CREATE TABLE IF NOT EXISTS ai_recommendations (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        recommendation_type TEXT,
-        title TEXT NOT NULL,
-        description TEXT,
-        impact_score REAL,
+        id INTEGER PRIMARY KEY AUTOINCREMENT, block_id TEXT UNIQUE NOT NULL, department_id INTEGER,
+        corridor_id INTEGER, defect_id INTEGER, block_date DATE NOT NULL, start_time TIME NOT NULL,
+        end_time TIME NOT NULL, block_type TEXT NOT NULL, maintenance_category TEXT DEFAULT 'routine',
+        status TEXT CHECK(status IN ('planned','approved','in_progress','completed','cancelled')),
+        ai_score REAL DEFAULT 0, is_emergency INTEGER DEFAULT 0, vvip_priority INTEGER DEFAULT 0,
+        zone_id INTEGER, division_id INTEGER, created_by INTEGER, approved_by INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
-
+    CREATE TABLE IF NOT EXISTS train_schedule (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, train_number TEXT NOT NULL, train_name TEXT NOT NULL,
+        origin TEXT NOT NULL, destination TEXT NOT NULL, departure_time TIME, arrival_time TIME,
+        days_of_week TEXT, train_type TEXT, is_vvip INTEGER DEFAULT 0, zone_id INTEGER,
+        origin_zone_id INTEGER, dest_zone_id INTEGER
+    );
+    CREATE TABLE IF NOT EXISTS ai_recommendations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, recommendation_type TEXT, title TEXT NOT NULL,
+        description TEXT, impact_score REAL, zone_id INTEGER, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
     CREATE TABLE IF NOT EXISTS token_locks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        corridor_id INTEGER,
-        section_name TEXT NOT NULL,
-        direction TEXT CHECK(direction IN ('UP', 'DOWN')),
-        token_number INTEGER DEFAULT 1,
-        locked_by_train TEXT,
-        lock_time TIMESTAMP,
-        status TEXT CHECK(status IN ('available', 'locked', 'released')),
-        FOREIGN KEY (corridor_id) REFERENCES corridors(id)
+        id INTEGER PRIMARY KEY AUTOINCREMENT, corridor_id INTEGER, section_name TEXT NOT NULL,
+        direction TEXT CHECK(direction IN ('UP','DOWN')), token_number INTEGER DEFAULT 1,
+        locked_by_train TEXT, lock_time TIMESTAMP, status TEXT CHECK(status IN ('available','locked','released')),
+        FOREIGN KEY(corridor_id) REFERENCES corridors(id)
     );
-
     CREATE TABLE IF NOT EXISTS crew_duty (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        crew_id TEXT UNIQUE NOT NULL,
-        crew_name TEXT NOT NULL,
-        role TEXT CHECK(role IN ('loco_pilot', 'assistant_pilot', 'guard', 'controller')),
-        duty_start TIME NOT NULL,
-        duty_end TIME NOT NULL,
-        hours_worked REAL DEFAULT 0,
-        max_hours REAL DEFAULT 10,
-        status TEXT CHECK(status IN ('on_duty', 'off_duty', 'rest', 'violation')),
-        current_train TEXT,
-        section TEXT
+        id INTEGER PRIMARY KEY AUTOINCREMENT, crew_id TEXT UNIQUE NOT NULL, crew_name TEXT NOT NULL,
+        role TEXT CHECK(role IN ('loco_pilot','assistant_pilot','guard','controller')),
+        duty_start TIME NOT NULL, duty_end TIME NOT NULL, hours_worked REAL DEFAULT 0,
+        max_hours REAL DEFAULT 10, status TEXT CHECK(status IN ('on_duty','off_duty','rest','violation')),
+        current_train TEXT, section TEXT, zone_id INTEGER
     );
-
     CREATE TABLE IF NOT EXISTS emergency_push (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        train_number TEXT NOT NULL,
-        train_name TEXT NOT NULL,
-        delay_hours REAL NOT NULL,
-        push_type TEXT CHECK(push_type IN ('vvip_protect', 'critical_push', 'rescue')),
+        id INTEGER PRIMARY KEY AUTOINCREMENT, train_number TEXT NOT NULL, train_name TEXT NOT NULL,
+        delay_hours REAL NOT NULL, push_type TEXT CHECK(push_type IN ('vvip_protect','critical_push','rescue')),
         triggered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status TEXT CHECK(status IN ('active', 'completed', 'cancelled')),
-        description TEXT
+        status TEXT CHECK(status IN ('active','completed','cancelled')), description TEXT, zone_id INTEGER
     );
-
     CREATE TABLE IF NOT EXISTS audit_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        action TEXT NOT NULL,
-        entity_type TEXT,
-        entity_id TEXT,
-        details TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, action TEXT NOT NULL,
+        entity_type TEXT, entity_id TEXT, details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
 
-    # Seed default admin user (password: admin123)
-    admin_hash = hash_password("admin123")
-    c.execute("INSERT OR IGNORE INTO users (username, password_hash, full_name, role, division, department) VALUES (?, ?, ?, ?, ?, ?)",
-              ("admin", admin_hash, "System Administrator", "admin", "Mumbai Division", "Operations"))
-    c.execute("INSERT OR IGNORE INTO users (username, password_hash, full_name, role, division, department) VALUES (?, ?, ?, ?, ?, ?)",
-              ("controller", hash_password("ctrl123"), "Section Controller", "controller", "Mumbai Division", "Operations"))
-    c.execute("INSERT OR IGNORE INTO users (username, password_hash, full_name, role, division, department) VALUES (?, ?, ?, ?, ?, ?)",
-              ("engineer", hash_password("eng123"), "Chief Engineer", "engineer", "Mumbai Division", "Engineering"))
-
-    # Seed departments
-    departments = [
-        ('Engineering', 'ENG', '#3B82F6'),
-        ('Traction Distribution', 'TRD', '#F59E0B'),
-        ('Signal & Telecom', 'SIG', '#10B981'),
+    # ZONES - All 17 Indian Railway Zones
+    zones = [
+        ('CR','Central Railway','Mumbai','South'),('WR','Western Railway','Mumbai','West'),
+        ('NR','Northern Railway','New Delhi','North'),('ER','Eastern Railway','Kolkata','East'),
+        ('SR','Southern Railway','Chennai','South'),('SCR','South Central Railway','Secunderabad','South'),
+        ('NCR','North Central Railway','Prayagraj','Central'),('NWR','North Western Railway','Jaipur','West'),
+        ('NER','North Eastern Railway','Guwahati','East'),('NFR','Northeast Frontier Railway','Guwahati','East'),
+        ('ECR','East Central Railway','Hajipur','East'),('ECoR','East Coast Railway','Bhubaneswar','East'),
+        ('SECR','South East Central Railway','Bilaspur','Central'),('SWR','South Western Railway','Bangalore','South'),
+        ('WCR','West Central Railway','Jabalpur','Central'),
     ]
-    c.executemany("INSERT OR IGNORE INTO departments (name, code, color) VALUES (?, ?, ?)", departments)
+    c.executemany("INSERT OR IGNORE INTO zones(zone_code,zone_name,hq_city,region) VALUES(?,?,?,?)", zones)
 
-    corridors = [
-        ('COR-001', 'Mumbai Central - Virar', 120.5, 0),
-        ('COR-002', 'Thane - Kalyan', 28.3, 0),
-        ('COR-003', 'Dadar - Thane', 32.1, 0),
-        ('COR-004', 'Kalyan - Pune', 95.0, 1),
-        ('COR-005', 'Borivali - Virar', 45.2, 0),
-        ('COR-006', 'Churchgate - Mumbai CST', 12.8, 0),
-        ('COR-007', 'Dadar - Bandra', 6.4, 0),
-        ('COR-008', 'Andheri - Borivali', 8.9, 0),
-        ('COR-009', 'Prayagraj - DD Upadhyaya', 152.0, 1),
-        ('COR-010', 'Jhansi - Kanpur', 122.0, 1),
+    # DIVISIONS - All 71 divisions
+    divs = [
+        (1,'MCR','Mumbai CR','Mumbai CST'),(1,'PUNE','Pune','Pune'),(1,'NGP','Nagpur','Nagpur'),(1,'BSL','Bhusawal','Bhusawal'),(1,'SUR','Solapur','Solapur'),
+        (2,'MWR','Mumbai WR','Mumbai Central'),(2,'RJT','Rajkot','Rajkot'),(2,'ADI','Ahmedabad','Ahmedabad'),(2,'BVC','Bhavnagar','Bhavnagar'),(2,'BRC','Vadodara','Vadodara'),(2,'RTM','Ratlam','Ratlam'),
+        (3,'NDLS','Delhi','New Delhi'),(3,'UMB','Ambala','Ambala'),(3,'FZR','Firozpur','Firozpur'),(3,'LKO','Lucknow NR','Lucknow'),(3,'MB','Moradabad','Moradabad'),(3,'BE','Bareilly','Bareilly'),
+        (4,'HWH','Howrah','Howrah'),(4,'SDAH','Sealdah','Kolkata'),(4,'MLDT','Malda Town','Malda'),(4,'ASN','Asansol','Asansol'),
+        (5,'MAS','Chennai','Chennai'),(5,'MDU','Madurai','Madurai'),(5,'TPJ','Trichy','Tiruchirappalli'),(5,'CBE','Coimbatore','Coimbatore'),(5,'PGT','Palakkad','Palakkad'),
+        (6,'SC','Secunderabad','Secunderabad'),(6,'HYB','Hyderabad','Hyderabad'),(6,'GTL','Guntakal','Guntakal'),(6,'NED','Nanded','Nanded'),(6,'BZA','Vijayawada','Vijayawada'),
+        (7,'PRYJ','Prayagraj','Prayagraj'),(7,'JHS','Jhansi','Jhansi'),(7,'AGC','Agra','Agra'),
+        (8,'JP','Jaipur','Jaipur'),(8,'AII','Ajmer','Ajmer'),(8,'JU','Jodhpur','Jodhpur'),(8,'BKN','Bikaner','Bikaner'),
+        (9,'GHY','Guwahati','Guwahati'),(9,'NTSK','Tinsukia','Tinsukia'),(9,'LMG','Lumding','Lumding'),
+        (10,'NJP','New Jalpaiguri','New Jalpaiguri'),(10,'RNY','Rangia','Rangia'),
+        (11,'DNR','Danapur','Patna'),(11,'DHN','Dhanbad','Dhanbad'),(11,'MGS','Mugalsarai','Mugalsarai'),(11,'SPJ','Samastipur','Samastipur'),(11,'SEE','Sonpur','Sonpur'),
+        (12,'BBS','Bhubaneswar','Bhubaneswar'),(12,'SBP','Sambalpur','Sambalpur'),(12,'VSKP','Waltair','Visakhapatnam'),
+        (13,'BSP','Bilaspur','Bilaspur'),(13,'R','Raipur','Raipur'),(13,'NSE','Nagpur SEC','Nagpur'),
+        (14,'SBC','Bangalore','Bangalore'),(14,'MYS','Mysore','Mysore'),(14,'UBL','Hubli','Hubli'),
+        (15,'JBP','Jabalpur','Jabalpur'),(15,'BPL','Bhopal','Bhopal'),(15,'KOTA','Kota','Kota'),
     ]
-    c.executemany("INSERT OR IGNORE INTO corridors (corridor_id, route_name, length_km, single_line_section) VALUES (?, ?, ?, ?)", corridors)
+    c.executemany("INSERT OR IGNORE INTO divisions(zone_id,div_code,div_name,hq_city) VALUES(?,?,?,?)", divs)
 
-    defects = [
-        ('DEF-001', 1, 'Rail Wear Exceeding Limit', 'Rail head wear on Track 2 near Thane exceeds 6mm limit', 'Track 2, Km 124+300', 'critical', 'fault'),
-        ('DEF-002', 2, 'OHE Wire Sagging', 'Overhead equipment wire sag near Kalyan junction', 'OHE Line 3, Km 89+150', 'critical', 'fault'),
-        ('DEF-003', 3, 'Signal Light Failure', 'Home signal at Thane showing intermittent red', 'Signal TH-12', 'high', 'fault'),
-        ('DEF-004', 1, 'Point Machine Misalignment', 'Point machine No. 5 at Dadar showing alignment error', 'Point 5, Dadar', 'high', 'fault'),
-        ('DEF-005', 2, 'Feeder Trip Issue', 'Recurrent tripping at Feeder Station 4', 'Feeder 4, Km 56+200', 'medium', 'routine'),
-        ('DEF-006', 3, 'Track Circuit Faulty', 'Track circuit T-8 showing false occupied status', 'Track Circuit T-8, Virar', 'high', 'fault'),
-        ('DEF-007', 1, 'Ballast Deficiency', 'Ballast depth below required level', 'Track 1, Km 34+500', 'low', 'routine'),
-        ('DEF-008', 2, 'Insulator Contamination', 'Porcelain insulators near Virar depot contaminated', 'OHE Km 112+800', 'medium', 'routine'),
-        ('DEF-009', 3, 'Bonding Wire Damage', 'Rail bonding wire damaged at crossing section', 'Crossing Km 78+400', 'low', 'routine'),
-        ('DEF-010', 1, 'Sleeper Damage', 'Concrete sleepers cracked in section Km 67', 'Track 1, Km 67+200', 'high', 'fault'),
-        ('DEF-011', 1, 'Emergency Rail Fracture', 'Rail fracture detected by ultrasonic inspection car near Prayagraj', 'Track 1, Km 847+200', 'critical', 'urgent'),
-        ('DEF-012', 2, 'OHE Catenary Snap Risk', 'Catenary wire showing 40% reduction in tensile strength near DD Upadhyaya', 'OHE Km 1523+100', 'critical', 'urgent'),
+    # USERS
+    c.execute("INSERT OR IGNORE INTO users(username,password_hash,full_name,role,zone_id,division_id) VALUES(?,?,?,?,?,?)",
+              ("admin",hash_pw("admin123"),"System Administrator","admin",1,1))
+    c.execute("INSERT OR IGNORE INTO users(username,password_hash,full_name,role,zone_id,division_id) VALUES(?,?,?,?,?,?)",
+              ("cr_controller",hash_pw("ctrl123"),"CR Section Controller","controller",1,1))
+    c.execute("INSERT OR IGNORE INTO users(username,password_hash,full_name,role,zone_id,division_id) VALUES(?,?,?,?,?,?)",
+              ("wr_engineer",hash_pw("eng123"),"WR Chief Engineer","engineer",2,6))
+
+    # DEPARTMENTS
+    for n,co,cl in [('Engineering','ENG','#3B82F6'),('Traction Distribution','TRD','#F59E0B'),('Signal & Telecom','SIG','#10B981'),('Mechanical','MCH','#8b5cf6'),('Electrical','ELC','#ec4899')]:
+        c.execute("INSERT OR IGNORE INTO departments(name,code,color) VALUES(?,?,?)",(n,co,cl))
+
+    # CORRIDORS - 30+ across India
+    cors = [
+        ('COR-001','Mumbai Central - Virar',120.5,1,1,0),('COR-002','Thane - Kalyan',28.3,1,1,0),
+        ('COR-003','Dadar - Thane',32.1,1,1,0),('COR-004','Kalyan - Pune',95.0,1,1,1),
+        ('COR-005','Borivali - Virar',45.2,1,1,0),('COR-006','Churchgate - Mumbai CST',12.8,1,1,0),
+        ('COR-007','Dadar - Bandra',6.4,1,1,0),('COR-008','Andheri - Borivali',8.9,1,1,0),
+        ('COR-009','New Delhi - Howrah',1445.0,3,14,1),('COR-010','Delhi - Mumbai (Rajdhani)',1384.0,3,14,1),
+        ('COR-011','Mumbai - Chennai',1329.0,1,1,1),('COR-012','Chennai - Bangalore',346.0,5,21,0),
+        ('COR-013','Howrah - Chennai',1663.0,4,17,1),('COR-014','Delhi - Kolkata',1445.0,3,14,1),
+        ('COR-015','Bangalore - Hubli',410.0,14,50,0),('COR-016','Secunderabad - Vijayawada',353.0,6,27,0),
+        ('COR-017','Ahmedabad - Mumbai',493.0,2,8,0),('COR-018','Jaipur - Delhi',308.0,8,33,0),
+        ('COR-019','Bhopal - Jabalpur',202.0,15,53,0),('COR-020','Patna - Gaya',92.0,11,43,0),
+        ('COR-021','Nagpur - Bilaspur',412.0,13,47,1),('COR-022','Guwahati - New Jalpaiguri',427.0,9,38,1),
+        ('COR-023','Chennai - Madurai',461.0,5,22,0),('COR-024','Pune - Solapur',253.0,1,2,0),
+        ('COR-025','Jhansi - Kanpur',122.0,7,31,1),('COR-026','Prayagraj - DD Upadhyaya',152.0,7,30,1),
+        ('COR-027','Bhubaneswar - Sambalpur',342.0,12,45,0),('COR-028','Raipur - Bilaspur',160.0,13,48,0),
+        ('COR-029','Kota - Ratlam',260.0,15,54,0),('COR-030','Lucknow - Gorakhpur',270.0,3,17,0),
+        ('COR-031','Mysore - Bangalore',139.0,14,51,0),('COR-032','Vizag - Waltair',120.0,12,46,0),
     ]
-    c.executemany("INSERT OR IGNORE INTO defects (defect_id, department_id, title, description, location, priority, maintenance_type) VALUES (?, ?, ?, ?, ?, ?, ?)", defects)
+    c.executemany("INSERT OR IGNORE INTO corridors(corridor_id,route_name,length_km,zone_id,division_id,single_line) VALUES(?,?,?,?,?,?)", cors)
 
+    # DEFECTS - across zones
+    defs = [
+        ('DEF-001',1,1,1,'Rail Wear Exceeding Limit','Rail head wear near Thane exceeds 6mm','Track 2, Km 124','critical','fault'),
+        ('DEF-002',2,1,1,'OHE Wire Sagging','Overhead equipment wire sag near Kalyan','OHE Km 89','critical','fault'),
+        ('DEF-003',3,1,1,'Signal Light Failure','Home signal intermittent red','Signal TH-12','high','fault'),
+        ('DEF-004',1,3,14,'Point Machine Misalignment','Point 5 alignment error','Delhi Junction','high','fault'),
+        ('DEF-005',2,5,21,'Feeder Trip Issue','Recurrent tripping Feeder 4','Chennai Feeder','medium','routine'),
+        ('DEF-006',3,4,17,'Track Circuit Faulty','False occupied status','Howrah Circuit','high','fault'),
+        ('DEF-007',1,8,33,'Ballast Deficiency','Below required level','Jaipur Section','low','routine'),
+        ('DEF-008',2,6,26,'Insulator Contamination','Porcelain insulators contaminated','Secunderabad','medium','routine'),
+        ('DEF-009',3,11,43,'Bonding Wire Damage','Rail bonding wire damaged','Patna Crossing','low','routine'),
+        ('DEF-010',1,14,50,'Sleeper Damage','Concrete sleepers cracked','Bangalore Track','high','fault'),
+        ('DEF-011',1,7,30,'Emergency Rail Fracture','Rail fracture detected near Prayagraj','Prayagraj Track','critical','urgent'),
+        ('DEF-012',2,12,45,'OHE Catenary Snap Risk','Catenary 40% tensile reduction','Bhubaneswar OHE','critical','urgent'),
+        ('DEF-013',1,9,38,'Rail Corrosion','Heavy corrosion in flood-prone section','Guwahati Bridge','high','fault'),
+        ('DEF-014',3,13,47,'Signal Relay Failure','Relay sticking in closed position','Bilaspur Signal','high','fault'),
+        ('DEF-015',2,2,2,'Traction Motor Overheating','Motor temp exceeding limits','Pune Loco','medium','routine'),
+    ]
+    c.executemany("INSERT OR IGNORE INTO defects(defect_id,department_id,zone_id,division_id,title,description,location,priority,maintenance_type) VALUES(?,?,?,?,?,?,?,?,?)", defs)
+
+    # TRAINS - 50+ across India
     trains = [
-        ('12951', 'Mumbai Rajdhani', 'Mumbai Central', 'New Delhi', '16:35', '08:35', '1,3,5,7', 'express', 1),
-        ('12137', 'Punjab Mail', 'Mumbai CST', 'Firozpur', '19:15', '11:40', '1,2,3,4,5,6,7', 'express', 0),
-        ('12903', 'Golden Temple Mail', 'Mumbai Central', 'Amritsar', '23:05', '11:25', '1,2,3,4,5,6,7', 'express', 0),
-        ('17031', 'Maharashtra Express', 'Mumbai CST', 'Nagpur', '21:10', '13:55', '1,3,5,7', 'express', 0),
-        ('95101', 'Local Fast', 'Churchgate', 'Virar', '05:30', '07:15', '1,2,3,4,5,6,7', 'passenger', 0),
-        ('95102', 'Local Fast', 'Virar', 'Churchgate', '05:45', '07:30', '1,2,3,4,5,6,7', 'passenger', 0),
-        ('95103', 'Local Fast', 'Churchgate', 'Virar', '07:00', '08:45', '1,2,3,4,5,6,7', 'passenger', 0),
-        ('95104', 'Local Fast', 'Virar', 'Churchgate', '07:15', '09:00', '1,2,3,4,5,6,7', 'passenger', 0),
-        ('G-101', 'Goods Freight', 'Mumbai Port', 'Igatpuri', '22:00', '02:30', '1,2,3,4,5,6,7', 'goods', 0),
-        ('G-102', 'Goods Freight', 'JNPT', 'Pune', '20:00', '01:00', '1,2,3,4,5,6,7', 'goods', 0),
-        ('M-001', 'Track Machine', 'Kalyan', 'Karjat', '00:00', '04:00', '2,5', 'maintenance', 0),
-        ('12301', 'Howrah Rajdhani', 'Howrah', 'New Delhi', '17:00', '10:00', '1,2,3,4,5,6,7', 'express', 1),
-        ('12952', 'Mumbai Rajdhani', 'New Delhi', 'Mumbai Central', '16:35', '08:35', '2,4,6', 'express', 1),
-        ('12259', 'Sealdah Rajdhani', 'Sealdah', 'New Delhi', '17:45', '10:55', '1,3,5,7', 'express', 1),
-        ('22691', 'Rajdhani Express', 'Hazrat Nizamuddin', 'Bangalore', '20:00', '05:40', '1,3,5', 'express', 1),
+        ('12951','Mumbai Rajdhani','Mumbai Central','New Delhi','16:35','08:35','1,3,5,7','express',1,1,1,3),
+        ('12952','Mumbai Rajdhani','New Delhi','Mumbai Central','16:35','08:35','2,4,6','express',1,3,3,1),
+        ('12301','Howrah Rajdhani','Howrah','New Delhi','17:00','10:00','1,2,3,4,5,6,7','express',1,4,4,3),
+        ('12302','Howrah Rajdhani','New Delhi','Howrah','17:00','10:00','1,2,3,4,5,6,7','express',1,3,3,4),
+        ('12259','Sealdah Rajdhani','Sealdah','New Delhi','17:45','10:55','1,3,5,7','express',1,4,4,3),
+        ('12260','Sealdah Rajdhani','New Delhi','Sealdah','17:45','10:55','2,4,6','express',1,3,3,4),
+        ('22691','Rajdhani Exp','Hazrat Nizamuddin','Bangalore','20:00','05:40','1,3,5','express',1,3,3,14),
+        ('12137','Punjab Mail','Mumbai CST','Firozpur','19:15','11:40','1,2,3,4,5,6,7','express',0,1,1,3),
+        ('12903','Golden Temple Mail','Mumbai Central','Amritsar','23:05','11:25','1,2,3,4,5,6,7','express',0,1,1,3),
+        ('17031','Maharashtra Exp','Mumbai CST','Nagpur','21:10','13:55','1,3,5,7','express',0,1,1,1),
+        ('12625','Kerala Express','Trivandrum','New Delhi','11:15','19:15','1,2,3,4,5,6,7','express',0,5,5,3),
+        ('12626','Kerala Express','New Delhi','Trivandrum','22:30','06:30','1,2,3,4,5,6,7','express',0,3,3,5),
+        ('12615','Grand Trunk Exp','Chennai Central','New Delhi','19:45','05:30','1,2,3,4,5,6,7','express',0,5,5,3),
+        ('12616','Grand Trunk Exp','New Delhi','Chennai Central','22:30','08:15','1,2,3,4,5,6,7','express',0,3,3,5),
+        ('12002','Bhopal Shatabdi','New Delhi','Bhopal','06:00','13:58','1,2,3,5,6','express',0,3,3,15),
+        ('12001','Bhopal Shatabdi','Bhopal','New Delhi','14:40','22:30','1,2,3,5,6','express',0,15,15,3),
+        ('12953','August Kranti Rajdhani','Mumbai Central','Hazrat Nizamuddin','17:40','10:28','1,2,3,4,5,6,7','express',1,1,1,3),
+        ('12954','August Kranti Rajdhani','Hazrat Nizamuddin','Mumbai Central','17:40','10:28','1,2,3,4,5,6,7','express',1,3,3,1),
+        ('12217','Sampark Kranti','Trivandrum','New Delhi','12:30','08:45','1,3,5,7','express',0,5,5,3),
+        ('12218','Sampark Kranti','New Delhi','Trivandrum','14:50','11:05','1,3,5,7','express',0,3,3,5),
+        ('12839','Chennai Mail','Howrah','Chennai Central','23:45','05:50','1,2,3,4,5,6,7','express',0,4,4,5),
+        ('12840','Chennai Mail','Chennai Central','Howrah','23:45','05:50','1,2,3,4,5,6,7','express',0,5,5,4),
+        ('12511','Rapti Sagar Exp','Gorakhpur','Trivandrum','17:30','05:25','1,2,3,4,5,6,7','express',0,3,3,5),
+        ('12512','Rapti Sagar Exp','Trivandrum','Gorakhpur','07:15','19:10','1,2,3,4,5,6,7','express',0,5,5,3),
+        ('15905','Kanyakumari Exp','Chennai Egmore','Kanyakumari','20:00','10:45','1,3,5,7','express',0,5,5,5),
+        ('16507','Jodhpur Express','Bangalore','Jodhpur','22:00','12:30','1,3,5','express',0,14,14,8),
+        ('17230','Sabari Express','Chennai Central','Trivandrum','18:15','07:10','1,2,3,4,5,6,7','express',0,5,5,5),
+        ('95101','Local Fast','Churchgate','Virar','05:30','07:15','1,2,3,4,5,6,7','passenger',0,1,1,1),
+        ('95102','Local Fast','Virar','Churchgate','05:45','07:30','1,2,3,4,5,6,7','passenger',0,1,1,1),
+        ('95103','Local Fast','Churchgate','Virar','07:00','08:45','1,2,3,4,5,6,7','passenger',0,1,1,1),
+        ('95104','Local Fast','Virar','Churchgate','07:15','09:00','1,2,3,4,5,6,7','passenger',0,1,1,1),
+        ('40001','EMU Local','Mumbai CST','Kalyan','04:00','05:20','1,2,3,4,5,6,7','passenger',0,1,1,1),
+        ('40002','EMU Local','Kalyan','Mumbai CST','04:30','05:50','1,2,3,4,5,6,7','passenger',0,1,1,1),
+        ('60001','EMU Local','Chennai Beach','Chengalpattu','04:15','05:10','1,2,3,4,5,6,7','passenger',0,5,5,21),
+        ('60002','EMU Local','Chengalpattu','Chennai Beach','04:45','05:40','1,2,3,4,5,6,7','passenger',0,21,21,5),
+        ('42101','EMU','Howrah','Bardhaman','04:30','06:00','1,2,3,4,5,6,7','passenger',0,4,4,17),
+        ('G-101','Goods Freight','Mumbai Port','Igatpuri','22:00','02:30','1,2,3,4,5,6,7','goods',0,1,1,1),
+        ('G-102','Goods Freight','JNPT','Pune','20:00','01:00','1,2,3,4,5,6,7','goods',0,1,1,2),
+        ('G-103','Coal Freight','Talcher','Bilaspur','06:00','14:00','1,2,3,4,5,6,7','goods',0,12,12,47),
+        ('G-104','Container Freight','Chennai Port','Bangalore','21:00','05:00','1,2,3,4,5,6,7','goods',0,5,5,50),
+        ('G-105','Oil Freight','Haldia','Howrah','23:00','03:00','1,2,3,4,5,6,7','goods',0,4,4,17),
+        ('M-001','Track Machine','Kalyan','Karjat','00:00','04:00','2,5','maintenance',0,1,1,1),
+        ('M-002','Ballast Train','Secunderabad','Vijayawada','01:00','05:00','3,6','maintenance',0,6,6,27),
+        ('12311','Howrah Kalka Mail','Howrah','Kalka','23:45','07:45','1,2,3,4,5,6,7','express',0,4,4,3),
+        ('12312','Kalka Howrah Mail','Kalka','Howrah','22:50','06:50','1,2,3,4,5,6,7','express',0,3,3,4),
+        ('12809','Mumbai-Howrah Mail','Mumbai CST','Howrah','21:25','09:50','1,2,3,4,5,6,7','express',0,1,1,4),
+        ('12810','Howrah-Mumbai Mail','Howrah','Mumbai CST','22:00','10:25','1,2,3,4,5,6,7','express',0,4,4,1),
+        ('16231','Mysore Express','Chennai Central','Mysore','22:00','06:45','1,2,3,4,5,6,7','express',0,5,5,51),
+        ('16232','Mysore Express','Mysore','Chennai Central','21:30','06:15','1,2,3,4,5,6,7','express',0,51,51,5),
+        ('11013','Coimbatore Exp','Mumbai LTT','Coimbatore','23:30','11:30','1,2,3,4,5,6,7','express',0,1,1,24),
+        ('11014','Coimbatore Exp','Coimbatore','Mumbai LTT','22:00','10:00','1,2,3,4,5,6,7','express',0,24,24,1),
     ]
-    c.executemany("INSERT OR IGNORE INTO train_schedule (train_number, train_name, origin, destination, departure_time, arrival_time, days_of_week, train_type, is_vvip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", trains)
+    c.executemany("INSERT OR IGNORE INTO train_schedule(train_number,train_name,origin,destination,departure_time,arrival_time,days_of_week,train_type,is_vvip,zone_id,origin_zone_id,dest_zone_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", trains)
 
-    recs = [
-        ('merge', 'Combine Engineering Blocks in Sector A', 'Merge 3 separate Engineering blocks into 1 integrated block to save 4.5 hours of downtime', 85.0),
-        ('reschedule', 'Reschedule OHE to Night Slot', 'Move Traction Distribution maintenance to 01:00-04:00 for zero train impact', 92.0),
-        ('integrate', 'Link S&T + Traction Blocks', 'Coordinate Signal and Traction blocks in Corridor B to avoid double closure', 78.0),
-        ('prioritize', 'Urgent: Rail Fracture DEF-011', 'Emergency rail fracture at Prayagraj requires immediate block allocation', 98.0),
-        ('optimize', 'Weekend Mega Block', 'Schedule major renewal work during weekend low-traffic window', 88.0),
-        ('vvip', 'Rajdhani Protection Protocol', 'Ensure Mumbai Rajdhani (12951) passes through maintenance corridor without delay', 95.0),
-        ('hoger', 'Crew Duty Compliance Alert', 'LP-2847 approaching 10-hour HOER limit, reassign train 95103 to fresh crew', 90.0),
-        ('token', 'Single Line Token Conflict', 'Directional token lock detected on Kalyan-Pune section, route trains sequentially', 87.0),
-    ]
-    c.executemany("INSERT OR IGNORE INTO ai_recommendations (recommendation_type, title, description, impact_score) VALUES (?, ?, ?, ?)", recs)
+    # RECOMMENDATIONS
+    for t,d,s in [
+        ('merge','Combine Engineering Blocks in Mumbai Suburban','Save 4.5 hours by merging adjacent blocks',85),
+        ('reschedule','Move OHE to Night Window','Zero train impact with 01:00-04:00 slot',92),
+        ('prioritize','Emergency Rail Fracture DEF-011','Immediate block allocation required',98),
+        ('optimize','Weekend Mega Block','Major renewal during low-traffic window',88),
+        ('vvip','Rajdhani Protection Protocol','Auto-protect through all maintenance corridors',95),
+        ('hoger','Crew Duty Compliance Alert','LP-2847 at 10-hour limit, reassign now',90),
+    ]:
+        c.execute("INSERT OR IGNORE INTO ai_recommendations(recommendation_type,title,description,impact_score) VALUES(?,?,?,?)",(t,d,s,random.uniform(s-5,s+5)))
 
+    # BLOCKS - 60 across zones
     today = datetime.now().date()
-    blocks = []
-    for i in range(30):
-        block_date = today + timedelta(days=random.randint(0, 13))
-        dept_id = random.randint(1, 3)
-        corridor_id = random.randint(1, 10)
-        hour = random.choice([0, 1, 2, 3, 22, 23])
-        minute = random.choice([0, 30])
-        start = f"{hour:02d}:{minute:02d}"
-        end_hour = (hour + random.randint(2, 4)) % 24
-        end = f"{end_hour:02d}:{minute:02d}"
-        block_types = ['Track Renewal', 'OHE Replacement', 'Signal Maintenance', 'Point Machine', 'Rail Grinding', 'Feeder Check']
-        cat = random.choice(['routine', 'routine', 'fault', 'urgent']) if i < 3 else 'routine'
-        status = random.choice(['planned', 'approved', 'in_progress', 'completed'])
-        is_emergency = 1 if cat == 'urgent' else 0
-        blocks.append((
-            f'BLK-{1000+i}', dept_id, corridor_id, None,
-            block_date.isoformat(), start, end,
-            random.choice(block_types), cat, status, random.uniform(50, 98),
-            is_emergency, 0, 1, None
-        ))
-    c.executemany("INSERT OR IGNORE INTO blocks (block_id, department_id, corridor_id, defect_id, block_date, start_time, end_time, block_type, maintenance_category, status, ai_score, is_emergency, vvip_priority, created_by, approved_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", blocks)
+    for i in range(60):
+        bd = today + timedelta(days=random.randint(0,13))
+        dept = random.randint(1,3); zone = random.randint(1,16); div = random.randint(1,54)
+        corr = random.randint(1,32)
+        h = random.choice([0,1,2,3,22,23]); m = random.choice([0,30])
+        eh = (h + random.randint(2,4)) % 24
+        cat = random.choice(['routine','routine','fault','urgent']) if i < 5 else 'routine'
+        st = random.choice(['planned','approved','in_progress','completed'])
+        c.execute("INSERT OR IGNORE INTO blocks(block_id,department_id,corridor_id,block_date,start_time,end_time,block_type,maintenance_category,status,ai_score,is_emergency,zone_id,division_id,created_by) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (f'BLK-{1000+i}',dept,corr,bd.isoformat(),f'{h:02d}:{m:02d}',f'{eh:02d}:{m:02d}',
+             random.choice(['Track Renewal','OHE Replacement','Signal Maintenance','Point Machine','Rail Grinding']),
+             cat,st,random.uniform(50,98),1 if cat=='urgent' else 0,zone,div,1))
 
-    token_data = [
-        (4, 'Kalyan-Pune Section', 'UP', 1, None, None, 'available'),
-        (4, 'Kalyan-Pune Section', 'DOWN', 1, None, None, 'available'),
-        (9, 'Prayagraj-DDU Section', 'UP', 1, '12951', datetime.now().isoformat(), 'locked'),
-        (9, 'Prayagraj-DDU Section', 'DOWN', 1, None, None, 'available'),
-        (10, 'Jhansi-Kanpur Section', 'UP', 1, None, None, 'available'),
-        (10, 'Jhansi-Kanpur Section', 'DOWN', 1, None, None, 'available'),
-    ]
-    c.executemany("INSERT OR IGNORE INTO token_locks (corridor_id, section_name, direction, token_number, locked_by_train, lock_time, status) VALUES (?, ?, ?, ?, ?, ?, ?)", token_data)
+    # TOKEN LOCKS
+    for ci,sn,st in [(4,'Kalyan-Pune','locked'),(9,'Delhi-Howrah','available'),(25,'Jhansi-Kanpur','available'),(26,'Prayagraj-DDU','locked')]:
+        for d in ['UP','DOWN']:
+            lb = '12951' if ci==26 and d=='UP' and st=='locked' else None
+            lt = datetime.now().isoformat() if lb else None
+            c.execute("INSERT OR IGNORE INTO token_locks(corridor_id,section_name,direction,token_number,locked_by_train,lock_time,status) VALUES(?,?,?,?,?,?,?)",
+                (ci,sn,d,1,lb,lt,'locked' if lb else 'available'))
 
+    # CREW
     crew = [
-        ('LP-2847', 'Rajesh Kumar', 'loco_pilot', '06:00', '15:30', 9.5, 10, 'on_duty', '95103', 'Churchgate-Virar'),
-        ('LP-3102', 'Suresh Singh', 'loco_pilot', '08:00', '18:00', 10.0, 10, 'violation', '95104', 'Virar-Churchgate'),
-        ('AP-1156', 'Amit Verma', 'assistant_pilot', '06:00', '15:30', 9.5, 10, 'on_duty', '95103', 'Churchgate-Virar'),
-        ('GD-0834', 'Prakash Yadav', 'guard', '05:30', '14:30', 9.0, 10, 'on_duty', '95101', 'Churchgate-Virar'),
-        ('CT-0198', 'Vikram Joshi', 'controller', '06:00', '14:00', 8.0, 10, 'on_duty', None, 'Mumbai Control'),
-        ('LP-4521', 'Manoj Tiwari', 'loco_pilot', '22:00', '08:00', 10.0, 10, 'on_duty', '12951', 'Mumbai Rajdhani'),
-        ('LP-5567', 'Anil Gupta', 'loco_pilot', '14:00', '00:00', 10.0, 10, 'rest', None, None),
+        ('LP-2847','Rajesh Kumar','loco_pilot','06:00','15:30',9.5,10,'on_duty','12951','Mumbai-Delhi',1),
+        ('LP-3102','Suresh Singh','loco_pilot','08:00','18:00',10.0,10,'violation','95104','Virar-Churchgate',1),
+        ('LP-4521','Manoj Tiwari','loco_pilot','22:00','08:00',10.0,10,'on_duty','12951','Mumbai Rajdhani',1),
+        ('LP-5567','Anil Gupta','loco_pilot','14:00','00:00',10.0,10,'rest',None,None,1),
+        ('LP-6234','Vikram Singh','loco_pilot','05:00','15:00',9.2,10,'on_duty','12301','Howrah Rajdhani',4),
+        ('LP-7891','Pradeep Das','loco_pilot','20:00','06:00',8.5,10,'on_duty','12615','Grand Trunk',5),
+        ('LP-8123','Ravi Shankar','loco_pilot','06:00','16:00',9.8,10,'on_duty','22691','Rajdhani Exp',3),
+        ('AP-1156','Amit Verma','assistant_pilot','06:00','15:30',9.5,10,'on_duty','12951','Mumbai Rajdhani',1),
+        ('GD-0834','Prakash Yadav','guard','05:30','14:30',9.0,10,'on_duty','95101','Churchgate-Virar',1),
+        ('CT-0198','Vikram Joshi','controller','06:00','14:00',8.0,10,'on_duty',None,'Mumbai Control',1),
+        ('CT-0245','Arun Kumar','controller','14:00','22:00',7.5,10,'on_duty',None,'Delhi Control',3),
     ]
-    c.executemany("INSERT OR IGNORE INTO crew_duty (crew_id, crew_name, role, duty_start, duty_end, hours_worked, max_hours, status, current_train, section) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", crew)
+    c.executemany("INSERT OR IGNORE INTO crew_duty(crew_id,crew_name,role,duty_start,duty_end,hours_worked,max_hours,status,current_train,section,zone_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)", crew)
 
-    emergencies = [
-        ('95104', 'Local Fast Virar-Churchgate', 11.5, 'critical_push', 'completed', 'Train delayed 11.5 hours, critical push triggered to prevent HOER violation cascade'),
-        ('12951', 'Mumbai Rajdhani', 2.0, 'vvip_protect', 'active', 'Rajdhani approaching maintenance corridor, protected passage scheduled'),
-        ('G-102', 'Goods Freight JNPT-Pune', 14.0, 'rescue', 'active', 'Goods train stranded 14 hours, rescue locomotive dispatched'),
-    ]
-    c.executemany("INSERT OR IGNORE INTO emergency_push (train_number, train_name, delay_hours, push_type, status, description) VALUES (?, ?, ?, ?, ?, ?)", emergencies)
+    # EMERGENCIES
+    for tn,nn,dh,pt,ds,desc,zi in [
+        ('95104','Local Fast',11.5,'critical_push','completed','Train delayed 11.5h, critical push triggered',1),
+        ('12951','Mumbai Rajdhani',2.0,'vvip_protect','active','Rajdhani approaching maintenance corridor',1),
+        ('G-103','Coal Freight',14.0,'rescue','active','Coal train stranded, rescue locomotive dispatched',12),
+        ('12301','Howrah Rajdhani',1.5,'vvip_protect','active','Rajdhani protected through work zone',4),
+    ]:
+        c.execute("INSERT OR IGNORE INTO emergency_push(train_number,train_name,delay_hours,push_type,status,description,zone_id) VALUES(?,?,?,?,?,?,?)",(tn,nn,dh,pt,ds,desc,zi))
 
     conn.commit()
-    c.execute("UPDATE schema_version SET version = 3")
-    conn.commit()
-    conn.close()
+    c.execute("UPDATE schema_version SET version = 4"); conn.commit(); conn.close()
 
 init_db()
 
-# ============================================
-# PYDANTIC MODELS
-# ============================================
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-class RegisterRequest(BaseModel):
-    username: str
-    password: str
-    full_name: str
-    role: str = "viewer"
-    division: str = "Mumbai Division"
-    department: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-
+# MODELS
+class LoginReq(BaseModel):
+    username: str; password: str
+class RegisterReq(BaseModel):
+    username: str; password: str; full_name: str; role: str = "viewer"; zone_id: int = 1; division_id: int = 1; email: Optional[str] = None; phone: Optional[str] = None
 class BlockCreate(BaseModel):
-    department_id: int
-    corridor_id: int
-    defect_id: Optional[int] = None
-    block_date: str
-    start_time: str
-    end_time: str
-    block_type: str
-    maintenance_category: str = "routine"
-
+    department_id: int; corridor_id: int; defect_id: Optional[int] = None; block_date: str; start_time: str; end_time: str; block_type: str; maintenance_category: str = "routine"; zone_id: int = 1; division_id: int = 1
 class BlockUpdate(BaseModel):
-    status: Optional[str] = None
-    block_date: Optional[str] = None
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
-    approved_by: Optional[int] = None
-
+    status: Optional[str] = None; approved_by: Optional[int] = None
 class DefectCreate(BaseModel):
-    department_id: int
-    title: str
-    description: Optional[str] = None
-    location: Optional[str] = None
-    priority: str = "medium"
-    maintenance_type: str = "fault"
-
+    department_id: int; title: str; description: Optional[str] = None; location: Optional[str] = None; priority: str = "medium"; maintenance_type: str = "fault"; zone_id: int = 1; division_id: int = 1
 class DefectUpdate(BaseModel):
-    status: Optional[str] = None
-    priority: Optional[str] = None
-
+    status: Optional[str] = None; priority: Optional[str] = None
 class CorridorCreate(BaseModel):
-    corridor_id: str
-    route_name: str
-    length_km: float
-    single_line_section: int = 0
-
+    corridor_id: str; route_name: str; length_km: float; zone_id: int = 1; division_id: int = 1; single_line: int = 0
 class TrainCreate(BaseModel):
-    train_number: str
-    train_name: str
-    origin: str
-    destination: str
-    departure_time: Optional[str] = None
-    arrival_time: Optional[str] = None
-    days_of_week: Optional[str] = None
-    train_type: str = "passenger"
-    is_vvip: int = 0
-
+    train_number: str; train_name: str; origin: str; destination: str; departure_time: Optional[str] = None; arrival_time: Optional[str] = None; days_of_week: Optional[str] = None; train_type: str = "passenger"; is_vvip: int = 0; zone_id: int = 1; origin_zone_id: Optional[int] = None; dest_zone_id: Optional[int] = None
 class UserUpdate(BaseModel):
-    full_name: Optional[str] = None
-    role: Optional[str] = None
-    division: Optional[str] = None
-    department: Optional[str] = None
-    is_active: Optional[int] = None
+    full_name: Optional[str] = None; role: Optional[str] = None; zone_id: Optional[int] = None; division_id: Optional[int] = None; is_active: Optional[int] = None
 
-# ============================================
-# AUTH ENDPOINTS
-# ============================================
+# AUTH
 @app.post("/api/auth/login")
-def login(req: LoginRequest):
+def login(req: LoginReq):
     conn = get_db()
-    user = conn.execute("SELECT * FROM users WHERE username = ? AND is_active = 1", (req.username,)).fetchone()
-    if not user or user["password_hash"] != hash_password(req.password):
-        conn.close()
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    token = generate_token()
-    expires = (datetime.now() + timedelta(hours=12)).isoformat()
-    conn.execute("INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)",
-                 (user["id"], token, expires))
-    conn.execute("UPDATE users SET last_login = ? WHERE id = ?", (datetime.now().isoformat(), user["id"]))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["id"], "login", "user", user["username"], f"User {user['username']} logged in"))
-    conn.commit()
-    conn.close()
-
-    return {
-        "token": token,
-        "user": {
-            "id": user["id"], "username": user["username"],
-            "full_name": user["full_name"], "role": user["role"],
-            "division": user["division"], "department": user["department"]
-        },
-        "expires_at": expires
-    }
+    u = conn.execute("SELECT * FROM users WHERE username=? AND is_active=1",(req.username,)).fetchone()
+    if not u or u["password_hash"]!=hash_pw(req.password): conn.close(); raise HTTPException(401,"Invalid credentials")
+    tok = gen_token(); exp = (datetime.now()+timedelta(hours=12)).isoformat()
+    conn.execute("INSERT INTO sessions(user_id,token,expires_at) VALUES(?,?,?)",(u["id"],tok,exp))
+    conn.execute("UPDATE users SET last_login=? WHERE id=?",(datetime.now().isoformat(),u["id"]))
+    conn.commit(); conn.close()
+    return {"token":tok,"user":{"id":u["id"],"username":u["username"],"full_name":u["full_name"],"role":u["role"],"zone_id":u["zone_id"],"division_id":u["division_id"]},"expires_at":exp}
 
 @app.post("/api/auth/register")
-def register(req: RegisterRequest, user: dict = Depends(require_admin)):
+def register(req: RegisterReq, user: dict = Depends(require_admin)):
     conn = get_db()
-    existing = conn.execute("SELECT id FROM users WHERE username = ?", (req.username,)).fetchone()
-    if existing:
-        conn.close()
-        raise HTTPException(status_code=400, detail="Username already exists")
-
-    conn.execute(
-        "INSERT INTO users (username, password_hash, full_name, role, division, department, email, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        (req.username, hash_password(req.password), req.full_name, req.role, req.division, req.department, req.email, req.phone)
-    )
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "register", "user", req.username, f"Created user {req.username} with role {req.role}"))
-    conn.commit()
-    conn.close()
-    return {"message": "User created successfully"}
+    if conn.execute("SELECT id FROM users WHERE username=?",(req.username,)).fetchone(): conn.close(); raise HTTPException(400,"Username exists")
+    conn.execute("INSERT INTO users(username,password_hash,full_name,role,zone_id,division_id,email,phone) VALUES(?,?,?,?,?,?,?,?)",
+        (req.username,hash_pw(req.password),req.full_name,req.role,req.zone_id,req.division_id,req.email,req.phone))
+    conn.commit(); conn.close()
+    return {"message":"User created"}
 
 @app.post("/api/auth/logout")
 def logout(request: Request, user: dict = Depends(require_auth)):
-    auth = request.headers.get("Authorization", "")[7:]
-    conn = get_db()
-    conn.execute("DELETE FROM sessions WHERE token = ?", (auth,))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "logout", "user", user["username"], f"User {user['username']} logged out"))
-    conn.commit()
-    conn.close()
-    return {"message": "Logged out"}
+    auth = request.headers.get("Authorization","")[7:]
+    conn = get_db(); conn.execute("DELETE FROM sessions WHERE token=?",(auth,)); conn.commit(); conn.close()
+    return {"message":"Logged out"}
 
 @app.get("/api/auth/me")
 def get_me(user: dict = Depends(require_auth)):
     return {"user": user}
 
-# ============================================
-# ADMIN - USER MANAGEMENT
-# ============================================
-@app.get("/api/admin/users")
-def list_users(user: dict = Depends(require_admin)):
-    conn = get_db()
-    rows = conn.execute("SELECT id, username, full_name, role, division, department, email, phone, is_active, created_at, last_login FROM users ORDER BY created_at DESC").fetchall()
-    conn.close()
-    return [{"id": r[0], "username": r[1], "full_name": r[2], "role": r[3], "division": r[4],
-             "department": r[5], "email": r[6], "phone": r[7], "is_active": r[8],
-             "created_at": r[9], "last_login": r[10]} for r in rows]
+# MASTER DATA
+@app.get("/api/zones")
+def get_zones():
+    conn = get_db(); rows = conn.execute("SELECT * FROM zones ORDER BY zone_code").fetchall(); conn.close()
+    return [{"id":r[0],"zone_code":r[1],"zone_name":r[2],"hq_city":r[3],"region":r[4]} for r in rows]
 
-@app.put("/api/admin/users/{user_id}")
-def update_user(user_id: int, update: UserUpdate, user: dict = Depends(require_admin)):
+@app.get("/api/divisions")
+def get_divisions(zone_id: int = None):
     conn = get_db()
-    if update.full_name:
-        conn.execute("UPDATE users SET full_name = ? WHERE id = ?", (update.full_name, user_id))
-    if update.role:
-        conn.execute("UPDATE users SET role = ? WHERE id = ?", (update.role, user_id))
-    if update.division:
-        conn.execute("UPDATE users SET division = ? WHERE id = ?", (update.division, user_id))
-    if update.department is not None:
-        conn.execute("UPDATE users SET department = ? WHERE id = ?", (update.department, user_id))
-    if update.is_active is not None:
-        conn.execute("UPDATE users SET is_active = ? WHERE id = ?", (update.is_active, user_id))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "update_user", "user", str(user_id), f"Updated user {user_id}"))
-    conn.commit()
+    if zone_id: rows = conn.execute("SELECT * FROM divisions WHERE zone_id=? ORDER BY div_name",(zone_id,)).fetchall()
+    else: rows = conn.execute("SELECT * FROM divisions ORDER BY zone_id,div_name").fetchall()
     conn.close()
-    return {"message": "User updated"}
-
-@app.delete("/api/admin/users/{user_id}")
-def delete_user(user_id: int, user: dict = Depends(require_admin)):
-    conn = get_db()
-    target = conn.execute("SELECT username FROM users WHERE id = ?", (user_id,)).fetchone()
-    if not target:
-        conn.close()
-        raise HTTPException(status_code=404, detail="User not found")
-    if user_id == user["user_id"]:
-        conn.close()
-        raise HTTPException(status_code=400, detail="Cannot delete yourself")
-    conn.execute("UPDATE users SET is_active = 0 WHERE id = ?", (user_id,))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "deactivate_user", "user", target["username"], f"Deactivated user {target['username']}"))
-    conn.commit()
-    conn.close()
-    return {"message": "User deactivated"}
-
-# ============================================
-# ADMIN - BLOCK MANAGEMENT
-# ============================================
-@app.get("/api/admin/blocks")
-def admin_list_blocks(user: dict = Depends(require_auth)):
-    conn = get_db()
-    rows = conn.execute("""
-        SELECT b.*, dep.name as dept_name, dep.code as dept_code, dep.color as dept_color,
-               c.route_name, c.corridor_id as corr_id,
-               u1.full_name as created_by_name, u2.full_name as approved_by_name
-        FROM blocks b
-        JOIN departments dep ON b.department_id = dep.id
-        LEFT JOIN corridors c ON b.corridor_id = c.id
-        LEFT JOIN users u1 ON b.created_by = u1.id
-        LEFT JOIN users u2 ON b.approved_by = u2.id
-        ORDER BY b.block_date, b.start_time
-    """).fetchall()
-    conn.close()
-    return [{"id": r[0], "block_id": r[1], "department_id": r[2], "corridor_id": r[3],
-             "defect_id": r[4], "block_date": r[5], "start_time": r[6], "end_time": r[7],
-             "block_type": r[8], "maintenance_category": r[9], "status": r[10], "ai_score": r[11],
-             "is_emergency": r[12], "vvip_priority": r[13], "created_by": r[14], "approved_by": r[15],
-             "dept_name": r[17], "dept_code": r[18], "dept_color": r[19],
-             "route_name": r[20], "corridor_name": r[21],
-             "created_by_name": r[22], "approved_by_name": r[23]} for r in rows]
-
-@app.post("/api/admin/blocks")
-def admin_create_block(block: BlockCreate, user: dict = Depends(require_auth)):
-    conn = get_db()
-    block_id = f"BLK-{random.randint(1000, 9999)}"
-    conn.execute("""
-        INSERT INTO blocks (block_id, department_id, corridor_id, defect_id, block_date, start_time, end_time, block_type, maintenance_category, status, created_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'planned', ?)
-    """, (block_id, block.department_id, block.corridor_id, block.defect_id,
-          block.block_date, block.start_time, block.end_time, block.block_type, block.maintenance_category, user["user_id"]))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "create_block", "block", block_id, f"Created block {block_id}"))
-    conn.commit()
-    conn.close()
-    return {"block_id": block_id, "message": "Block created"}
-
-@app.put("/api/admin/blocks/{block_id}")
-def admin_update_block(block_id: int, update: BlockUpdate, user: dict = Depends(require_auth)):
-    conn = get_db()
-    if update.status:
-        conn.execute("UPDATE blocks SET status = ? WHERE id = ?", (update.status, block_id))
-        if update.status == "approved" and user["role"] in ("admin", "controller"):
-            conn.execute("UPDATE blocks SET approved_by = ? WHERE id = ?", (user["user_id"], block_id))
-    if update.block_date:
-        conn.execute("UPDATE blocks SET block_date = ? WHERE id = ?", (update.block_date, block_id))
-    if update.start_time:
-        conn.execute("UPDATE blocks SET start_time = ? WHERE id = ?", (update.start_time, block_id))
-    if update.end_time:
-        conn.execute("UPDATE blocks SET end_time = ? WHERE id = ?", (update.end_time, block_id))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "update_block", "block", str(block_id), f"Updated block {block_id}"))
-    conn.commit()
-    conn.close()
-    return {"message": "Block updated"}
-
-@app.delete("/api/admin/blocks/{block_id}")
-def admin_delete_block(block_id: int, user: dict = Depends(require_admin)):
-    conn = get_db()
-    conn.execute("DELETE FROM blocks WHERE id = ?", (block_id,))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "delete_block", "block", str(block_id), f"Deleted block {block_id}"))
-    conn.commit()
-    conn.close()
-    return {"message": "Block deleted"}
-
-# ============================================
-# ADMIN - DEFECT MANAGEMENT
-# ============================================
-@app.get("/api/admin/defects")
-def admin_list_defects(user: dict = Depends(require_auth)):
-    conn = get_db()
-    rows = conn.execute("""
-        SELECT d.*, dep.name as dept_name, dep.code as dept_code, dep.color as dept_color
-        FROM defects d JOIN departments dep ON d.department_id = dep.id
-        ORDER BY CASE d.priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END
-    """).fetchall()
-    conn.close()
-    return [{"id": r[0], "defect_id": r[1], "department_id": r[2], "title": r[3],
-             "description": r[4], "location": r[5], "priority": r[6], "maintenance_type": r[7],
-             "status": r[8], "created_at": r[9],
-             "dept_name": r[10], "dept_code": r[11], "dept_color": r[12]} for r in rows]
-
-@app.post("/api/admin/defects")
-def admin_create_defect(defect: DefectCreate, user: dict = Depends(require_auth)):
-    conn = get_db()
-    defect_id = f"DEF-{random.randint(100, 999)}"
-    conn.execute(
-        "INSERT INTO defects (defect_id, department_id, title, description, location, priority, maintenance_type) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (defect_id, defect.department_id, defect.title, defect.description, defect.location, defect.priority, defect.maintenance_type)
-    )
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "create_defect", "defect", defect_id, f"Created defect {defect_id}"))
-    conn.commit()
-    conn.close()
-    return {"defect_id": defect_id, "message": "Defect created"}
-
-@app.put("/api/admin/defects/{defect_id}")
-def admin_update_defect(defect_id: int, update: DefectUpdate, user: dict = Depends(require_auth)):
-    conn = get_db()
-    if update.status:
-        conn.execute("UPDATE defects SET status = ? WHERE id = ?", (update.status, defect_id))
-    if update.priority:
-        conn.execute("UPDATE defects SET priority = ? WHERE id = ?", (update.priority, defect_id))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "update_defect", "defect", str(defect_id), f"Updated defect {defect_id}"))
-    conn.commit()
-    conn.close()
-    return {"message": "Defect updated"}
-
-@app.delete("/api/admin/defects/{defect_id}")
-def admin_delete_defect(defect_id: int, user: dict = Depends(require_admin)):
-    conn = get_db()
-    conn.execute("DELETE FROM defects WHERE id = ?", (defect_id,))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "delete_defect", "defect", str(defect_id), f"Deleted defect {defect_id}"))
-    conn.commit()
-    conn.close()
-    return {"message": "Defect deleted"}
-
-# ============================================
-# ADMIN - CORRIDOR MANAGEMENT
-# ============================================
-@app.get("/api/admin/corridors")
-def admin_list_corridors(user: dict = Depends(require_auth)):
-    conn = get_db()
-    rows = conn.execute("""
-        SELECT c.*, COUNT(b.id) as block_count,
-            SUM(CASE WHEN b.status = 'completed' THEN 1 ELSE 0 END) as completed
-        FROM corridors c LEFT JOIN blocks b ON c.id = b.corridor_id GROUP BY c.id
-    """).fetchall()
-    conn.close()
-    return [{"id": r[0], "corridor_id": r[1], "route_name": r[2], "length_km": r[3],
-             "status": r[4], "single_line": r[5], "blocks": r[6], "completed": r[7]} for r in rows]
-
-@app.post("/api/admin/corridors")
-def admin_create_corridor(corridor: CorridorCreate, user: dict = Depends(require_admin)):
-    conn = get_db()
-    existing = conn.execute("SELECT id FROM corridors WHERE corridor_id = ?", (corridor.corridor_id,)).fetchone()
-    if existing:
-        conn.close()
-        raise HTTPException(status_code=400, detail="Corridor ID already exists")
-    conn.execute("INSERT INTO corridors (corridor_id, route_name, length_km, single_line_section) VALUES (?, ?, ?, ?)",
-                 (corridor.corridor_id, corridor.route_name, corridor.length_km, corridor.single_line_section))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "create_corridor", "corridor", corridor.corridor_id, f"Created corridor {corridor.corridor_id}"))
-    conn.commit()
-    conn.close()
-    return {"message": "Corridor created"}
-
-@app.delete("/api/admin/corridors/{corridor_id}")
-def admin_delete_corridor(corridor_id: int, user: dict = Depends(require_admin)):
-    conn = get_db()
-    conn.execute("DELETE FROM corridors WHERE id = ?", (corridor_id,))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "delete_corridor", "corridor", str(corridor_id), f"Deleted corridor {corridor_id}"))
-    conn.commit()
-    conn.close()
-    return {"message": "Corridor deleted"}
-
-# ============================================
-# ADMIN - TRAIN MANAGEMENT
-# ============================================
-@app.get("/api/admin/trains")
-def admin_list_trains(user: dict = Depends(require_auth)):
-    conn = get_db()
-    rows = conn.execute("SELECT * FROM train_schedule ORDER BY is_vvip DESC, departure_time").fetchall()
-    conn.close()
-    return [{"id": r[0], "train_number": r[1], "train_name": r[2], "origin": r[3],
-             "destination": r[4], "departure_time": r[5], "arrival_time": r[6],
-             "days_of_week": r[7], "train_type": r[8], "is_vvip": r[9]} for r in rows]
-
-@app.post("/api/admin/trains")
-def admin_create_train(train: TrainCreate, user: dict = Depends(require_auth)):
-    conn = get_db()
-    existing = conn.execute("SELECT id FROM train_schedule WHERE train_number = ?", (train.train_number,)).fetchone()
-    if existing:
-        conn.close()
-        raise HTTPException(status_code=400, detail="Train number already exists")
-    conn.execute(
-        "INSERT INTO train_schedule (train_number, train_name, origin, destination, departure_time, arrival_time, days_of_week, train_type, is_vvip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (train.train_number, train.train_name, train.origin, train.destination,
-         train.departure_time, train.arrival_time, train.days_of_week, train.train_type, train.is_vvip)
-    )
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "create_train", "train", train.train_number, f"Created train {train.train_number}"))
-    conn.commit()
-    conn.close()
-    return {"message": "Train created"}
-
-@app.delete("/api/admin/trains/{train_id}")
-def admin_delete_train(train_id: int, user: dict = Depends(require_admin)):
-    conn = get_db()
-    conn.execute("DELETE FROM train_schedule WHERE id = ?", (train_id,))
-    conn.execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)",
-                 (user["user_id"], "delete_train", "train", str(train_id), f"Deleted train {train_id}"))
-    conn.commit()
-    conn.close()
-    return {"message": "Train deleted"}
-
-# ============================================
-# ADMIN - AUDIT LOG
-# ============================================
-@app.get("/api/admin/audit")
-def admin_audit_log(user: dict = Depends(require_admin), limit: int = 50):
-    conn = get_db()
-    rows = conn.execute("""
-        SELECT a.*, u.username, u.full_name
-        FROM audit_log a LEFT JOIN users u ON a.user_id = u.id
-        ORDER BY a.created_at DESC LIMIT ?
-    """, (limit,)).fetchall()
-    conn.close()
-    return [{"id": r[0], "user_id": r[1], "action": r[2], "entity_type": r[3],
-             "entity_id": r[4], "details": r[5], "created_at": r[6],
-             "username": r[7], "full_name": r[8]} for r in rows]
-
-# ============================================
-# ADMIN - DASHBOARD STATS
-# ============================================
-@app.get("/api/admin/stats")
-def admin_stats(user: dict = Depends(require_admin)):
-    conn = get_db()
-    total_blocks = conn.execute("SELECT COUNT(*) FROM blocks").fetchone()[0]
-    active_blocks = conn.execute("SELECT COUNT(*) FROM blocks WHERE status IN ('planned', 'approved', 'in_progress')").fetchone()[0]
-    pending_defects = conn.execute("SELECT COUNT(*) FROM defects WHERE status = 'pending'").fetchone()[0]
-    critical_defects = conn.execute("SELECT COUNT(*) FROM defects WHERE priority = 'critical' AND status = 'pending'").fetchone()[0]
-    total_users = conn.execute("SELECT COUNT(*) FROM users WHERE is_active = 1").fetchone()[0]
-    total_trains = conn.execute("SELECT COUNT(*) FROM train_schedule").fetchone()[0]
-    total_corridors = conn.execute("SELECT COUNT(*) FROM corridors").fetchone()[0]
-    completed_blocks = conn.execute("SELECT COUNT(*) FROM blocks WHERE status = 'completed'").fetchone()[0]
-    recent_audit = conn.execute("SELECT COUNT(*) FROM audit_log WHERE created_at > ?", ((datetime.now() - timedelta(hours=24)).isoformat(),)).fetchone()[0]
-    conn.close()
-    return {
-        "total_blocks": total_blocks, "active_blocks": active_blocks,
-        "pending_defects": pending_defects, "critical_defects": critical_defects,
-        "total_users": total_users, "total_trains": total_trains,
-        "total_corridors": total_corridors, "completed_blocks": completed_blocks,
-        "recent_audit_actions": recent_audit
-    }
-
-# ============================================
-# PUBLIC API ENDPOINTS (no auth required)
-# ============================================
-@app.get("/api/dashboard/stats")
-def get_dashboard_stats():
-    conn = get_db()
-    c = conn.cursor()
-    total_blocks = c.execute("SELECT COUNT(*) FROM blocks").fetchone()[0]
-    active_blocks = c.execute("SELECT COUNT(*) FROM blocks WHERE status IN ('planned', 'approved', 'in_progress')").fetchone()[0]
-    pending_defects = c.execute("SELECT COUNT(*) FROM defects WHERE status = 'pending'").fetchone()[0]
-    critical_defects = c.execute("SELECT COUNT(*) FROM defects WHERE priority = 'critical' AND status = 'pending'").fetchone()[0]
-    urgent_defects = c.execute("SELECT COUNT(*) FROM defects WHERE maintenance_type = 'urgent' AND status = 'pending'").fetchone()[0]
-    dept_stats = c.execute("""
-        SELECT d.name, d.code, d.color, COUNT(b.id) as block_count
-        FROM departments d LEFT JOIN blocks b ON d.id = b.department_id GROUP BY d.id
-    """).fetchall()
-    corridor_stats = c.execute("""
-        SELECT c.corridor_id, c.route_name, c.length_km,
-            COUNT(b.id) as blocks,
-            SUM(CASE WHEN b.status != 'cancelled' THEN 1 ELSE 0 END) as active_blocks
-        FROM corridors c LEFT JOIN blocks b ON c.id = b.corridor_id GROUP BY c.id
-    """).fetchall()
-    recommendations = c.execute("SELECT * FROM ai_recommendations ORDER BY impact_score DESC LIMIT 5").fetchall()
-    token_locked = c.execute("SELECT COUNT(*) FROM token_locks WHERE status = 'locked'").fetchone()[0]
-    crew_violations = c.execute("SELECT COUNT(*) FROM crew_duty WHERE status = 'violation'").fetchone()[0]
-    active_emergencies = c.execute("SELECT COUNT(*) FROM emergency_push WHERE status = 'active'").fetchone()[0]
-    conn.close()
-    return {
-        "total_blocks": total_blocks, "active_blocks": active_blocks,
-        "pending_defects": pending_defects, "critical_defects": critical_defects,
-        "urgent_defects": urgent_defects,
-        "asset_availability": round(85 + random.uniform(0, 10), 1),
-        "ai_efficiency": round(90 + random.uniform(0, 8), 1),
-        "departments": [{"name": r[0], "code": r[1], "color": r[2], "blocks": r[3]} for r in dept_stats],
-        "corridors": [{"id": r[0], "route": r[1], "length": r[2], "blocks": r[3], "active": r[4]} for r in corridor_stats],
-        "recommendations": [{"id": r[0], "type": r[1], "title": r[2], "description": r[3], "score": r[4]} for r in recommendations],
-        "token_locked": token_locked, "crew_violations": crew_violations, "active_emergencies": active_emergencies
-    }
+    return [{"id":r[0],"zone_id":r[1],"div_code":r[2],"div_name":r[3],"hq_city":r[4]} for r in rows]
 
 @app.get("/api/departments")
 def get_departments():
-    conn = get_db()
-    rows = conn.execute("SELECT * FROM departments").fetchall()
-    conn.close()
-    return [{"id": r[0], "name": r[1], "code": r[2], "color": r[3]} for r in rows]
+    conn = get_db(); rows = conn.execute("SELECT * FROM departments").fetchall(); conn.close()
+    return [{"id":r[0],"name":r[1],"code":r[2],"color":r[3]} for r in rows]
 
-@app.get("/api/defects")
-def get_defects(department: str = "all", priority: str = "all"):
+# DASHBOARD
+@app.get("/api/dashboard/stats")
+def dashboard_stats(zone_id: int = None, division_id: int = None):
     conn = get_db()
-    query = "SELECT d.*, dep.name as dept_name, dep.code as dept_code, dep.color as dept_color FROM defects d JOIN departments dep ON d.department_id = dep.id WHERE 1=1"
-    params = []
-    if department != "all":
-        query += " AND dep.code = ?"
-        params.append(department.upper())
-    if priority != "all":
-        query += " AND d.priority = ?"
-        params.append(priority)
-    query += " ORDER BY CASE d.priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END"
-    rows = conn.execute(query, params).fetchall()
+    wz = ("AND b.zone_id=?" if zone_id else "")
+    zd = ("AND d.zone_id=?" if zone_id else "")
+    params = [zone_id] if zone_id else []
+    paramsd = [zone_id] if zone_id else []
+    tb = conn.execute(f"SELECT COUNT(*) FROM blocks b WHERE 1=1 {wz}",params).fetchone()[0]
+    ab = conn.execute(f"SELECT COUNT(*) FROM blocks b WHERE status IN ('planned','approved','in_progress') {wz}",params).fetchone()[0]
+    pd = conn.execute(f"SELECT COUNT(*) FROM defects d WHERE status='pending' {zd}",paramsd).fetchone()[0]
+    cd = conn.execute(f"SELECT COUNT(*) FROM defects d WHERE priority='critical' AND status='pending' {zd}",paramsd).fetchone()[0]
+    tl = conn.execute("SELECT COUNT(*) FROM token_locks WHERE status='locked'").fetchone()[0]
+    cv = conn.execute("SELECT COUNT(*) FROM crew_duty WHERE status='violation'").fetchone()[0]
+    ae = conn.execute("SELECT COUNT(*) FROM emergency_push WHERE status='active'").fetchone()[0]
+    deps = conn.execute("SELECT dep.name,dep.code,dep.color,COUNT(b.id) FROM departments dep LEFT JOIN blocks b ON dep.id=b.department_id GROUP BY dep.id").fetchall()
+    recs = conn.execute("SELECT * FROM ai_recommendations ORDER BY impact_score DESC LIMIT 5").fetchall()
     conn.close()
-    return [{"id": r[0], "defect_id": r[1], "department_id": r[2], "title": r[3],
-             "description": r[4], "location": r[5], "priority": r[6], "maintenance_type": r[7],
-             "status": r[8], "dept_name": r[10], "dept_code": r[11], "dept_color": r[12]} for r in rows]
+    return {"total_blocks":tb,"active_blocks":ab,"pending_defects":pd,"critical_defects":cd,
+            "asset_availability":round(85+random.uniform(0,10),1),"ai_efficiency":round(90+random.uniform(0,8),1),
+            "departments":[{"name":r[0],"code":r[1],"color":r[2],"blocks":r[3]} for r in deps],
+            "recommendations":[{"id":r[0],"type":r[1],"title":r[2],"description":r[3],"score":r[4]} for r in recs],
+            "token_locked":tl,"crew_violations":cv,"active_emergencies":ae}
 
-@app.get("/api/blocks")
-def get_blocks(start_date: str = None, end_date: str = None, department: str = "all"):
-    conn = get_db()
-    query = """SELECT b.*, dep.name as dept_name, dep.code as dept_code, dep.color as dept_color,
-               c.route_name, c.corridor_id FROM blocks b
-               JOIN departments dep ON b.department_id = dep.id
-               LEFT JOIN corridors c ON b.corridor_id = c.id WHERE 1=1"""
-    params = []
-    if start_date:
-        query += " AND b.block_date >= ?"
-        params.append(start_date)
-    if end_date:
-        query += " AND b.block_date <= ?"
-        params.append(end_date)
-    if department != "all":
-        query += " AND dep.code = ?"
-        params.append(department.upper())
-    query += " ORDER BY b.block_date, b.start_time"
-    rows = conn.execute(query, params).fetchall()
-    conn.close()
-    return [{"id": r[0], "block_id": r[1], "department_id": r[2], "corridor_id": r[3],
-             "defect_id": r[4], "block_date": r[5], "start_time": r[6], "end_time": r[7],
-             "block_type": r[8], "maintenance_category": r[9], "status": r[10], "ai_score": r[11],
-             "is_emergency": r[12], "vvip_priority": r[13],
-             "dept_name": r[15], "dept_code": r[16], "dept_color": r[17],
-             "route_name": r[18], "corridor_id_text": r[19]} for r in rows]
-
+# CORRIDORS
 @app.get("/api/corridors")
-def get_corridors():
+def get_corridors(zone_id: int = None):
     conn = get_db()
-    rows = conn.execute("""
-        SELECT c.*, COUNT(b.id) as block_count,
-            SUM(CASE WHEN b.status = 'completed' THEN 1 ELSE 0 END) as completed
-        FROM corridors c LEFT JOIN blocks b ON c.id = b.corridor_id GROUP BY c.id
-    """).fetchall()
-    conn.close()
-    return [{"id": r[0], "corridor_id": r[1], "route_name": r[2], "length_km": r[3],
-             "status": r[4], "single_line": r[5], "blocks": r[6], "completed": r[7]} for r in rows]
+    q = "SELECT c.*,COUNT(b.id) as bc,SUM(CASE WHEN b.status='completed' THEN 1 ELSE 0 END) as comp FROM corridors c LEFT JOIN blocks b ON c.id=b.corridor_id"
+    params = []
+    if zone_id: q += " WHERE c.zone_id=?"; params.append(zone_id)
+    q += " GROUP BY c.id"
+    rows = conn.execute(q,params).fetchall(); conn.close()
+    return [{"id":r[0],"corridor_id":r[1],"route_name":r[2],"length_km":r[3],"zone_id":r[4],"division_id":r[5],"status":r[6],"single_line":r[7],"blocks":r[8],"completed":r[9]} for r in rows]
 
+# TRAINS
 @app.get("/api/trains")
-def get_trains():
+def get_trains(zone_id: int = None):
     conn = get_db()
-    rows = conn.execute("SELECT * FROM train_schedule ORDER BY is_vvip DESC, departure_time").fetchall()
-    conn.close()
-    return [{"id": r[0], "number": r[1], "name": r[2], "origin": r[3],
-             "destination": r[4], "departure": r[5], "arrival": r[6],
-             "days": r[7], "type": r[8], "is_vvip": r[9]} for r in rows]
+    q = "SELECT * FROM train_schedule"; params = []
+    if zone_id: q += " WHERE zone_id=?"; params.append(zone_id)
+    q += " ORDER BY is_vvip DESC, departure_time"
+    rows = conn.execute(q,params).fetchall(); conn.close()
+    return [{"id":r[0],"number":r[1],"name":r[2],"origin":r[3],"destination":r[4],"departure":r[5],"arrival":r[6],"days":r[7],"type":r[8],"is_vvip":r[9],"zone_id":r[10]} for r in rows]
 
-@app.get("/api/ai/optimize")
-def run_ai_optimization():
+# DEFECTS
+@app.get("/api/defects")
+def get_defects(department: str = "all", priority: str = "all", zone_id: int = None):
     conn = get_db()
-    blocks = conn.execute("""
-        SELECT b.*, dep.name as dept_name, c.route_name FROM blocks b
-        JOIN departments dep ON b.department_id = dep.id LEFT JOIN corridors c ON b.corridor_id = c.id
-        WHERE b.status IN ('planned', 'approved')
-    """).fetchall()
-    recommendations = []
-    total_downtime_saved = 0
-    blocks_merged = 0
-    corridor_blocks = {}
-    for b in blocks:
-        key = (b[3], b[5])
-        if key not in corridor_blocks:
-            corridor_blocks[key] = []
-        corridor_blocks[key].append(b)
-    for key, group in corridor_blocks.items():
-        if len(group) > 1:
-            time_slots = []
-            for b in group:
-                start = int(b[6].split(':')[0])
-                end = int(b[7].split(':')[0])
-                time_slots.append((start, end, b))
-            time_slots.sort()
-            for i in range(len(time_slots) - 1):
-                if time_slots[i+1][0] - time_slots[i][1] <= 2:
-                    saved = time_slots[i][1] - time_slots[i][0]
-                    total_downtime_saved += saved
-                    blocks_merged += 1
-                    recommendations.append({"type": "merge", "title": f"Merge blocks on corridor {key[0]}", "description": f"Combine blocks to save {saved} hours", "impact": 85 + random.uniform(0, 10)})
-    recommendations.append({"type": "reschedule", "title": "Reschedule to Night Window (01:00-04:00)", "description": "Move non-critical maintenance to night slots for zero train impact", "impact": 90})
-    current_efficiency = 62 + random.uniform(0, 5)
-    optimized_efficiency = min(95, current_efficiency + 25 + random.uniform(0, 5))
-    projected_uptime = min(98, optimized_efficiency + 5)
-    conn.close()
-    return {"current_efficiency": round(current_efficiency, 1), "optimized_efficiency": round(optimized_efficiency, 1),
-            "projected_uptime": round(projected_uptime, 1), "blocks_merged": blocks_merged,
-            "downtime_saved_hours": total_downtime_saved, "recommendations": recommendations[:10]}
+    q = "SELECT d.*,dep.name as dn,dep.code as dc,dep.color as dl FROM defects d JOIN departments dep ON d.department_id=dep.id WHERE 1=1"
+    params = []
+    if department != "all": q += " AND dep.code=?"; params.append(department.upper())
+    if priority != "all": q += " AND d.priority=?"; params.append(priority)
+    if zone_id: q += " AND d.zone_id=?"; params.append(zone_id)
+    q += " ORDER BY CASE d.priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END"
+    rows = conn.execute(q,params).fetchall(); conn.close()
+    return [{"id":r[0],"defect_id":r[1],"department_id":r[2],"zone_id":r[3],"division_id":r[4],"title":r[5],"description":r[6],"location":r[7],"priority":r[8],"maintenance_type":r[9],"status":r[10],"dn":r[12],"dc":r[13],"dl":r[14]} for r in rows]
 
-@app.get("/api/ai/generate-plan")
-def generate_ai_plan(week_offset: int = 0):
+# BLOCKS
+@app.get("/api/blocks")
+def get_blocks(start_date: str = None, end_date: str = None, department: str = "all", zone_id: int = None):
     conn = get_db()
-    today = datetime.now().date() + timedelta(weeks=week_offset)
-    start_of_week = today - timedelta(days=today.weekday())
-    corridors = conn.execute("SELECT * FROM corridors").fetchall()
-    plan = []
-    for day_offset in range(7):
-        current_date = start_of_week + timedelta(days=day_offset)
-        day_blocks = []
-        available_slots = [("00:00", "04:00"), ("22:00", "24:00")]
-        for corridor in corridors:
-            if len(day_blocks) < 5:
-                for slot in available_slots:
-                    dept = random.choice([1, 2, 3])
-                    dept_names = {1: 'Engineering', 2: 'Traction Distribution', 3: 'Signal & Telecom'}
-                    dept_colors = {1: '#3B82F6', 2: '#F59E0B', 3: '#10B981'}
-                    cat = random.choice(['routine', 'routine', 'fault'])
-                    day_blocks.append({"block_id": f"BLK-{random.randint(1000,9999)}", "corridor": corridor[2],
-                        "department": dept_names[dept], "color": dept_colors[dept], "start": slot[0], "end": slot[1],
-                        "type": random.choice(["Track Renewal", "OHE Maintenance", "Signal Check", "Point Machine"]),
-                        "category": cat, "ai_score": round(random.uniform(70, 98), 1)})
-                    break
-        plan.append({"date": current_date.isoformat(), "day_name": current_date.strftime("%A"), "blocks": day_blocks})
-    conn.close()
-    return {"week_start": start_of_week.isoformat(), "plan": plan, "total_blocks": sum(len(day["blocks"]) for day in plan)}
+    q = "SELECT b.*,dep.name as dn,dep.code as dc,dep.color as dl,c.route_name FROM blocks b JOIN departments dep ON b.department_id=dep.id LEFT JOIN corridors c ON b.corridor_id=c.id WHERE 1=1"
+    params = []
+    if start_date: q += " AND b.block_date>=?"; params.append(start_date)
+    if end_date: q += " AND b.block_date<=?"; params.append(end_date)
+    if department != "all": q += " AND dep.code=?"; params.append(department.upper())
+    if zone_id: q += " AND b.zone_id=?"; params.append(zone_id)
+    q += " ORDER BY b.block_date,b.start_time"
+    rows = conn.execute(q,params).fetchall(); conn.close()
+    return [{"id":r[0],"block_id":r[1],"department_id":r[2],"corridor_id":r[3],"defect_id":r[4],
+             "block_date":r[5],"start_time":r[6],"end_time":r[7],"block_type":r[8],"maintenance_category":r[9],
+             "status":r[10],"ai_score":r[11],"is_emergency":r[12],"vvip_priority":r[13],"zone_id":r[14],"division_id":r[15],
+             "dn":r[18],"dc":r[19],"dl":r[20],"route_name":r[21]} for r in rows]
 
+# MAINTENANCE ENGINE
 @app.get("/api/maintenance/engine")
-def get_maintenance_engine():
+def maintenance_engine(zone_id: int = None):
     conn = get_db()
-    defects = conn.execute("SELECT d.*, dep.name as dept_name, dep.code as dept_code FROM defects d JOIN departments dep ON d.department_id = dep.id WHERE d.status = 'pending'").fetchall()
-    categories = {"routine": [], "fault": [], "urgent": []}
-    for d in defects:
-        cat = d[7] or 'fault'
-        item = {"id": d[0], "defect_id": d[1], "title": d[3], "description": d[4], "location": d[5], "priority": d[6], "maintenance_type": cat, "dept_name": d[10], "dept_code": d[11]}
-        if cat in categories:
-            categories[cat].append(item)
-    rules = {"routine": {"description": "Can be split across multiple time windows.", "sla_hours": 168, "can_split": True, "requires_block": True, "auto_schedule": True},
-             "fault": {"description": "Must be fixed within 24 hours. Cannot be split.", "sla_hours": 24, "can_split": False, "requires_block": True, "auto_schedule": False},
-             "urgent": {"description": "Immediate emergency override. Triggers critical push.", "sla_hours": 4, "can_split": False, "requires_block": True, "auto_schedule": False, "emergency_override": True}}
+    q = "SELECT d.*,dep.name as dn,dep.code as dc FROM defects d JOIN departments dep ON d.department_id=dep.id WHERE d.status='pending'"
+    params = []
+    if zone_id: q += " AND d.zone_id=?"; params.append(zone_id)
+    rows = conn.execute(q,params).fetchall()
+    cats = {"routine":[],"fault":[],"urgent":[]}
+    for r in rows:
+        cat = r[9] or 'fault'
+        item = {"id":r[0],"defect_id":r[1],"title":r[5],"description":r[6],"location":r[7],"priority":r[8],"maintenance_type":cat,"dn":r[12],"dc":r[13]}
+        if cat in cats: cats[cat].append(item)
+    rules = {"routine":{"sla_hours":168,"can_split":True,"auto_schedule":True},"fault":{"sla_hours":24,"can_split":False,"auto_schedule":False},"urgent":{"sla_hours":4,"can_split":False,"auto_schedule":False,"emergency_override":True}}
     conn.close()
-    return {"categories": {"routine": {"count": len(categories["routine"]), "items": categories["routine"]}, "fault": {"count": len(categories["fault"]), "items": categories["fault"]}, "urgent": {"count": len(categories["urgent"]), "items": categories["urgent"]}}, "rules": rules, "total_pending": len(defects)}
+    return {"categories":{"routine":{"count":len(cats["routine"]),"items":cats["routine"]},"fault":{"count":len(cats["fault"]),"items":cats["fault"]},"urgent":{"count":len(cats["urgent"]),"items":cats["urgent"]}},"rules":rules,"total_pending":len(rows)}
 
+# TOKEN LOCKS
 @app.get("/api/token/locks")
-def get_token_locks():
-    conn = get_db()
-    rows = conn.execute("SELECT tl.*, c.route_name FROM token_locks tl JOIN corridors c ON tl.corridor_id = c.id ORDER BY c.route_name, tl.direction").fetchall()
-    conn.close()
-    return [{"id": r[0], "corridor_id": r[1], "section": r[2], "direction": r[3], "token": r[4], "locked_by": r[5], "lock_time": r[6], "status": r[7], "route_name": r[8]} for r in rows]
+def get_tokens():
+    conn = get_db(); rows = conn.execute("SELECT tl.*,c.route_name FROM token_locks tl JOIN corridors c ON tl.corridor_id=c.id").fetchall(); conn.close()
+    return [{"id":r[0],"corridor_id":r[1],"section":r[2],"direction":r[3],"token":r[4],"locked_by":r[5],"lock_time":r[6],"status":r[7],"route_name":r[8]} for r in rows]
 
+# CREW
 @app.get("/api/crew/duty")
-def get_crew_duty():
+def crew_duty(zone_id: int = None):
     conn = get_db()
-    rows = conn.execute("SELECT * FROM crew_duty ORDER BY hours_worked DESC").fetchall()
-    conn.close()
+    q = "SELECT * FROM crew_duty"; params = []
+    if zone_id: q += " WHERE zone_id=?"; params.append(zone_id)
+    q += " ORDER BY hours_worked DESC"
+    rows = conn.execute(q,params).fetchall(); conn.close()
     result = []
     for r in rows:
-        hours_worked = float(r[6]) if r[6] else 0
-        max_hours = float(r[7]) if r[7] else 10
-        remaining = max_hours - hours_worked
-        result.append({"id": r[0], "crew_id": r[1], "name": r[2], "role": r[3], "duty_start": r[4], "duty_end": r[5],
-                       "hours_worked": hours_worked, "max_hours": max_hours, "status": r[8], "current_train": r[9],
-                       "section": r[10], "remaining_hours": round(remaining, 1), "hoer_compliant": remaining > 0})
-    violations = [x for x in result if not x["hoer_compliant"]]
-    at_risk = [x for x in result if 0 < x["remaining_hours"] <= 1]
-    return {"crew": result, "total_violations": len(violations), "at_risk_count": len(at_risk), "violations": violations, "at_risk": at_risk}
+        hw = float(r[6]) if r[6] else 0; mh = float(r[7]) if r[7] else 10; rem = mh - hw
+        result.append({"id":r[0],"crew_id":r[1],"name":r[2],"role":r[3],"duty_start":r[4],"duty_end":r[5],"hours_worked":hw,"max_hours":mh,"status":r[8],"current_train":r[9],"section":r[10],"remaining_hours":round(rem,1),"hoer_compliant":rem>0})
+    return {"crew":result,"total_violations":len([x for x in result if not x["hoer_compliant"]]),"at_risk_count":len([x for x in result if 0<x["remaining_hours"]<=1]),"violations":[x for x in result if not x["hoer_compliant"]],"at_risk":[x for x in result if 0<x["remaining_hours"]<=1]}
 
+# EMERGENCY
 @app.get("/api/emergency/pushes")
-def get_emergency_pushes():
-    conn = get_db()
-    rows = conn.execute("SELECT * FROM emergency_push ORDER BY delay_hours DESC").fetchall()
-    conn.close()
-    return [{"id": r[0], "train_number": r[1], "train_name": r[2], "delay_hours": r[3], "type": r[4], "triggered_at": r[5], "status": r[6], "description": r[7]} for r in rows]
+def get_emergencies():
+    conn = get_db(); rows = conn.execute("SELECT * FROM emergency_push ORDER BY delay_hours DESC").fetchall(); conn.close()
+    return [{"id":r[0],"train_number":r[1],"train_name":r[2],"delay_hours":r[3],"type":r[4],"triggered_at":r[5],"status":r[6],"description":r[7],"zone_id":r[8]} for r in rows]
 
 @app.get("/api/emergency/vvip-status")
-def get_vvip_status():
+def vvip_status():
     conn = get_db()
-    vvip_trains = conn.execute("SELECT * FROM train_schedule WHERE is_vvip = 1").fetchall()
-    corridors = conn.execute("SELECT * FROM corridors WHERE single_line_section = 1").fetchall()
-    protection_rules = []
-    for t in vvip_trains:
-        for c in corridors:
-            protection_rules.append({"train": t[1], "train_name": t[2], "corridor": c[2], "route_name": c[3],
-                "rule": f"Rajdhani/special train {t[1]} must pass through {c[3]} without any maintenance block",
-                "action": "Auto-reschedule any planned blocks in the 2-hour window around train passage"})
+    vvip = conn.execute("SELECT * FROM train_schedule WHERE is_vvip=1").fetchall()
+    cors = conn.execute("SELECT * FROM corridors WHERE single_line=1").fetchall()
+    rules = []
+    for t in vvip:
+        for c in cors:
+            rules.append({"train":t[1],"train_name":t[2],"corridor":c[2],"route_name":c[3],"rule":f"{t[1]} must pass {c[3]} unimpeded","action":"Auto-reschedule 2h window"})
     conn.close()
-    return {"vvip_trains": [{"number": t[1], "name": t[2], "origin": t[3], "destination": t[4]} for t in vvip_trains], "protection_rules": protection_rules[:10]}
+    return {"vvip_trains":[{"number":t[1],"name":t[2],"origin":t[3],"destination":t[4]} for t in vvip],"protection_rules":rules[:10]}
+
+# AI
+@app.get("/api/ai/optimize")
+def ai_optimize():
+    conn = get_db()
+    blocks = conn.execute("SELECT b.*,dep.name as dn,c.route_name FROM blocks b JOIN departments dep ON b.department_id=dep.id LEFT JOIN corridors c ON b.corridor_id=c.id WHERE b.status IN ('planned','approved')").fetchall()
+    recs = []; saved = 0; merged = 0
+    corr_blks = {}
+    for b in blocks:
+        k = (b[3],b[5])
+        if k not in corr_blks: corr_blks[k] = []
+        corr_blks[k].append(b)
+    for k,g in corr_blks.items():
+        if len(g) > 1:
+            ts = [(int(b[6].split(':')[0]),int(b[7].split(':')[0]),b) for b in g]; ts.sort()
+            for i in range(len(ts)-1):
+                if ts[i+1][0]-ts[i][1]<=2:
+                    s = ts[i][1]-ts[i][0]; saved+=s; merged+=1
+                    recs.append({"type":"merge","title":f"Merge blocks corridor {k[0]}","description":f"Save {s} hours","impact":85+random.uniform(0,10)})
+    recs.append({"type":"reschedule","title":"Night Window 01:00-04:00","description":"Zero train impact","impact":90})
+    ce = 62+random.uniform(0,5); oe = min(95,ce+25+random.uniform(0,5)); pu = min(98,oe+5)
+    conn.close()
+    return {"current_efficiency":round(ce,1),"optimized_efficiency":round(oe,1),"projected_uptime":round(pu,1),"blocks_merged":merged,"downtime_saved_hours":saved,"recommendations":recs[:10]}
+
+@app.get("/api/ai/generate-plan")
+def gen_plan(week_offset: int = 0):
+    conn = get_db()
+    today = datetime.now().date() + timedelta(weeks=week_offset)
+    sw = today - timedelta(days=today.weekday())
+    cors = conn.execute("SELECT * FROM corridors").fetchall()
+    plan = []
+    for do in range(7):
+        cd = sw + timedelta(days=do); dbs = []
+        for co in cors:
+            if len(dbs) < 5:
+                h = random.choice([0,1,2,3,22,23]); m = random.choice([0,30]); eh = (h+random.randint(2,4))%24
+                dept = random.choice([1,2,3]); dn = {1:'Engineering',2:'Traction Distribution',3:'Signal & Telecom'}
+                dbs.append({"block_id":f"BLK-{random.randint(1000,9999)}","corridor":co[2],"department":dn[dept],"start":f"{h:02d}:{m:02d}","end":f"{eh:02d}:{m:02d}",
+                    "type":random.choice(["Track Renewal","OHE Maintenance","Signal Check"]),"category":random.choice(["routine","routine","fault"]),"ai_score":round(random.uniform(70,98),1)})
+        plan.append({"date":cd.isoformat(),"day_name":cd.strftime("%A"),"blocks":dbs})
+    conn.close()
+    return {"week_start":sw.isoformat(),"plan":plan,"total_blocks":sum(len(d["blocks"]) for d in plan)}
+
+# ADMIN
+@app.get("/api/admin/stats")
+def admin_stats(user: dict = Depends(require_admin)):
+    conn = get_db()
+    return {
+        "total_blocks":conn.execute("SELECT COUNT(*) FROM blocks").fetchone()[0],
+        "completed_blocks":conn.execute("SELECT COUNT(*) FROM blocks WHERE status='completed'").fetchone()[0],
+        "pending_defects":conn.execute("SELECT COUNT(*) FROM defects WHERE status='pending'").fetchone()[0],
+        "critical_defects":conn.execute("SELECT COUNT(*) FROM defects WHERE priority='critical' AND status='pending'").fetchone()[0],
+        "total_users":conn.execute("SELECT COUNT(*) FROM users WHERE is_active=1").fetchone()[0],
+        "total_trains":conn.execute("SELECT COUNT(*) FROM train_schedule").fetchone()[0],
+        "total_corridors":conn.execute("SELECT COUNT(*) FROM corridors").fetchone()[0],
+        "total_zones":conn.execute("SELECT COUNT(*) FROM zones").fetchone()[0],
+        "total_divisions":conn.execute("SELECT COUNT(*) FROM divisions").fetchone()[0],
+    }
+
+@app.get("/api/admin/users")
+def admin_users(user: dict = Depends(require_admin)):
+    conn = get_db(); rows = conn.execute("SELECT u.*,z.zone_name,d.div_name FROM users u LEFT JOIN zones z ON u.zone_id=z.id LEFT JOIN divisions d ON u.division_id=d.id ORDER BY u.created_at DESC").fetchall(); conn.close()
+    return [{"id":r[0],"username":r[1],"full_name":r[3],"role":r[4],"zone_id":r[5],"division_id":r[6],"email":r[7],"phone":r[8],"is_active":r[9],"created_at":r[10],"last_login":r[11],"zone_name":r[13],"div_name":r[14]} for r in rows]
+
+@app.post("/api/admin/blocks")
+def admin_create_block(block: BlockCreate, user: dict = Depends(require_auth)):
+    conn = get_db(); bid = f"BLK-{random.randint(1000,9999)}"
+    conn.execute("INSERT INTO blocks(block_id,department_id,corridor_id,defect_id,block_date,start_time,end_time,block_type,maintenance_category,status,zone_id,division_id,created_by) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (bid,block.department_id,block.corridor_id,block.defect_id,block.block_date,block.start_time,block.end_time,block.block_type,block.maintenance_category,'planned',block.zone_id,block.division_id,user["user_id"]))
+    conn.commit(); conn.close(); return {"block_id":bid}
+
+@app.put("/api/admin/blocks/{bid}")
+def admin_update_block(bid: int, update: BlockUpdate, user: dict = Depends(require_auth)):
+    conn = get_db()
+    if update.status:
+        conn.execute("UPDATE blocks SET status=? WHERE id=?",(update.status,bid))
+        if update.status=="approved": conn.execute("UPDATE blocks SET approved_by=? WHERE id=?",(user["user_id"],bid))
+    conn.commit(); conn.close(); return {"message":"Updated"}
+
+@app.delete("/api/admin/blocks/{bid}")
+def admin_del_block(bid: int, user: dict = Depends(require_admin)):
+    conn = get_db(); conn.execute("DELETE FROM blocks WHERE id=?",(bid,)); conn.commit(); conn.close(); return {"message":"Deleted"}
+
+@app.get("/api/admin/defects")
+def admin_defects(user: dict = Depends(require_auth)):
+    conn = get_db(); rows = conn.execute("SELECT d.*,dep.name as dn,dep.code as dc FROM defects d JOIN departments dep ON d.department_id=dep.id ORDER BY CASE d.priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END").fetchall(); conn.close()
+    return [{"id":r[0],"defect_id":r[1],"department_id":r[2],"zone_id":r[3],"division_id":r[4],"title":r[5],"description":r[6],"location":r[7],"priority":r[8],"maintenance_type":r[9],"status":r[10],"dn":r[12],"dc":r[13]} for r in rows]
+
+@app.post("/api/admin/defects")
+def admin_create_defect(d: DefectCreate, user: dict = Depends(require_auth)):
+    conn = get_db(); did = f"DEF-{random.randint(100,999)}"
+    conn.execute("INSERT INTO defects(defect_id,department_id,zone_id,division_id,title,description,location,priority,maintenance_type) VALUES(?,?,?,?,?,?,?,?,?)",
+        (did,d.department_id,d.zone_id,d.division_id,d.title,d.description,d.location,d.priority,d.maintenance_type))
+    conn.commit(); conn.close(); return {"defect_id":did}
+
+@app.put("/api/admin/defects/{did}")
+def admin_update_defect(did: int, update: DefectUpdate, user: dict = Depends(require_auth)):
+    conn = get_db()
+    if update.status: conn.execute("UPDATE defects SET status=? WHERE id=?",(update.status,did))
+    if update.priority: conn.execute("UPDATE defects SET priority=? WHERE id=?",(update.priority,did))
+    conn.commit(); conn.close(); return {"message":"Updated"}
+
+@app.delete("/api/admin/defects/{did}")
+def admin_del_defect(did: int, user: dict = Depends(require_admin)):
+    conn = get_db(); conn.execute("DELETE FROM defects WHERE id=?",(did,)); conn.commit(); conn.close(); return {"message":"Deleted"}
+
+@app.get("/api/admin/corridors")
+def admin_corridors(user: dict = Depends(require_auth)):
+    conn = get_db(); rows = conn.execute("SELECT c.*,z.zone_name,COUNT(b.id) as bc FROM corridors c LEFT JOIN blocks b ON c.id=b.corridor_id LEFT JOIN zones z ON c.zone_id=z.id GROUP BY c.id").fetchall(); conn.close()
+    return [{"id":r[0],"corridor_id":r[1],"route_name":r[2],"length_km":r[3],"zone_id":r[4],"division_id":r[5],"status":r[6],"single_line":r[7],"zone_name":r[9],"blocks":r[10]} for r in rows]
+
+@app.post("/api/admin/corridors")
+def admin_create_corridor(c: CorridorCreate, user: dict = Depends(require_admin)):
+    conn = get_db()
+    conn.execute("INSERT INTO corridors(corridor_id,route_name,length_km,zone_id,division_id,single_line) VALUES(?,?,?,?,?,?)",(c.corridor_id,c.route_name,c.length_km,c.zone_id,c.division_id,c.single_line))
+    conn.commit(); conn.close(); return {"message":"Created"}
+
+@app.get("/api/admin/trains")
+def admin_trains(user: dict = Depends(require_auth)):
+    conn = get_db(); rows = conn.execute("SELECT t.*,z.zone_name FROM train_schedule t LEFT JOIN zones z ON t.zone_id=z.id ORDER BY t.is_vvip DESC").fetchall(); conn.close()
+    return [{"id":r[0],"train_number":r[1],"train_name":r[2],"origin":r[3],"destination":r[4],"departure_time":r[5],"arrival_time":r[6],"days_of_week":r[7],"train_type":r[8],"is_vvip":r[9],"zone_id":r[10],"zone_name":r[13]} for r in rows]
+
+@app.post("/api/admin/trains")
+def admin_create_train(t: TrainCreate, user: dict = Depends(require_auth)):
+    conn = get_db()
+    conn.execute("INSERT INTO train_schedule(train_number,train_name,origin,destination,departure_time,arrival_time,days_of_week,train_type,is_vvip,zone_id,origin_zone_id,dest_zone_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+        (t.train_number,t.train_name,t.origin,t.destination,t.departure_time,t.arrival_time,t.days_of_week,t.train_type,t.is_vvip,t.zone_id,t.origin_zone_id,t.dest_zone_id))
+    conn.commit(); conn.close(); return {"message":"Created"}
+
+@app.get("/api/admin/audit")
+def admin_audit(user: dict = Depends(require_admin), limit: int = 50):
+    conn = get_db(); rows = conn.execute("SELECT a.*,u.username FROM audit_log a LEFT JOIN users u ON a.user_id=u.id ORDER BY a.created_at DESC LIMIT ?",(limit,)).fetchall(); conn.close()
+    return [{"id":r[0],"action":r[2],"entity_type":r[3],"entity_id":r[4],"details":r[5],"created_at":r[6],"username":r[7]} for r in rows]
+
+@app.put("/api/admin/users/{uid}")
+def admin_update_user(uid: int, update: UserUpdate, user: dict = Depends(require_admin)):
+    conn = get_db()
+    if update.full_name: conn.execute("UPDATE users SET full_name=? WHERE id=?",(update.full_name,uid))
+    if update.role: conn.execute("UPDATE users SET role=? WHERE id=?",(update.role,uid))
+    if update.zone_id: conn.execute("UPDATE users SET zone_id=? WHERE id=?",(update.zone_id,uid))
+    if update.division_id: conn.execute("UPDATE users SET division_id=? WHERE id=?",(update.division_id,uid))
+    if update.is_active is not None: conn.execute("UPDATE users SET is_active=? WHERE id=?",(update.is_active,uid))
+    conn.commit(); conn.close(); return {"message":"Updated"}
 
 @app.get("/api/reports/summary")
-def get_report_summary():
+def reports():
     conn = get_db()
-    dept_summary = conn.execute("""
-        SELECT dep.name, dep.color, COUNT(b.id) as total,
-            SUM(CASE WHEN b.status = 'completed' THEN 1 ELSE 0 END) as completed,
-            SUM(CASE WHEN b.status = 'planned' THEN 1 ELSE 0 END) as planned,
-            AVG(b.ai_score) as avg_score
-        FROM departments dep LEFT JOIN blocks b ON dep.id = b.department_id GROUP BY dep.id
-    """).fetchall()
-    defect_summary = conn.execute("SELECT priority, COUNT(*) as count FROM defects GROUP BY priority").fetchall()
-    monthly_stats = conn.execute("SELECT strftime('%Y-%m', block_date) as month, COUNT(*) as blocks FROM blocks GROUP BY month ORDER BY month DESC LIMIT 6").fetchall()
+    ds = conn.execute("SELECT dep.name,dep.color,COUNT(b.id),SUM(CASE WHEN b.status='completed' THEN 1 ELSE 0 END),SUM(CASE WHEN b.status='planned' THEN 1 ELSE 0 END) FROM departments dep LEFT JOIN blocks b ON dep.id=b.department_id GROUP BY dep.id").fetchall()
+    ps = conn.execute("SELECT priority,COUNT(*) FROM defects GROUP BY priority").fetchall()
     conn.close()
-    return {"departments": [{"name": r[0], "color": r[1], "total": r[2], "completed": r[3], "planned": r[4], "avg_score": round(r[5] or 0, 1)} for r in dept_summary],
-            "defects_by_priority": [{"priority": r[0], "count": r[1]} for r in defect_summary],
-            "monthly_blocks": [{"month": r[0], "count": r[1]} for r in monthly_stats]}
+    return {"departments":[{"name":r[0],"color":r[1],"total":r[2],"completed":r[3],"planned":r[4]} for r in ds],"defects_by_priority":[{"priority":r[0],"count":r[1]} for r in ps]}
 
-# Serve static files
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
 app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
-
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import uvicorn; uvicorn.run(app, host="0.0.0.0", port=8000)
