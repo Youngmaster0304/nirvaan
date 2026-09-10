@@ -276,6 +276,11 @@
                 <a onclick="show('pareto')">Pareto</a>
                 <a onclick="show('predictive')">Predictive</a>
                 <a onclick="show('analytics')">Analytics</a>
+                <a onclick="show('digitaltwin')">Digital Twin</a>
+                <a onclick="show('notifications')">Notifications</a>
+                <a onclick="show('energy')">Energy</a>
+                <a onclick="show('demand')">Demand</a>
+                <a onclick="show('multizone')">Multi-Zone</a>
             </div>
             <div class="header-right">
                 <div class="ai-status" id="aiStatus">
@@ -484,6 +489,124 @@
                     <div class="section" style="margin-bottom:0">
                         <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-map"></i> Zone Distribution</h2></div>
                         <div class="section-body" id="analyticsZones"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-digitaltwin" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr">
+                    <h2><i class="fas fa-network-wired"></i> Digital Twin Simulator</h2>
+                    <button class="btn btn-auto" onclick="loadDigitalTwin()" id="digitalTwinBtn"><i class="fas fa-play"></i> Run Simulation</button>
+                </div>
+                <div class="section-body">
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="dtKPIs"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-train"></i> Train Simulations</h2></div>
+                            <div class="section-body" id="dtTrains" style="max-height:360px;overflow-y:auto"></div>
+                        </div>
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-exclamation-triangle"></i> Block Impacts</h2></div>
+                            <div class="section-body" id="dtImpacts" style="max-height:360px;overflow-y:auto"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-notifications" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr">
+                    <h2><i class="fas fa-bell"></i> Automated Notifications</h2>
+                    <button class="btn btn-auto" onclick="loadNotifications()" id="notifBtn"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="section-body">
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px" id="notifKPIs"></div>
+                    <div class="section" style="margin-bottom:16px">
+                        <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-envelope"></i> Notification Queue</h2></div>
+                        <div class="section-body" id="notifList" style="max-height:400px;overflow-y:auto"></div>
+                    </div>
+                    <div class="section" style="margin-bottom:0">
+                        <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-address-book"></i> Department Contacts</h2></div>
+                        <div class="section-body" id="notifContacts"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-energy" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr">
+                    <h2><i class="fas fa-bolt"></i> Energy/Cost-Aware Scheduling</h2>
+                    <button class="btn btn-auto" onclick="loadEnergy()" id="energyBtn"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="section-body">
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="energyKPIs"></div>
+                    <div class="section" style="margin-bottom:16px">
+                        <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-lightbulb"></i> Recommendations</h2></div>
+                        <div class="section-body" id="energyRecs"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-demand" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr">
+                    <h2><i class="fas fa-users"></i> Passenger-Demand-Aware Planning</h2>
+                    <button class="btn btn-auto" onclick="loadDemand()" id="demandBtn"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="section-body">
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px" id="demandKPIs"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-chart-line"></i> Hourly Demand Curve</h2></div>
+                            <div class="section-body" id="demandCurve"></div>
+                        </div>
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-route"></i> Top Routes by Traffic</h2></div>
+                            <div class="section-body" id="demandRoutes" style="max-height:300px;overflow-y:auto"></div>
+                        </div>
+                    </div>
+                    <div class="section" style="margin-bottom:16px">
+                        <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-exclamation-circle"></i> Block Impact Analysis</h2></div>
+                        <div class="section-body" id="demandBlocks" style="max-height:280px;overflow-y:auto"></div>
+                    </div>
+                    <div class="section" style="margin-bottom:0">
+                        <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-lightbulb"></i> Recommendations</h2></div>
+                        <div class="section-body" id="demandRecs"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-multizone" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr">
+                    <h2><i class="fas fa-globe-asia"></i> Multi-Zone Coordination</h2>
+                    <button class="btn btn-auto" onclick="loadMultiZone()" id="multiZoneBtn"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="section-body">
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px" id="mzKPIs"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-map-marked-alt"></i> Zone Overview</h2></div>
+                            <div class="section-body" id="mzZones" style="max-height:360px;overflow-y:auto"></div>
+                        </div>
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-exchange-alt"></i> Cross-Zone Trains</h2></div>
+                            <div class="section-body" id="mzTrains" style="max-height:360px;overflow-y:auto"></div>
+                        </div>
+                    </div>
+                    <div class="section" style="margin-bottom:16px">
+                        <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-exclamation-triangle"></i> Cross-Zone Conflicts</h2></div>
+                        <div class="section-body" id="mzConflicts"></div>
+                    </div>
+                    <div class="section" style="margin-bottom:0">
+                        <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-lightbulb"></i> Recommendations</h2></div>
+                        <div class="section-body" id="mzRecs"></div>
                     </div>
                 </div>
             </div>
@@ -1081,6 +1204,227 @@ async function init() {
     loadData();
 }
 init();
+
+// ═══ DIGITAL TWIN ═══
+async function loadDigitalTwin() {
+    const btn = document.getElementById('digitalTwinBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Simulating...';
+    try {
+        const r = await fetch(API + '/api/ai/digital-twin', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await r.json();
+        document.getElementById('dtKPIs').innerHTML = [
+            { l: 'Trains Simulated', v: d.simulated_trains, c: 'var(--primary)' },
+            { l: 'On Time', v: d.trains_on_time, c: 'var(--accent)' },
+            { l: 'Trains Delayed', v: d.trains_delayed, c: 'var(--danger)' },
+            { l: 'Total Delay', v: d.total_delay_minutes + ' min', c: 'var(--warning)' },
+        ].map(k => `<div class="stat-card" style="border-left:3px solid ${k.c}"><div class="stat-val">${k.v}</div><div class="stat-lbl">${k.l}</div></div>`).join('');
+
+        document.getElementById('dtTrains').innerHTML = d.timeline.length ? d.timeline.map(t => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <div style="width:8px;height:8px;border-radius:50%;background:${t.status === 'delayed' ? 'var(--danger)' : 'var(--accent)'};flex-shrink:0"></div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;font-weight:600">${t.train_number} — ${t.train_name}</div>
+                    <div style="font-size:11px;color:var(--dim)">${t.origin} → ${t.destination} | Dep: ${t.departure}</div>
+                </div>
+                <div style="font-size:13px;font-weight:700;color:${t.delay_minutes > 0 ? 'var(--danger)' : 'var(--accent)'}">${t.delay_minutes > 0 ? '+' + t.delay_minutes + ' min' : 'On time'}</div>
+            </div>
+        `).join('') : '<p style="color:var(--dim);padding:12px">No simulation data</p>';
+
+        document.getElementById('dtImpacts').innerHTML = d.block_impacts.length ? d.block_impacts.map(b => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <div class="tag tag-warning" style="flex-shrink:0">${b.block_id}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;font-weight:600">${b.route}</div>
+                    <div style="font-size:11px;color:var(--dim)">${b.trains_delayed} trains delayed</div>
+                </div>
+                <div style="font-size:13px;font-weight:700;color:var(--danger)">${b.total_delay_mins} min</div>
+            </div>
+        `).join('') : '<p style="color:var(--dim);padding:12px">No block impacts</p>';
+    } catch(e) { console.error(e); }
+    btn.innerHTML = '<i class="fas fa-play"></i> Run Simulation';
+}
+
+// ═══ NOTIFICATIONS ═══
+async function loadNotifications() {
+    const btn = document.getElementById('notifBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const r = await fetch(API + '/api/ai/notifications', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await r.json();
+        document.getElementById('notifKPIs').innerHTML = [
+            { l: 'Pending Approval', v: d.pending_approval, c: 'var(--warning)' },
+            { l: 'Sent (Awaiting ACK)', v: d.sent_awaiting_ack, c: 'var(--primary)' },
+            { l: 'Acknowledged', v: d.acknowledged, c: 'var(--accent)' },
+        ].map(k => `<div class="stat-card" style="border-left:3px solid ${k.c}"><div class="stat-val">${k.v}</div><div class="stat-lbl">${k.l}</div></div>`).join('');
+
+        document.getElementById('notifList').innerHTML = d.notifications.length ? d.notifications.map(n => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <div style="width:8px;height:8px;border-radius:50%;background:${n.acknowledged ? 'var(--accent)' : n.sent ? 'var(--primary)' : 'var(--warning)'};flex-shrink:0"></div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;font-weight:600">${n.id} — ${n.block_id}</div>
+                    <div style="font-size:11px;color:var(--dim)">${n.department} | ${n.route} | ${n.date} ${n.time}</div>
+                </div>
+                <div style="font-size:12px;color:${n.acknowledged ? 'var(--accent)' : n.sent ? 'var(--primary)' : 'var(--warning)'}">${n.acknowledged ? 'ACK' : n.sent ? 'Sent' : 'Pending'}</div>
+            </div>
+        `).join('') : '<p style="color:var(--dim);padding:12px">No notifications</p>';
+
+        document.getElementById('notifContacts').innerHTML = Object.entries(d.dept_contacts).map(([dept, c]) => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <div class="tag tag-engineering" style="flex-shrink:0">${dept.split(' ')[0]}</div>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">${c.head}</div>
+                    <div style="font-size:11px;color:var(--dim)">${c.email} | ${c.phone}</div>
+                </div>
+            </div>
+        `).join('');
+    } catch(e) { console.error(e); }
+    btn.innerHTML = '<i class="fas fa-sync"></i> Refresh';
+}
+
+// ═══ ENERGY ═══
+async function loadEnergy() {
+    const btn = document.getElementById('energyBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const r = await fetch(API + '/api/ai/energy', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await r.json();
+        document.getElementById('energyKPIs').innerHTML = [
+            { l: 'Current Energy Cost', v: 'Rs ' + d.current_energy_cost_rs?.toLocaleString(), c: 'var(--danger)' },
+            { l: 'Potential Savings', v: 'Rs ' + d.potential_savings_rs?.toLocaleString(), c: 'var(--accent)' },
+            { l: 'CO₂ Emissions', v: d.carbon_emission_kg?.toLocaleString() + ' kg', c: 'var(--warning)' },
+            { l: 'Night Blocks', v: d.night_blocks + '/' + d.total_blocks, c: 'var(--primary)' },
+        ].map(k => `<div class="stat-card" style="border-left:3px solid ${k.c}"><div class="stat-val">${k.v}</div><div class="stat-lbl">${k.l}</div></div>`).join('');
+
+        document.getElementById('energyRecs').innerHTML = d.recommendations.length ? d.recommendations.map(r => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <i class="fas fa-lightbulb" style="color:var(--warning)"></i>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">${r.title}</div>
+                    <div style="font-size:11px;color:var(--dim)">${r.action}</div>
+                </div>
+                <div style="font-size:13px;font-weight:700;color:var(--accent)">Rs ${r.savings?.toLocaleString()}</div>
+            </div>
+        `).join('') : '<p style="color:var(--dim);padding:12px">No recommendations — schedule is optimized</p>';
+    } catch(e) { console.error(e); }
+    btn.innerHTML = '<i class="fas fa-sync"></i> Refresh';
+}
+
+// ═══ PASSENGER DEMAND ═══
+async function loadDemand() {
+    const btn = document.getElementById('demandBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const r = await fetch(API + '/api/ai/passenger-demand', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await r.json();
+        document.getElementById('demandKPIs').innerHTML = [
+            { l: 'High Demand Blocks', v: d.high_demand_blocks, c: 'var(--danger)' },
+            { l: 'Total Blocks Analyzed', v: d.block_analysis?.length, c: 'var(--primary)' },
+            { l: 'Top Routes', v: d.top_routes?.length, c: 'var(--accent)' },
+        ].map(k => `<div class="stat-card" style="border-left:3px solid ${k.c}"><div class="stat-val">${k.v}</div><div class="stat-lbl">${k.l}</div></div>`).join('');
+
+        // Demand curve SVG
+        const curve = d.demand_curve || {};
+        const pts = Object.entries(curve).map(([h, v]) => `${h * 16 + 8},${180 - v * 1.6}`).join(' ');
+        document.getElementById('demandCurve').innerHTML = `
+            <svg viewBox="0 0 400 200" style="width:100%;height:200px">
+                <defs><linearGradient id="dGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.3"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0.02"/></linearGradient></defs>
+                <polyline points="${pts}" fill="none" stroke="var(--primary)" stroke-width="2"/>
+                <polygon points="8,180 ${pts} 392,180" fill="url(#dGrad)"/>
+                ${[0,6,12,18,23].map(h => `<text x="${h*16+8}" y="196" font-size="9" fill="var(--dim)" text-anchor="middle">${h}:00</text>`).join('')}
+                <text x="8" y="12" font-size="9" fill="var(--dim)">Peak</text>
+                <text x="8" y="176" font-size="9" fill="var(--dim)">Low</text>
+            </svg>`;
+
+        document.getElementById('demandRoutes').innerHTML = d.top_routes?.length ? d.top_routes.map((r, i) => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${i+1}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.route}</div>
+                    <div style="font-size:11px;color:var(--dim)">${r.trains} trains | ${r.peak_trains} peak</div>
+                </div>
+            </div>
+        `).join('') : '';
+
+        document.getElementById('demandBlocks').innerHTML = d.block_analysis?.length ? d.block_analysis.map(b => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <div class="tag tag-${b.impact === 'high' ? 'danger' : b.impact === 'medium' ? 'warning' : 'success'}" style="flex-shrink:0">${b.impact}</div>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">${b.block_id}</div>
+                    <div style="font-size:11px;color:var(--dim)">${b.start_time} - ${b.end_time}</div>
+                </div>
+                <div style="font-size:13px;font-weight:700;color:${b.impact === 'high' ? 'var(--danger)' : 'var(--dim)'}">Load: ${b.avg_demand_index}</div>
+            </div>
+        `).join('') : '';
+
+        document.getElementById('demandRecs').innerHTML = d.recommendations?.length ? d.recommendations.map(r => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <i class="fas fa-users" style="color:var(--primary)"></i>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">${r.title}</div>
+                    <div style="font-size:11px;color:var(--dim)">${r.action}</div>
+                </div>
+            </div>
+        `).join('') : '<p style="color:var(--dim);padding:12px">No demand conflicts found</p>';
+    } catch(e) { console.error(e); }
+    btn.innerHTML = '<i class="fas fa-sync"></i> Refresh';
+}
+
+// ═══ MULTI-ZONE ═══
+async function loadMultiZone() {
+    const btn = document.getElementById('multiZoneBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const r = await fetch(API + '/api/ai/multi-zone', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await r.json();
+        document.getElementById('mzKPIs').innerHTML = [
+            { l: 'Total Zones', v: d.total_zones, c: 'var(--primary)' },
+            { l: 'Cross-Zone Trains', v: d.total_cross_zone_trains, c: 'var(--accent)' },
+            { l: 'Cross-Zone Conflicts', v: d.cross_zone_conflicts?.length, c: 'var(--danger)' },
+        ].map(k => `<div class="stat-card" style="border-left:3px solid ${k.c}"><div class="stat-val">${k.v}</div><div class="stat-lbl">${k.l}</div></div>`).join('');
+
+        document.getElementById('mzZones').innerHTML = d.zones?.length ? d.zones.map(z => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <div class="tag tag-engineering" style="flex-shrink:0">${z.zone_code || 'Z'}</div>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">${z.zone_name}</div>
+                    <div style="font-size:11px;color:var(--dim)">${z.corridors?.length || 0} corridors | ${z.blocks} blocks</div>
+                </div>
+            </div>
+        `).join('') : '';
+
+        document.getElementById('mzTrains').innerHTML = d.cross_zone_trains?.length ? d.cross_zone_trains.map(t => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;font-weight:600">${t.number} — ${t.name}</div>
+                    <div style="font-size:11px;color:var(--dim)">${t.origin_zone} → ${t.dest_zone} | Dep: ${t.departure}</div>
+                </div>
+                <i class="fas fa-exchange-alt" style="color:var(--primary);flex-shrink:0"></i>
+            </div>
+        `).join('') : '<p style="color:var(--dim);padding:12px">No cross-zone trains</p>';
+
+        document.getElementById('mzConflicts').innerHTML = d.cross_zone_conflicts?.length ? d.cross_zone_conflicts.map(c => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <i class="fas fa-exclamation-triangle" style="color:var(--danger);flex-shrink:0"></i>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">${c.zone1} ↔ ${c.zone2}</div>
+                    <div style="font-size:11px;color:var(--dim)">${c.block1} vs ${c.block2} on ${c.date}</div>
+                </div>
+                <div style="font-size:11px;color:var(--warning);max-width:200px;text-align:right">${c.recommendation}</div>
+            </div>
+        `).join('') : '<p style="color:var(--dim);padding:12px">No cross-zone conflicts</p>';
+
+        document.getElementById('mzRecs').innerHTML = d.recommendations?.length ? d.recommendations.map(r => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border)">
+                <i class="fas fa-globe-asia" style="color:var(--primary)"></i>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">${r.title}</div>
+                    <div style="font-size:11px;color:var(--dim)">${r.action}</div>
+                </div>
+            </div>
+        `).join('') : '<p style="color:var(--dim);padding:12px">All zones coordinated</p>';
+    } catch(e) { console.error(e); }
+    btn.innerHTML = '<i class="fas fa-sync"></i> Refresh';
+}
 </script>
 </body>
 </html>

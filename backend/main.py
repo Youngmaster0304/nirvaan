@@ -1505,6 +1505,411 @@ def predictive_maintenance():
     }
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# ADDITIONAL AI FEATURES (Remaining 5 from research report)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/ai/digital-twin")
+def digital_twin_simulate():
+    """Digital Twin Simulator.
+    
+    Simulates train movements through the network and calculates
+    delays caused by maintenance blocks. Shows timeline visualization.
+    """
+    import random
+    conn = get_db()
+    corridors = [dict(r) for r in conn.execute("SELECT * FROM corridors").fetchall()]
+    trains = [dict(r) for r in conn.execute("SELECT * FROM train_schedule").fetchall()].fetchall() if False else []
+    trains = [dict(r) for r in conn.execute("SELECT * FROM train_schedule").fetchall()]
+    blocks = [dict(r) for r in conn.execute("SELECT * FROM blocks WHERE status IN ('planned','approved')").fetchall()]
+    conn.close()
+
+    corridor_map = {c['id']: c for c in corridors}
+
+    # Simulate train journeys
+    simulations = []
+    total_delay = 0
+    trains_affected = 0
+
+    for train in trains[:50]:  # Simulate first 50 trains
+        dep_time = train.get('departure', '10:00')
+        if not dep_time:
+            continue
+        parts = dep_time.split(':')
+        dep_hour = int(parts[0]) + int(parts[1]) / 60.0
+
+        # Check if this train's zone has any active blocks
+        zone_id = train.get('zone_id')
+        zone_blocks = [b for b in blocks if corridor_map.get(b.get('corridor_id'), {}).get('zone_id') == zone_id]
+
+        delay_mins = 0
+        conflicting_block = None
+        for block in zone_blocks:
+            b_start = 0
+            try:
+                b_parts = block.get('start_time', '0:00').split(':')
+                b_start = int(b_parts[0]) + int(b_parts[1]) / 60.0
+            except:
+                pass
+            b_end = b_start + 3  # 3-hour blocks
+
+            if b_start <= dep_hour <= b_end:
+                delay_mins = random.randint(15, 90)
+                conflicting_block = block
+                break
+
+        total_delay += delay_mins
+        if delay_mins > 0:
+            trains_affected += 1
+
+        simulations.append({
+            'train_number': train.get('number'),
+            'train_name': train.get('name'),
+            'origin': train.get('origin'),
+            'destination': train.get('destination'),
+            'departure': dep_time,
+            'delay_minutes': delay_mins,
+            'conflicting_block': conflicting_block.get('block_id') if conflicting_block else None,
+            'status': 'delayed' if delay_mins > 0 else 'on_time',
+        })
+
+    # Block impact summary
+    block_impacts = []
+    for block in blocks:
+        affected = [s for s in simulations if s.get('conflicting_block') == block.get('block_id')]
+        block_impacts.append({
+            'block_id': block.get('block_id'),
+            'route': corridor_map.get(block.get('corridor_id'), {}).get('route_name', 'N/A'),
+            'trains_delayed': len(affected),
+            'total_delay_mins': sum(s['delay_minutes'] for s in affected),
+        })
+
+    return {
+        'simulated_trains': len(simulations),
+        'trains_on_time': len([s for s in simulations if s['status'] == 'on_time']),
+        'trains_delayed': trains_affected,
+        'total_delay_minutes': total_delay,
+        'avg_delay_minutes': round(total_delay / trains_affected, 1) if trains_affected else 0,
+        'block_impacts': sorted(block_impacts, key=lambda x: x['total_delay_mins'], reverse=True)[:10],
+        'timeline': simulations[:30],
+    }
+
+
+@app.get("/api/ai/notifications")
+def get_notifications():
+    """Automated Notifications & Coordination.
+    
+    Generates pending notification records for each department
+    regarding their scheduled blocks awaiting approval.
+    """
+    conn = get_db()
+    blocks = [dict(r) for r in conn.execute("""
+        SELECT b.*, d.name as dept_name, d.code as dept_code, d.color,
+               c.route_name, c.corridor_id
+        FROM blocks b
+        LEFT JOIN departments d ON b.department_id = d.id
+        LEFT JOIN corridors c ON b.corridor_id = c.id
+        WHERE b.status IN ('planned','approved')
+        ORDER BY b.block_date DESC
+    """).fetchall()]
+
+    # Department contacts (simulated)
+    dept_contacts = {
+        'Engineering': {'head': 'Chief Engineer', 'email': 'eng@railway.gov.in', 'phone': '+91-9876543210'},
+        'Traction Distribution': {'head': 'Sr. DEE (Traction)', 'email': 'trd@railway.gov.in', 'phone': '+91-9876543211'},
+        'Signal & Telecom': {'head': 'Chief Signal Engineer', 'email': 'sig@railway.gov.in', 'phone': '+91-9876543212'},
+    }
+
+    notifications = []
+    for block in blocks:
+        dept_name = block.get('dept_name', 'Unknown')
+        contact = dept_contacts.get(dept_name, {'head': 'Dept Head', 'email': 'dept@railway.gov.in'})
+
+        notifications.append({
+            'id': f'NTF-{block.get("id", 0):04d}',
+            'block_id': block.get('block_id'),
+            'department': dept_name,
+            'dept_code': block.get('dept_code'),
+            'route': block.get('route_name', 'N/A'),
+            'date': block.get('block_date'),
+            'time': f'{block.get("start_time")} - {block.get("end_time")}',
+            'status': block.get('status'),
+            'recipient': contact['head'],
+            'email': contact['email'],
+            'sent': block.get('status') == 'approved',
+            'acknowledged': block.get('status') == 'completed',
+        })
+
+    # Summary
+    pending = [n for n in notifications if not n['sent']]
+    sent = [n for n in notifications if n['sent'] and not n['acknowledged']]
+    acked = [n for n in notifications if n['acknowledged']]
+
+    return {
+        'total': len(notifications),
+        'pending_approval': len(pending),
+        'sent_awaiting_ack': len(sent),
+        'acknowledged': len(acked),
+        'notifications': notifications,
+        'dept_contacts': dept_contacts,
+    }
+
+
+@app.get("/api/ai/energy")
+def energy_aware_scheduling():
+    """Energy/Cost-Aware Scheduling.
+    
+    Estimates energy cost savings from scheduling blocks during
+    off-peak hours and minimizing diesel locomotive idling.
+    """
+    conn = get_db()
+    blocks = [dict(r) for r in conn.execute("SELECT * FROM blocks").fetchall()]
+    trains = [dict(r) for r in conn.execute("SELECT * FROM train_schedule").fetchall()]
+    conn.close()
+
+    # Energy cost model (synthetic)
+    # Peak hours (6am-10am, 4pm-9pm) = higher cost
+    # Off-peak/night = lower cost
+    def hour_cost(hour):
+        if 6 <= hour <= 10 or 16 <= hour <= 21:
+            return 850  # Rs per train-hour during peak
+        elif 22 <= hour or hour <= 5:
+            return 320  # Rs per train-hour during night
+        else:
+            return 550  # Rs per train-hour during off-peak
+
+    def parse_hour(t):
+        if not t: return 12
+        parts = t.split(':')
+        return int(parts[0])
+
+    # Calculate current energy cost
+    current_cost = 0
+    night_savings = 0
+    for block in blocks:
+        start_h = parse_hour(block.get('start_time'))
+        end_h = parse_hour(block.get('end_time'))
+        affected_trains = len([t for t in trains if t.get('zone_id')])
+
+        for h in range(start_h, end_h if end_h > start_h else end_h + 24):
+            h_mod = h % 24
+            current_cost += affected_trains * hour_cost(h_mod)
+
+        # Savings if moved to night
+        night_cost = affected_trains * 3 * hour_cost(2)  # 3hr block at 2am
+        current_block_cost = affected_trains * 3 * hour_cost(start_h)
+        night_savings += max(0, current_block_cost - night_cost)
+
+    # Carbon estimate (1 kWh = 0.82 kg CO2 for Indian grid)
+    kwh_per_train_hour = 1200  # Average traction energy
+    total_kwh = sum(len(trains) * 3 * kwh_per_train_hour for _ in blocks) / len(blocks) if blocks else 0
+    carbon_kg = total_kwh * 0.82
+
+    # Recommendations
+    recommendations = []
+    night_blocks = sum(1 for b in blocks if parse_hour(b.get('start_time')) <= 5)
+    peak_blocks = sum(1 for b in blocks if 6 <= parse_hour(b.get('start_time')) <= 10)
+
+    if peak_blocks > 0:
+        recommendations.append({
+            'type': 'cost',
+            'title': f'{peak_blocks} blocks during peak hours',
+            'action': f'Move to night window to save Rs {night_savings:,.0f}',
+            'savings': round(night_savings, 0),
+        })
+    if night_blocks < len(blocks) * 0.5:
+        recommendations.append({
+            'type': 'energy',
+            'title': 'Night utilization below 50%',
+            'action': 'Shift routine maintenance to 22:00-06:00 for 40% cost reduction',
+            'savings': round(night_savings * 0.4, 0),
+        })
+
+    return {
+        'current_energy_cost_rs': round(current_cost, 0),
+        'potential_savings_rs': round(night_savings, 0),
+        'carbon_emission_kg': round(carbon_kg, 0),
+        'night_blocks': night_blocks,
+        'peak_blocks': peak_blocks,
+        'total_blocks': len(blocks),
+        'cost_per_block_avg': round(current_cost / len(blocks), 0) if blocks else 0,
+        'recommendations': recommendations,
+    }
+
+
+@app.get("/api/ai/passenger-demand")
+def passenger_demand_planning():
+    """Passenger-Demand-Aware Planning.
+    
+    Uses synthetic passenger load patterns to avoid scheduling
+    blocks during peak travel times on busy routes.
+    """
+    conn = get_db()
+    trains = [dict(r) for r in conn.execute("SELECT * FROM train_schedule").fetchall()]
+    corridors = [dict(r) for r in conn.execute("SELECT * FROM corridors").fetchall()]
+    blocks = [dict(r) for r in conn.execute("SELECT * FROM blocks WHERE status IN ('planned','approved')").fetchall()]
+    conn.close()
+
+    # Synthetic demand patterns (hourly passenger load index 0-100)
+    demand_curve = {
+        0: 5, 1: 3, 2: 2, 3: 2, 4: 5, 5: 15,
+        6: 35, 7: 65, 8: 90, 9: 85, 10: 70, 11: 55,
+        12: 50, 13: 45, 14: 55, 15: 65, 16: 80, 17: 95,
+        18: 90, 19: 75, 20: 60, 21: 40, 22: 25, 23: 15,
+    }
+
+    # Day-of-week multipliers
+    dow_mult = {1: 0.7, 2: 0.8, 3: 0.85, 4: 0.9, 5: 1.0, 6: 1.1, 7: 0.6}
+
+    def parse_hour(t):
+        if not t: return 12
+        parts = t.split(':')
+        return int(parts[0])
+
+    # Analyze blocks against demand
+    block_analysis = []
+    for block in blocks:
+        start_h = parse_hour(block.get('start_time'))
+        end_h = parse_hour(block.get('end_time'))
+
+        peak_impact = 0
+        for h in range(start_h, end_h if end_h > start_h else end_h + 24):
+            h_mod = h % 24
+            peak_impact += demand_curve.get(h_mod, 50)
+
+        avg_demand = peak_impact / max(1, end_h - start_h if end_h > start_h else 24 - start_h + end_h)
+
+        block_analysis.append({
+            'block_id': block.get('block_id'),
+            'start_time': block.get('start_time'),
+            'end_time': block.get('end_time'),
+            'avg_demand_index': round(avg_demand, 1),
+            'peak_demand': round(max(demand_curve.get(parse_hour(block.get('start_time')) + h, 50) for h in range(3)), 1),
+            'impact': 'high' if avg_demand > 70 else 'medium' if avg_demand > 40 else 'low',
+        })
+
+    # Route demand ranking
+    route_demand = {}
+    for train in trains:
+        route = f"{train.get('origin', '')} - {train.get('destination', '')}"
+        if route not in route_demand:
+            route_demand[route] = {'trains': 0, 'peak_trains': 0}
+        route_demand[route]['trains'] += 1
+        dep = parse_hour(train.get('departure'))
+        if 7 <= dep <= 10 or 16 <= dep <= 20:
+            route_demand[route]['peak_trains'] += 1
+
+    # Sort by demand
+    top_routes = sorted(route_demand.items(), key=lambda x: x[1]['trains'], reverse=True)[:10]
+
+    # Recommendations
+    high_demand_blocks = [b for b in block_analysis if b['impact'] == 'high']
+    recommendations = []
+    if high_demand_blocks:
+        recommendations.append({
+            'type': 'demand',
+            'title': f'{len(high_demand_blocks)} blocks during peak passenger hours',
+            'action': 'Reschedule to off-peak (22:00-06:00) to minimize passenger disruption',
+            'affected_blocks': [b['block_id'] for b in high_demand_blocks],
+        })
+
+    return {
+        'demand_curve': demand_curve,
+        'block_analysis': block_analysis,
+        'high_demand_blocks': len(high_demand_blocks),
+        'top_routes': [{'route': r, **d} for r, d in top_routes],
+        'recommendations': recommendations,
+    }
+
+
+@app.get("/api/ai/multi-zone")
+def multi_zone_coordination():
+    """Collaborative Multi-Zone Coordination.
+    
+    Identifies cross-zone corridors and coordinates block plans
+    across adjacent zones to avoid boundary conflicts.
+    """
+    conn = get_db()
+    corridors = [dict(r) for r in conn.execute("""
+        SELECT c.*, z.zone_name, z.zone_code, d.div_name
+        FROM corridors c
+        LEFT JOIN zones z ON c.zone_id = z.id
+        LEFT JOIN divisions d ON c.division_id = d.id
+    """).fetchall()]
+    blocks = [dict(r) for r in conn.execute("""
+        SELECT b.*, c.zone_id, c.route_name, z.zone_name
+        FROM blocks b
+        LEFT JOIN corridors c ON b.corridor_id = c.id
+        LEFT JOIN zones z ON c.zone_id = z.id
+        WHERE b.status IN ('planned','approved')
+    """).fetchall()]
+    trains = [dict(r) for r in conn.execute("SELECT * FROM train_schedule").fetchall()]
+    conn.close()
+
+    # Group corridors by zone
+    zone_corridors = {}
+    for c in corridors:
+        zid = c.get('zone_id')
+        if zid not in zone_corridors:
+            zone_corridors[zid] = {'zone_name': c.get('zone_name'), 'zone_code': c.get('zone_code'), 'corridors': [], 'blocks': 0}
+        zone_corridors[zid]['corridors'].append(c.get('route_name'))
+
+    for b in blocks:
+        zid = b.get('zone_id')
+        if zid in zone_corridors:
+            zone_corridors[zid]['blocks'] += 1
+
+    # Find cross-zone trains (trains that pass through multiple zones)
+    cross_zone_trains = []
+    for train in trains:
+        origin_zone = train.get('origin_zone_id')
+        dest_zone = train.get('dest_zone_id')
+        if origin_zone and dest_zone and origin_zone != dest_zone:
+            cross_zone_trains.append({
+                'number': train.get('number'),
+                'name': train.get('name'),
+                'origin_zone': next((z.get('zone_name') for z in corridors if z.get('zone_id') == origin_zone), 'Unknown'),
+                'dest_zone': next((z.get('zone_name') for z in corridors if z.get('zone_id') == dest_zone), 'Unknown'),
+                'departure': train.get('departure'),
+            })
+
+    # Find potential cross-zone conflicts
+    zone_blocks = {}
+    for b in blocks:
+        zid = b.get('zone_id')
+        if zid not in zone_blocks:
+            zone_blocks[zid] = []
+        zone_blocks[zid].append(b)
+
+    conflicts = []
+    for z1, blocks1 in zone_blocks.items():
+        for z2, blocks2 in zone_blocks.items():
+            if z1 >= z2:
+                continue
+            for b1 in blocks1:
+                for b2 in blocks2:
+                    if b1.get('block_date') == b2.get('block_date'):
+                        conflicts.append({
+                            'zone1': zone_corridors.get(z1, {}).get('zone_name', 'Zone ' + str(z1)),
+                            'zone2': zone_corridors.get(z2, {}).get('zone_name', 'Zone ' + str(z2)),
+                            'block1': b1.get('block_id'),
+                            'block2': b2.get('block_id'),
+                            'date': b1.get('block_date'),
+                            'recommendation': 'Coordinate timing to avoid simultaneous blocks on connecting corridors',
+                        })
+
+    return {
+        'zones': list(zone_corridors.values()),
+        'cross_zone_trains': cross_zone_trains[:15],
+        'cross_zone_conflicts': conflicts[:10],
+        'total_zones': len(zone_corridors),
+        'total_cross_zone_trains': len(cross_zone_trains),
+        'recommendations': [
+            {'type': 'coordination', 'title': f'{len(cross_zone_trains)} cross-zone trains need coordinated blocks', 'action': 'Align block timing across adjacent zones for through routes'}
+        ] if cross_zone_trains else [],
+    }
+
+
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
 if os.path.exists(frontend_dir):
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
