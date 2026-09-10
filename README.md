@@ -8,8 +8,8 @@ AI-Powered Automatic Block Planning system that automates maintenance block sche
 
 | Component | URL |
 |-----------|-----|
-| **Frontend** | https://sih-railways.vercel.app |
-| **Admin Panel** | https://sih-railways.vercel.app/admin.html |
+| **Frontend** | https://nirvaan-railsaathi.vercel.app |
+| **Admin Panel** | https://nirvaan-railsaathi.vercel.app/admin.html |
 | **Backend API** | https://railblock-ai-k8xm.onrender.com |
 
 **Credentials:**
