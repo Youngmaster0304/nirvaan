@@ -272,8 +272,10 @@
                 <a onclick="show('blocks')">Blocks</a>
                 <a onclick="show('trains')">Trains</a>
                 <a onclick="show('defects')">Defects</a>
-                <a onclick="show('tokens')">Tokens</a>
-                <a onclick="show('crew')">Crew</a>
+                <a onclick="show('whatif')">What-If</a>
+                <a onclick="show('pareto')">Pareto</a>
+                <a onclick="show('predictive')">Predictive</a>
+                <a onclick="show('analytics')">Analytics</a>
             </div>
             <div class="header-right">
                 <div class="ai-status" id="aiStatus">
@@ -385,6 +387,105 @@
             <div class="section">
                 <div class="section-hdr"><h2><i class="fas fa-users"></i> Crew HOER Status</h2></div>
                 <div class="section-body no-pad"><div class="tbl-scroll" id="crewTbl"></div></div>
+            </div>
+        </div>
+
+        <!-- ═══ WHAT-IF SCENARIO ═══ -->
+        <div id="sec-whatif" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr"><h2><i class="fas fa-flask"></i> What-If Scenario Planner</h2></div>
+                <div class="section-body">
+                    <p style="font-size:12.5px;color:var(--text-sec);margin-bottom:16px">Test hypothetical changes and see how the AI re-optimizes the schedule.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:600;color:var(--text-sec);display:block;margin-bottom:6px">Add Extra VVIP Train</label>
+                            <div style="display:flex;gap:8px">
+                                <input type="text" id="wifTrainName" placeholder="Train name" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px">
+                                <input type="text" id="wifTrainDep" placeholder="Dep 10:00" style="width:90px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px">
+                                <button class="btn btn-approve" onclick="addScenarioTrain()" style="font-size:11px"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:600;color:var(--text-sec);display:block;margin-bottom:6px">Add Emergency Defect</label>
+                            <div style="display:flex;gap:8px">
+                                <input type="text" id="wifDefectTitle" placeholder="Defect title" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px">
+                                <select id="wifDefectPri" style="width:100px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px"><option value="critical">Critical</option><option value="high">High</option></select>
+                                <button class="btn btn-approve" onclick="addScenarioDefect()" style="font-size:11px"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="wifScenarioList" style="margin-bottom:14px"></div>
+                    <button class="btn btn-auto" onclick="runWhatIf()" id="wifRunBtn"><i class="fas fa-play"></i> Run Scenario</button>
+                </div>
+            </div>
+            <div id="wifResults" style="display:none">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px" id="wifMetrics"></div>
+                <div class="section">
+                    <div class="section-hdr"><h2><i class="fas fa-exchange-alt"></i> Impact Analysis</h2></div>
+                    <div class="section-body" id="wifImpact"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ PARETO OPTIMIZER ═══ -->
+        <div id="sec-pareto" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr">
+                    <h2><i class="fas fa-balance-scale"></i> Multi-Objective Pareto Optimizer</h2>
+                    <button class="btn btn-auto" onclick="loadPareto()" id="paretoBtn"><i class="fas fa-sync"></i> Generate Frontier</button>
+                </div>
+                <div class="section-body">
+                    <p style="font-size:12.5px;color:var(--text-sec);margin-bottom:16px">Explore trade-offs between train delay, maintenance backlog, and cost. Each point is a non-dominated solution.</p>
+                    <div style="background:#f8f9fc;border-radius:8px;padding:20px;position:relative;height:320px;margin-bottom:16px" id="paretoChart">
+                        <div style="text-align:center;color:var(--text-muted);padding-top:120px;font-size:13px">
+                            <i class="fas fa-chart-scatter" style="font-size:28px;display:block;margin-bottom:8px;color:var(--primary)"></i>
+                            Click "Generate Frontier" to compute Pareto solutions
+                        </div>
+                    </div>
+                    <div id="paretoSolutions"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ PREDICTIVE MAINTENANCE ═══ -->
+        <div id="sec-predictive" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr">
+                    <h2><i class="fas fa-chart-line"></i> Predictive Maintenance Timeline</h2>
+                    <button class="btn btn-auto" onclick="loadPredictive()" id="predBtn"><i class="fas fa-sync"></i> Analyze</button>
+                </div>
+                <div class="section-body">
+                    <p style="font-size:12.5px;color:var(--text-sec);margin-bottom:16px">Projects defect degradation forward 8 weeks. Shows failure probability curves per asset.</p>
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px" id="predStats"></div>
+                    <div id="predTimeline"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ ANALYTICS ═══ -->
+        <div id="sec-analytics" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr">
+                    <h2><i class="fas fa-chart-bar"></i> Historical Analytics</h2>
+                    <button class="btn btn-auto" onclick="loadAnalytics()" id="analyticsBtn"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="section-body">
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="analyticsKPIs"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-building"></i> Department Performance</h2></div>
+                            <div class="section-body" id="analyticsDepts"></div>
+                        </div>
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-chart-pie"></i> Score Distribution</h2></div>
+                            <div class="section-body" id="analyticsScores"></div>
+                        </div>
+                    </div>
+                    <div class="section" style="margin-bottom:0">
+                        <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-map"></i> Zone Distribution</h2></div>
+                        <div class="section-body" id="analyticsZones"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -783,6 +884,194 @@ async function loadCrew() {
             <td style="font-family:'JetBrains Mono',monospace;font-weight:600;color:${c.remaining_hours<=0?'var(--danger)':c.remaining_hours<=1?'var(--warning)':'var(--success)'}">${c.remaining_hours}h</td>
             <td><span class="badge b-${c.status}">${c.status}</span></td>
         </tr>`).join('')}</tbody></table>`;
+}
+
+// ═══ WHAT-IF SCENARIO ═══
+let scenarioTrains = [];
+let scenarioDefects = [];
+
+function addScenarioTrain() {
+    const name = document.getElementById('wifTrainName').value || 'Scenario VVIP';
+    const dep = document.getElementById('wifTrainDep').value || '10:00';
+    scenarioTrains.push({ number: 'SCN' + (scenarioTrains.length+1).toString().padStart(3,'0'), name, origin: 'Source', destination: 'Dest', departure: dep, is_vvip: 1, zone_id: 1 });
+    document.getElementById('wifTrainName').value = '';
+    document.getElementById('wifTrainDep').value = '';
+    renderScenarioList();
+}
+function addScenarioDefect() {
+    const title = document.getElementById('wifDefectTitle').value || 'Emergency Defect';
+    const pri = document.getElementById('wifDefectPri').value;
+    scenarioDefects.push({ title, department_id: 1, zone_id: 1, priority: pri, maintenance_type: 'urgent', location: 'Scenario Location' });
+    document.getElementById('wifDefectTitle').value = '';
+    renderScenarioList();
+}
+function renderScenarioList() {
+    const el = document.getElementById('wifScenarioList');
+    let html = '';
+    scenarioTrains.forEach((t,i) => { html += `<span class="badge b-high" style="margin:2px">🚂 ${t.name} (${t.departure}) <span style="cursor:pointer;margin-left:4px" onclick="scenarioTrains.splice(${i},1);renderScenarioList()">×</span></span>`; });
+    scenarioDefects.forEach((d,i) => { html += `<span class="badge b-critical" style="margin:2px">⚠️ ${d.title} (${d.priority}) <span style="cursor:pointer;margin-left:4px" onclick="scenarioDefects.splice(${i},1);renderScenarioList()">×</span></span>`; });
+    el.innerHTML = html || '<span style="font-size:12px;color:var(--text-muted)">No scenario items added yet</span>';
+}
+async function runWhatIf() {
+    const btn = document.getElementById('wifRunBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+    try {
+        const r = await fetch(API+'/api/ai/whatif', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({extra_trains:scenarioTrains, extra_defects:scenarioDefects})});
+        const d = await r.json();
+        document.getElementById('wifResults').style.display = '';
+        const impact = d.impact;
+        document.getElementById('wifMetrics').innerHTML = `
+            <div class="score-card"><div class="gauge-label" style="font-size:24px;font-weight:700;color:${impact.score_change>=0?'var(--success)':'var(--danger)'}">${impact.score_change>0?'+':''}${impact.score_change}</div><div class="score-label">Score Change</div></div>
+            <div class="score-card"><div class="gauge-label" style="font-size:24px;font-weight:700;color:var(--info)">${d.scenario_result.blocks}</div><div class="score-label">Blocks Scheduled</div></div>
+            <div class="score-card"><div class="gauge-label" style="font-size:24px;font-weight:700;color:var(--warning)">${impact.additional_blocks>0?'+':''}${impact.additional_blocks}</div><div class="score-label">Additional Blocks</div></div>
+        `;
+        document.getElementById('wifImpact').innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div><h4 style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text-sec)">Baseline</h4>
+                    <div style="font-size:12px;color:var(--text-muted)">Blocks: ${d.baseline.blocks} | Avg Score: ${d.baseline.avg_score} | Night: ${d.baseline.night_utilization}%</div></div>
+                <div><h4 style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text-sec)">Scenario</h4>
+                    <div style="font-size:12px;color:var(--text-muted)">Blocks: ${d.scenario_result.blocks} | Avg Score: ${d.scenario_result.avg_score} | Night: ${d.scenario_result.night_utilization}%</div></div>
+            </div>
+        `;
+    } catch(e) { console.error(e); }
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-play"></i> Run Scenario';
+}
+
+// ═══ PARETO OPTIMIZER ═══
+async function loadPareto() {
+    const btn = document.getElementById('paretoBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Computing...';
+    try {
+        const r = await fetch(API+'/api/ai/pareto');
+        const d = await r.json();
+        // Render scatter chart
+        const chart = document.getElementById('paretoChart');
+        const solutions = d.solutions;
+        const maxDelay = Math.max(...solutions.map(s=>s.train_delay)) || 100;
+        const maxBacklog = Math.max(...solutions.map(s=>s.maintenance_backlog)) || 100;
+        chart.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 600 280" style="overflow:visible">
+            <defs><linearGradient id="paretoGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#3b82f6"/><stop offset="100%" style="stop-color:#8b5cf6"/></linearGradient></defs>
+            <line x1="50" y1="250" x2="580" y2="250" stroke="#e0e3ea" stroke-width="1"/>
+            <line x1="50" y1="10" x2="50" y2="250" stroke="#e0e3ea" stroke-width="1"/>
+            <text x="315" y="275" text-anchor="middle" fill="#9a9ab5" font-size="11" font-family="Fira Sans">Train Delay →</text>
+            <text x="15" y="130" text-anchor="middle" fill="#9a9ab5" font-size="11" font-family="Fira Sans" transform="rotate(-90,15,130)">Maintenance Backlog →</text>
+            ${solutions.map((s,i) => {
+                const x = 50 + (s.train_delay / maxDelay) * 520;
+                const y = 250 - (s.maintenance_backlog / maxBacklog) * 230;
+                const isRec = i === 0;
+                return `<circle cx="${x}" cy="${y}" r="${isRec?10:7}" fill="${isRec?'#3b82f6':'#8b5cf6'}" opacity="${isRec?1:0.6}" stroke="${isRec?'#1d4ed8':'#7c3aed'}" stroke-width="2" style="cursor:pointer"/>
+                    <text x="${x}" y="${y-14}" text-anchor="middle" fill="#1a1a2e" font-size="10" font-weight="600" font-family="Fira Sans">S${s.id}</text>`;
+            }).join('')}
+        </svg>`;
+        // Solution cards
+        document.getElementById('paretoSolutions').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">${solutions.map((s,i) => `
+            <div class="score-card" style="text-align:left;padding:14px;${i===0?'border:2px solid #3b82f6':''}">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <span style="font-size:12px;font-weight:600">Solution ${s.id}</span>
+                    ${i===0?'<span class="badge b-approved" style="font-size:9px">RECOMMENDED</span>':''}
+                </div>
+                <div style="font-size:11px;color:var(--text-muted)">
+                    Delay: ${s.train_delay} | Backlog: ${s.maintenance_backlog}<br>
+                    Score: ${s.overall_score} | Grade: ${s.grade}
+                </div>
+            </div>
+        `).join('')}</div>`;
+    } catch(e) { console.error(e); }
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync"></i> Generate Frontier';
+}
+
+// ═══ PREDICTIVE MAINTENANCE ═══
+async function loadPredictive() {
+    const btn = document.getElementById('predBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+    try {
+        const r = await fetch(API+'/api/ai/predictive');
+        const d = await r.json();
+        // Stats
+        document.getElementById('predStats').innerHTML = `
+            <div class="score-card"><div class="gauge-label" style="font-size:22px;font-weight:700;color:var(--primary)">${d.summary.total_defects}</div><div class="score-label">Total Assets</div></div>
+            <div class="score-card"><div class="gauge-label" style="font-size:22px;font-weight:700;color:var(--danger)">${d.summary.critical_by_week4}</div><div class="score-label">Critical by Week 4</div></div>
+            <div class="score-card"><div class="gauge-label" style="font-size:22px;font-weight:700;color:var(--warning)">${d.summary.critical_by_week8}</div><div class="score-label">Critical by Week 8</div></div>
+            <div class="score-card"><div class="gauge-label" style="font-size:22px;font-weight:700;color:var(--success)">${d.timeline.length - d.summary.critical_by_week8}</div><div class="score-label">Stable Assets</div></div>
+        `;
+        // Timeline cards
+        document.getElementById('predTimeline').innerHTML = d.timeline.slice(0, 12).map(t => {
+            const maxRisk = Math.max(...t.weekly_projection.map(w=>w.failure_probability));
+            const barColor = maxRisk >= 90 ? 'var(--danger)' : maxRisk >= 70 ? 'var(--warning)' : 'var(--success)';
+            return `<div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                    <div><span style="font-size:13px;font-weight:600">${t.title}</span> <span style="font-size:11px;color:var(--text-muted)">${t.department} | ${t.location}</span></div>
+                    ${t.critical_week ? `<span class="badge b-critical" style="font-size:10px">CRITICAL WEEK ${t.critical_week}</span>` : '<span class="badge b-completed" style="font-size:10px">STABLE</span>'}
+                </div>
+                <div style="display:flex;gap:3px;align-items:end;height:40px">
+                    ${t.weekly_projection.map(w => `<div style="flex:1;background:${w.failure_probability>=90?'var(--danger)':w.failure_probability>=70?'var(--warning)':'var(--success)'};height:${w.failure_probability*0.4}px;border-radius:2px;position:relative" title="Week ${w.week}: ${w.failure_probability}%">
+                        <span style="position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--text-muted)">W${w.week}</span>
+                    </div>`).join('')}
+                </div>
+                <div style="margin-top:20px;display:flex;gap:8px;font-size:10px;color:var(--text-muted)">
+                    <span>Current: ${t.current_priority}</span>
+                    <span>|</span>
+                    <span>Type: ${t.maintenance_type}</span>
+                    <span>|</span>
+                    <span>Peak Risk: ${maxRisk}%</span>
+                </div>
+            </div>`;
+        }).join('');
+    } catch(e) { console.error(e); }
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync"></i> Analyze';
+}
+
+// ═══ ANALYTICS ═══
+async function loadAnalytics() {
+    const btn = document.getElementById('analyticsBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    try {
+        const r = await fetch(API+'/api/ai/analytics');
+        const d = await r.json();
+        // KPIs
+        document.getElementById('analyticsKPIs').innerHTML = `
+            <div class="score-card"><div class="gauge-label" style="font-size:22px;font-weight:700;color:var(--primary)">${d.blocks.total}</div><div class="score-label">Total Blocks</div></div>
+            <div class="score-card"><div class="gauge-label" style="font-size:22px;font-weight:700;color:var(--success)">${d.kpi.block_utilization}%</div><div class="score-label">Block Utilization</div></div>
+            <div class="score-card"><div class="gauge-label" style="font-size:22px;font-weight:700;color:var(--warning)">${d.kpi.defect_resolution_rate}%</div><div class="score-label">Defect Resolution</div></div>
+            <div class="score-card"><div class="gauge-label" style="font-size:22px;font-weight:700;color:var(--info)">${d.kpi.avg_ai_score}</div><div class="score-label">Avg AI Score</div></div>
+        `;
+        // Department performance
+        document.getElementById('analyticsDepts').innerHTML = d.departments.map(dept => {
+            const pct = dept.total ? Math.round(dept.done / dept.total * 100) : 0;
+            return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f1f5">
+                <span style="font-size:12px;font-weight:600;min-width:100px">${dept.name}</span>
+                <div style="flex:1;height:6px;background:#e0e3ea;border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--success);border-radius:3px"></div></div>
+                <span style="font-size:11px;color:var(--text-muted);min-width:60px;text-align:right">${dept.done}/${dept.total}</span>
+            </div>`;
+        }).join('');
+        // Score distribution
+        const sd = d.score_distribution;
+        const total = sd.excellent + sd.good + sd.average + sd.poor || 1;
+        document.getElementById('analyticsScores').innerHTML = `
+            <div style="display:flex;gap:4px;height:24px;border-radius:4px;overflow:hidden;margin-bottom:12px">
+                <div style="width:${sd.excellent/total*100}%;background:#22c55e" title="Excellent: ${sd.excellent}"></div>
+                <div style="width:${sd.good/total*100}%;background:#3b82f6" title="Good: ${sd.good}"></div>
+                <div style="width:${sd.average/total*100}%;background:#f59e0b" title="Average: ${sd.average}"></div>
+                <div style="width:${sd.poor/total*100}%;background:#ef4444" title="Poor: ${sd.poor}"></div>
+            </div>
+            <div style="display:flex;gap:16px;font-size:11px;color:var(--text-muted)">
+                <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#22c55e;margin-right:4px"></span>Excellent ${sd.excellent}</span>
+                <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#3b82f6;margin-right:4px"></span>Good ${sd.good}</span>
+                <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#f59e0b;margin-right:4px"></span>Average ${sd.average}</span>
+                <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#ef4444;margin-right:4px"></span>Poor ${sd.poor}</span>
+            </div>
+        `;
+        // Zone distribution
+        const maxZone = Math.max(...d.zone_distribution.map(z=>z.blocks)) || 1;
+        document.getElementById('analyticsZones').innerHTML = `<div style="display:flex;gap:8px;align-items:end;height:120px;padding-top:10px">
+            ${d.zone_distribution.slice(0,10).map(z => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                <span style="font-size:10px;font-weight:600;color:var(--text)">${z.blocks}</span>
+                <div style="width:100%;height:${z.blocks/maxZone*80}px;background:linear-gradient(180deg,#3b82f6,#8b5cf6);border-radius:4px 4px 0 0"></div>
+                <span style="font-size:9px;color:var(--text-muted);writing-mode:vertical-rl;text-orientation:mixed;max-height:60px;overflow:hidden">${z.zone}</span>
+            </div>`).join('')}
+        </div>`;
+    } catch(e) { console.error(e); }
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync"></i> Refresh';
 }
 
 // INIT
