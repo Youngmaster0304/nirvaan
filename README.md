@@ -4,6 +4,19 @@
 
 AI-Powered Automatic Block Planning system that automates maintenance block scheduling, optimizes multi-department coordination, and ensures safety compliance across Indian Railway networks.
 
+## Live Demo
+
+| Component | URL |
+|-----------|-----|
+| **Frontend** | https://sih-railways.vercel.app |
+| **Admin Panel** | https://sih-railways.vercel.app/admin.html |
+| **Backend API** | https://railblock-ai-k8xm.onrender.com |
+
+**Credentials:**
+- Admin: `admin` / `admin123`
+- Controller: `controller` / `ctrl123`
+- Engineer: `engineer` / `eng123`
+
 ## Problem
 Indian Railways manages 131,000+ km of track with thousands of daily maintenance blocks. Current planning is manual, phone-based, and causes:
 - Blocks treated as "favors" instead of entitlements
@@ -40,6 +53,7 @@ RailBlock AI automates the entire block planning lifecycle using real Indian Rai
 - **Backend**: Python 3.13, FastAPI, SQLite
 - **Frontend**: Vanilla JS, Inter font, Font Awesome icons
 - **Theme**: White IRCTC/government style, no dark navy, professional typography
+- **Deployment**: Render (backend) + Vercel (frontend)
 
 ## Quick Start
 ```bash
@@ -346,11 +360,6 @@ sequenceDiagram
     A-->>F: Monthly schedule
     F-->>U: Future maintenance blocks
 ```
-
-## Credentials
-- **Admin**: admin / admin123
-- **Controller**: controller / ctrl123
-- **Engineer**: engineer / eng123
 
 ## License
 MIT License - SIH 2026 Submission
