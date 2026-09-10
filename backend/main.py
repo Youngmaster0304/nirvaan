@@ -1923,7 +1923,7 @@ def crew_management():
     """
     import random
     conn = get_db()
-    crew = [dict(r) for r in conn.execute("SELECT * FROM crew_members").fetchall()]
+    crew = [dict(r) for r in conn.execute("SELECT * FROM crew_duty").fetchall()]
     blocks = [dict(r) for r in conn.execute("""
         SELECT b.*, d.name as dept_name, d.code as dept_code, c.route_name
         FROM blocks b
@@ -1950,6 +1950,15 @@ def crew_management():
     idle_crew = []
     overloaded_crew = []
 
+    # Map crew roles to departments
+    role_to_dept = {
+        'Track Inspector': 'Engineering',
+        'Signal Technician': 'Signal & Telecom',
+        'OHE Maintainer': 'Traction Distribution',
+        'Welder': 'Engineering',
+        'Section Engineer': 'Engineering',
+    }
+
     for block in blocks:
         dept = block.get('dept_name', 'Engineering')
         required_skills = skill_matrix.get(dept, ['general'])
@@ -1957,19 +1966,20 @@ def crew_management():
         # Find matching crew
         matching = []
         for c in crew:
-            crew_dept = c.get('department', '')
-            if crew_dept == dept or crew_dept == 'General':
+            crew_dept = role_to_dept.get(c.get('role', ''), 'Engineering')
+            if crew_dept == dept or c.get('role') == 'Section Engineer':
                 matching.append(c)
         
         if matching:
             assigned = random.sample(matching, min(2, len(matching)))
             for c in assigned:
+                crew_dept = role_to_dept.get(c.get('role', ''), 'Engineering')
                 assignments.append({
                     'block_id': block.get('block_id'),
                     'block_date': block.get('block_date'),
                     'route': block.get('route_name'),
-                    'crew_id': c.get('id'),
-                    'crew_name': c.get('name'),
+                    'crew_id': c.get('crew_id'),
+                    'crew_name': c.get('crew_name'),
                     'department': crew_dept,
                     'skill_match': random.randint(70, 100),
                     'hours_allocated': random.randint(4, 8),
@@ -1986,32 +1996,32 @@ def crew_management():
     # Crew utilization stats
     crew_utilization = []
     for c in crew:
-        assigned_hours = sum(a['hours_allocated'] for a in assignments if a['crew_id'] == c.get('id'))
-        total_available = 8  # 8-hour shifts
-        utilization = round(assigned_hours / total_available * 100)
+        assigned_hours = sum(a['hours_allocated'] for a in assignments if a['crew_id'] == c.get('crew_id'))
+        total_available = float(c.get('max_hours', 10))
+        utilization = round(assigned_hours / total_available * 100) if total_available > 0 else 0
         
         status = 'optimal' if 60 <= utilization <= 85 else 'underutilized' if utilization < 60 else 'overloaded'
         
         crew_utilization.append({
-            'crew_id': c.get('id'),
-            'name': c.get('name'),
-            'department': c.get('department'),
+            'crew_id': c.get('crew_id'),
+            'name': c.get('crew_name'),
+            'department': role_to_dept.get(c.get('role', ''), 'Engineering'),
             'assigned_hours': assigned_hours,
             'available_hours': total_available,
             'utilization_pct': utilization,
             'status': status,
-            'blocks_assigned': len([a for a in assignments if a['crew_id'] == c.get('id')]),
+            'blocks_assigned': len([a for a in assignments if a['crew_id'] == c.get('crew_id')]),
         })
 
     # Nearby job bundling
     bundles = []
     for c in crew:
-        crew_assignments = [a for a in assignments if a['crew_id'] == c.get('id')]
+        crew_assignments = [a for a in assignments if a['crew_id'] == c.get('crew_id')]
         if len(crew_assignments) >= 2:
             routes = list(set(a['route'] for a in crew_assignments))
             bundles.append({
-                'crew_name': c.get('name'),
-                'crew_id': c.get('id'),
+                'crew_name': c.get('crew_name'),
+                'crew_id': c.get('crew_id'),
                 'blocks_bundled': len(crew_assignments),
                 'routes': routes,
                 'total_hours': sum(a['hours_allocated'] for a in crew_assignments),
