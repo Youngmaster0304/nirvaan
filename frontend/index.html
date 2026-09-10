@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nirvaan - Indian Railways Block Planning</title>
+    <title>Nirvaan - AI Block Planning</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -12,9 +12,8 @@
         :root {
             --primary: #1a3a6a;
             --primary-light: #2c5299;
-            --primary-lighter: #e8edf4;
+            --primary-glow: rgba(26,58,106,0.12);
             --accent: #e8590c;
-            --accent-light: #fff3e0;
             --bg: #f5f6fa;
             --white: #ffffff;
             --text: #1a1a2e;
@@ -29,453 +28,377 @@
             --danger-light: #ffebee;
             --info: #1565c0;
             --info-light: #e3f2fd;
-            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
-            --radius: 8px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --radius: 10px;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); font-size:13.5px; line-height:1.55; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
 
-        /* HEADER */
-        .header { background:linear-gradient(135deg,#1a3a6a 0%,#2c5299 100%); color:#fff; padding:0; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.15); }
-        .header-top { display:flex; align-items:center; justify-content:space-between; padding:10px 28px; }
-        .header-brand { display:flex; align-items:center; gap:14px; }
-        .header-brand .logo { width:42px; height:42px; background:rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; color:#fff; border:2px solid rgba(255,255,255,0.25); }
-        .header-brand h1 { font-size:18px; font-weight:700; letter-spacing:0.3px; }
-        .header-brand .tag { font-size:11px; background:rgba(255,255,255,0.15); padding:2px 8px; border-radius:4px; margin-left:6px; font-weight:500; }
-        .header-user { display:flex; align-items:center; gap:16px; }
-        .header-user select { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:6px 10px; border-radius:6px; font-size:12px; cursor:pointer; }
-        .header-user select option { color:#333; background:#fff; }
-        .header-user .badge { background:rgba(255,255,255,0.15); padding:4px 10px; border-radius:6px; font-size:12px; }
-        .header-nav { display:flex; padding:0 28px; gap:2px; }
-        .header-nav a { color:rgba(255,255,255,0.7); text-decoration:none; padding:10px 16px; font-size:12.5px; font-weight:500; border-radius:6px 6px 0 0; transition:all 0.2s; }
-        .header-nav a:hover { color:#fff; background:rgba(255,255,255,0.1); }
-        .header-nav a.active { color:#fff; background:rgba(255,255,255,0.15); }
+        /* ═══ HEADER ═══ */
+        .header { background:var(--primary); color:#fff; position:sticky; top:0; z-index:100; }
+        .header-inner { display:flex; align-items:center; justify-content:space-between; padding:12px 24px; max-width:1400px; margin:0 auto; }
+        .brand { display:flex; align-items:center; gap:12px; }
+        .brand-icon { width:38px; height:38px; background:rgba(255,255,255,0.12); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+        .brand h1 { font-size:17px; font-weight:700; letter-spacing:0.2px; }
+        .brand span { font-size:11px; background:rgba(255,255,255,0.12); padding:2px 8px; border-radius:4px; margin-left:6px; font-weight:500; }
+        .header-right { display:flex; align-items:center; gap:12px; }
+        .ai-status { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.1); padding:6px 14px; border-radius:20px; font-size:12px; font-weight:500; }
+        .ai-dot { width:8px; height:8px; border-radius:50%; background:#4ade80; animation:pulse 2s infinite; }
+        .ai-dot.thinking { background:#facc15; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .hamburger { display:none; background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:8px; }
+        .nav-links { display:flex; gap:4px; }
+        .nav-links a { color:rgba(255,255,255,0.7); text-decoration:none; padding:8px 14px; border-radius:6px; font-size:12.5px; font-weight:500; transition:all 0.15s; cursor:pointer; }
+        .nav-links a:hover, .nav-links a.active { color:#fff; background:rgba(255,255,255,0.12); }
 
-        /* CONTENT */
-        .main { padding:20px 28px; max-width:1400px; margin:0 auto; }
+        /* ═══ MAIN ═══ */
+        .main { padding:20px 24px; max-width:1400px; margin:0 auto; }
 
-        /* STATS */
-        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:20px; }
-        .stat-card { background:#fff; border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow); border-left:4px solid var(--primary); transition:transform 0.15s; }
-        .stat-card:hover { transform:translateY(-1px); box-shadow:var(--shadow-md); }
-        .stat-card.accent { border-left-color:var(--accent); }
-        .stat-card.success { border-left-color:var(--success); }
-        .stat-card.warning { border-left-color:var(--warning); }
-        .stat-card.danger { border-left-color:var(--danger); }
-        .stat-card.info { border-left-color:var(--info); }
-        .stat-card .label { font-size:11.5px; color:var(--text-muted); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
-        .stat-card .value { font-size:26px; font-weight:700; color:var(--primary); margin:4px 0 2px; font-family:'JetBrains Mono',monospace; }
-        .stat-card.accent .value { color:var(--accent); }
-        .stat-card.success .value { color:var(--success); }
-        .stat-card.warning .value { color:var(--warning); }
-        .stat-card.danger .value { color:var(--danger); }
-        .stat-card.info .value { color:var(--info); }
-        .stat-card .sub { font-size:11px; color:var(--text-muted); }
+        /* ═══ AI BRAIN PANEL ═══ */
+        .brain-panel {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .brain-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+        }
+        .brain-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; position:relative; z-index:1; }
+        .brain-title { display:flex; align-items:center; gap:12px; }
+        .brain-title i { font-size:22px; color:#60a5fa; }
+        .brain-title h2 { font-size:16px; font-weight:600; }
+        .brain-btn { padding:8px 20px; border-radius:8px; border:none; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:inherit; }
+        .brain-btn.primary { background:#3b82f6; color:#fff; }
+        .brain-btn.primary:hover { background:#2563eb; }
+        .brain-btn:disabled { opacity:0.5; cursor:not-allowed; }
 
-        /* SECTIONS */
-        .section { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:18px; overflow:hidden; }
-        .section-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); }
-        .section-header h2 { font-size:14px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:8px; }
-        .section-header h2 i { color:var(--primary); font-size:15px; }
-        .section-header .actions { display:flex; gap:8px; }
+        .brain-steps { position:relative; z-index:1; }
+        .brain-step { display:flex; gap:14px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.06); opacity:0.4; transition:all 0.4s; }
+        .brain-step.active { opacity:1; }
+        .brain-step.done { opacity:0.7; }
+        .step-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; background:rgba(255,255,255,0.06); color:#94a3b8; transition:all 0.3s; }
+        .brain-step.active .step-icon { background:#3b82f6; color:#fff; }
+        .brain-step.done .step-icon { background:#22c55e; color:#fff; }
+        .step-content { flex:1; }
+        .step-title { font-size:13px; font-weight:600; margin-bottom:2px; }
+        .step-detail { font-size:12px; color:#94a3b8; }
+        .brain-step.active .step-detail { color:#cbd5e1; }
+
+        /* ═══ AI DECISIONS ═══ */
+        .decisions-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:16px; margin-bottom:20px; }
+        .decision-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .decision-card:hover { box-shadow: var(--shadow-md); }
+        .decision-card.urgent { border-left: 4px solid var(--danger); }
+        .decision-card.optimize { border-left: 4px solid var(--info); }
+        .decision-card.warning { border-left: 4px solid var(--warning); }
+        .decision-card.success { border-left: 4px solid var(--success); }
+        .decision-head { padding:14px 16px 10px; display:flex; align-items:flex-start; justify-content:space-between; }
+        .decision-head h3 { font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; }
+        .decision-head .conf { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; }
+        .conf.high { color:var(--success); }
+        .conf.med { color:var(--warning); }
+        .conf.low { color:var(--danger); }
+        .decision-body { padding:0 16px 14px; }
+        .decision-body p { font-size:12.5px; color:var(--text-sec); margin-bottom:10px; }
+        .decision-actions { display:flex; gap:8px; }
+        .btn { padding:7px 14px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; transition:all 0.15s; font-family:inherit; display:inline-flex; align-items:center; gap:6px; }
+        .btn-approve { background:var(--success); color:#fff; }
+        .btn-approve:hover { background:#1b5e20; }
+        .btn-reject { background:var(--danger-light); color:var(--danger); }
+        .btn-reject:hover { background:var(--danger); color:#fff; }
+        .btn-auto { background:var(--info); color:#fff; }
+        .btn-auto:hover { background:#0d47a1; }
+        .btn-outline { background:var(--white); border:1px solid var(--border); color:var(--text-sec); }
+        .btn-outline:hover { border-color:var(--primary); color:var(--primary); }
+
+        /* ═══ SCHEDULED BLOCKS ═══ */
+        .schedule-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:20px; }
+        .block-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 16px;
+            transition: all 0.2s;
+        }
+        .block-card:hover { box-shadow: var(--shadow-md); }
+        .block-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+        .block-dept { font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px; }
+        .dept-eng { background:#e3f2fd; color:#1565c0; }
+        .dept-sig { background:#f3e5f5; color:#7b1fa2; }
+        .dept-trd { background:#fff3e0; color:#e65100; }
+        .block-score { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; }
+        .block-title { font-size:13px; font-weight:600; margin-bottom:6px; }
+        .block-meta { font-size:11.5px; color:var(--text-muted); display:flex; flex-wrap:wrap; gap:12px; }
+        .block-meta i { margin-right:4px; }
+        .block-tags { display:flex; gap:6px; margin-top:10px; }
+        .tag { font-size:10px; font-weight:600; padding:3px 7px; border-radius:3px; }
+        .tag-night { background:#1e293b; color:#94a3b8; }
+        .tag-vvip { background:#fef3c7; color:#b45309; }
+        .tag-safe { background:#dcfce7; color:#166534; }
+        .tag-risk { background:#fee2e2; color:#991b1b; }
+
+        /* ═══ CONFLICTS ═══ */
+        .conflict-list { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+        .conflict-item {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .conflict-sev { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+        .sev-critical { background:var(--danger); }
+        .sev-high { background:var(--warning); }
+        .sev-medium { background:var(--info); }
+        .conflict-info { flex:1; }
+        .conflict-info .title { font-size:13px; font-weight:600; }
+        .conflict-info .desc { font-size:12px; color:var(--text-muted); }
+        .conflict-res { font-size:11.5px; color:var(--info); font-weight:500; }
+
+        /* ═══ SCORE GAUGE ═══ */
+        .score-panel { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:20px; }
+        .score-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 18px;
+            text-align: center;
+        }
+        .gauge { position:relative; width:80px; height:80px; margin:0 auto 10px; }
+        .gauge svg { transform:rotate(-90deg); }
+        .gauge-bg { fill:none; stroke:var(--border); stroke-width:6; }
+        .gauge-fill { fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset 1s ease; }
+        .gauge-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; }
+        .score-label { font-size:11.5px; color:var(--text-muted); font-weight:500; }
+
+        /* ═══ SECTIONS ═══ */
+        .section { background:var(--white); border-radius:var(--radius); border:1px solid var(--border); margin-bottom:20px; overflow:hidden; }
+        .section-hdr { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); }
+        .section-hdr h2 { font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; }
+        .section-hdr h2 i { color:var(--primary); }
         .section-body { padding:16px 18px; }
         .section-body.no-pad { padding:0; }
 
-        /* TABLE */
+        /* ═══ TABLE ═══ */
+        .tbl-scroll { overflow-x:auto; }
         table { width:100%; border-collapse:collapse; font-size:12.5px; }
-        thead th { background:#f8f9fc; color:var(--text-sec); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; padding:10px 12px; text-align:left; border-bottom:2px solid var(--border); white-space:nowrap; }
-        tbody td { padding:9px 12px; border-bottom:1px solid #f0f1f5; vertical-align:middle; }
-        tbody tr:hover { background:#f8f9fc; }
-        tbody tr:last-child td { border-bottom:none; }
-
-        /* BADGES */
+        thead th { background:#f8f9fc; color:var(--text-sec); font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; padding:10px 14px; text-align:left; border-bottom:2px solid var(--border); white-space:nowrap; }
+        tbody td { padding:10px 14px; border-bottom:1px solid #f0f1f5; }
+        tbody tr:hover td { background:#f8f9fc; }
         .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:600; }
-        .badge-critical { background:var(--danger-light); color:var(--danger); }
-        .badge-high { background:var(--warning-light); color:var(--warning); }
-        .badge-medium { background:var(--info-light); color:var(--info); }
-        .badge-low { background:#f5f5f5; color:#757575; }
-        .badge-locked { background:var(--danger-light); color:var(--danger); }
-        .badge-available { background:var(--success-light); color:var(--success); }
-        .badge-on_duty { background:var(--success-light); color:var(--success); }
-        .badge-violation { background:var(--danger-light); color:var(--danger); }
-        .badge-rest { background:#f5f5f5; color:#757575; }
-        .badge-active { background:var(--info-light); color:var(--info); }
-        .badge-completed { background:var(--success-light); color:var(--success); }
-        .badge-planned { background:#f3e5f5; color:#7b1fa2; }
-        .badge-approved { background:var(--info-light); color:var(--info); }
-        .badge-in_progress { background:var(--warning-light); color:var(--warning); }
-        .badge-vvip { background:var(--accent-light); color:var(--accent); }
-        .badge-routine { background:var(--info-light); color:var(--info); }
-        .badge-fault { background:var(--warning-light); color:var(--warning); }
-        .badge-urgent { background:var(--danger-light); color:var(--danger); }
-        .badge-dot { width:6px; height:6px; border-radius:50%; display:inline-block; }
-        .dot-red { background:var(--danger); }
-        .dot-green { background:var(--success); }
-        .dot-yellow { background:var(--warning); }
+        .b-critical { background:var(--danger-light); color:var(--danger); }
+        .b-high { background:var(--warning-light); color:var(--warning); }
+        .b-medium { background:var(--info-light); color:var(--info); }
+        .b-low { background:#f5f5f5; color:#757575; }
+        .b-planned { background:#f3e5f5; color:#7b1fa2; }
+        .b-approved { background:var(--info-light); color:var(--info); }
+        .b-in_progress { background:var(--warning-light); color:var(--warning); }
+        .b-completed { background:var(--success-light); color:var(--success); }
+        .b-locked { background:var(--danger-light); color:var(--danger); }
+        .b-available { background:var(--success-light); color:var(--success); }
 
-        /* BUTTONS */
-        .btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s; }
-        .btn-primary { background:var(--primary); color:#fff; }
-        .btn-primary:hover { background:var(--primary-light); }
-        .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text-sec); }
-        .btn-outline:hover { border-color:var(--primary); color:var(--primary); }
-        .btn-sm { padding:4px 10px; font-size:11px; }
-        .btn-success { background:var(--success); color:#fff; }
-        .btn-danger { background:var(--danger); color:#fff; }
+        /* ═══ ZONE BAR ═══ */
+        .zone-bar { background:var(--white); border-radius:var(--radius); border:1px solid var(--border); padding:12px 18px; margin-bottom:16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+        .zone-bar label { font-size:12px; font-weight:600; color:var(--text-sec); white-space:nowrap; }
+        .zone-bar select { padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:12px; font-family:inherit; background:#fff; }
+        .zone-bar .divider { width:1px; height:24px; background:var(--border); }
 
-        /* FORMS */
-        select, input { padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:12px; font-family:inherit; color:var(--text); background:#fff; }
-        select:focus, input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,58,106,0.1); }
-
-        /* TABS */
-        .tabs { display:flex; gap:2px; padding:0 18px; background:#f8f9fc; border-bottom:1px solid var(--border); }
-        .tab { padding:10px 16px; font-size:12px; font-weight:500; color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.15s; }
-        .tab:hover { color:var(--text-sec); }
-        .tab.active { color:var(--primary); border-bottom-color:var(--primary); background:#fff; }
-
-        /* GRID */
-        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
-        .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; }
-
-        /* FILTERS */
-        .filters { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
-        .filter-group { display:flex; align-items:center; gap:6px; }
-        .filter-group label { font-size:11.5px; font-weight:500; color:var(--text-sec); }
-
-        /* TRAIN ROW */
-        .train-type-badge { padding:2px 6px; border-radius:3px; font-size:10px; font-weight:600; text-transform:uppercase; }
-        .type-express { background:#e3f2fd; color:#1565c0; }
-        .type-passenger { background:#f3e5f5; color:#7b1fa2; }
-        .type-goods { background:#fff3e0; color:#e65100; }
-        .type-maintenance { background:#fce4ec; color:#c62828; }
-
-        /* PROGRESS BAR */
-        .progress-bar { height:6px; background:#e0e3ea; border-radius:3px; overflow:hidden; }
-        .progress-fill { height:100%; border-radius:3px; transition:width 0.3s; }
-
-        /* RECOMMENDATION */
-        .rec-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #f0f1f5; }
-        .rec-item:last-child { border-bottom:none; }
-        .rec-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
-        .rec-icon.merge { background:#e8f5e9; color:#2e7d32; }
-        .rec-icon.reschedule { background:#e3f2fd; color:#1565c0; }
-        .rec-icon.prioritize { background:#ffebee; color:#c62828; }
-        .rec-icon.optimize { background:#fff3e0; color:#e65100; }
-        .rec-icon.vvip { background:#fce4ec; color:#ad1457; }
-        .rec-icon.hoger { background:#f3e5f5; color:#7b1fa2; }
-        .rec-text { flex:1; }
-        .rec-text .title { font-size:12.5px; font-weight:600; color:var(--text); }
-        .rec-text .desc { font-size:11.5px; color:var(--text-muted); }
-        .rec-score { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--success); }
-
-        /* CORRIDOR */
-        .corridor-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--border); border-radius:6px; margin-bottom:8px; transition:all 0.15s; }
-        .corridor-item:hover { border-color:var(--primary); box-shadow:0 1px 4px rgba(26,58,106,0.1); }
-        .corridor-line { width:4px; height:36px; border-radius:2px; background:var(--primary); flex-shrink:0; }
-        .corridor-line.single { background:var(--warning); }
-        .corridor-info { flex:1; }
-        .corridor-info .name { font-size:12.5px; font-weight:600; color:var(--text); }
-        .corridor-info .meta { font-size:11px; color:var(--text-muted); }
-
-        /* EMP LOGIN */
+        /* ═══ LOGIN ═══ */
         .login-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; }
         .login-overlay.show { display:flex; }
-        .login-box { background:#fff; border-radius:12px; padding:32px; width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+        .login-box { background:#fff; border-radius:12px; padding:32px; width:380px; max-width:95%; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
         .login-box h2 { font-size:18px; font-weight:700; color:var(--primary); margin-bottom:4px; }
         .login-box p { font-size:12px; color:var(--text-muted); margin-bottom:20px; }
         .login-box .field { margin-bottom:14px; }
         .login-box .field label { display:block; font-size:11.5px; font-weight:500; color:var(--text-sec); margin-bottom:4px; }
-        .login-box .field input { width:100%; padding:9px 12px; }
-        .login-box .btn { width:100%; justify-content:center; padding:10px; font-size:13px; }
-        .login-box .error { color:var(--danger); font-size:12px; margin-top:8px; display:none; }
+        .login-box .field input { width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:inherit; }
+        .login-box .field input:focus { outline:none; border-color:var(--primary); }
+        .login-box .btn { width:100%; justify-content:center; padding:10px; background:var(--primary); color:#fff; font-size:13px; }
 
-        /* EMERGENCY */
-        .emergency-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--danger-light); border-radius:6px; margin-bottom:8px; background:var(--danger-light); }
-        .emergency-item .pulse { width:10px; height:10px; border-radius:50%; background:var(--danger); animation:pulse 1.5s infinite; flex-shrink:0; }
-        @keyframes pulse { 0%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} 100%{opacity:1;transform:scale(1)} }
-        .emergency-info { flex:1; }
-        .emergency-info .train { font-weight:600; font-size:13px; }
-        .emergency-info .desc { font-size:11.5px; color:var(--text-sec); }
-
-        /* HAMBURGER */
-        .hamburger { display:none; background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:8px; border-radius:6px; transition:background 0.15s; }
-        .hamburger:hover { background:rgba(255,255,255,0.1); }
-
-        /* TABLE WRAPPER */
-        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-        .section-body.no-pad table { min-width:700px; }
-
-        /* RESPONSIVE — LAPTOP (≤1200px) */
-        @media(max-width:1200px) {
-            .main { padding:16px 20px; }
-            .stats-row { grid-template-columns:repeat(3,1fr); }
-        }
-
-        /* RESPONSIVE — TABLET (≤900px) */
+        /* ═══ RESPONSIVE ═══ */
         @media(max-width:900px) {
-            .grid-2, .grid-3 { grid-template-columns:1fr; }
-            .stats-row { grid-template-columns:repeat(2,1fr); }
-            .header-top { padding:10px 16px; }
-            .header-nav { padding:0 16px; }
-            .main { padding:14px 16px; }
-            .zone-bar { padding:10px 14px; gap:10px; }
-            .zone-bar select { min-width:140px; flex:1; }
-            .section-header { flex-wrap:wrap; gap:8px; }
-            .section-header .actions { width:100%; }
-            .section-header .actions input,
-            .section-header .actions select { width:100%; }
+            .decisions-grid, .schedule-grid { grid-template-columns:1fr; }
+            .score-panel { grid-template-columns:repeat(2,1fr); }
         }
-
-        /* RESPONSIVE — MOBILE (≤640px) */
         @media(max-width:640px) {
             .hamburger { display:block; }
-            .header-brand h1 { font-size:15px; }
-            .header-brand .tag { display:none; }
-            .header-nav {
-                display:none;
-                position:absolute;
-                top:100%;
-                left:0;
-                right:0;
-                background:var(--primary);
-                flex-direction:column;
-                padding:8px;
-                gap:2px;
-                box-shadow:0 8px 24px rgba(0,0,0,0.2);
-                z-index:99;
-            }
-            .header-nav.open { display:flex; }
-            .header-nav a { padding:12px 16px; border-radius:6px; font-size:13px; }
-            .header-nav a:hover { background:rgba(255,255,255,0.1); }
-            .header-nav a.active { background:rgba(255,255,255,0.15); border-radius:6px; }
-            .header-top { padding:8px 12px; }
-            .header-brand { gap:10px; }
-            .header-brand .logo { width:36px; height:36px; font-size:16px; }
-            .header-user { gap:8px; }
-            .header-user .badge { font-size:10px; padding:3px 6px; }
-            .main { padding:12px; }
-            .stats-row { grid-template-columns:1fr 1fr; gap:10px; }
-            .stat-card { padding:12px 14px; }
-            .stat-card .value { font-size:22px; }
-            .zone-bar { flex-direction:column; align-items:stretch; gap:8px; padding:10px 12px; }
+            .nav-links { display:none; position:absolute; top:100%; left:0; right:0; background:var(--primary); flex-direction:column; padding:8px; box-shadow:0 8px 24px rgba(0,0,0,0.2); z-index:99; }
+            .nav-links.open { display:flex; }
+            .nav-links a { padding:12px 16px; }
+            .main { padding:14px; }
+            .brain-panel { padding:18px; }
+            .score-panel { grid-template-columns:1fr 1fr; }
+            .zone-bar { flex-direction:column; align-items:stretch; }
             .zone-bar .divider { display:none; }
-            .zone-bar label { font-size:11px; }
-            .zone-bar select { min-width:100%; }
-            .zone-bar .info { text-align:center; }
-            .section { border-radius:6px; margin-bottom:12px; }
-            .section-header { padding:12px 14px; }
-            .section-header h2 { font-size:13px; }
-            .section-body { padding:12px 14px; }
-            .tabs { padding:0 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-            .tab { padding:10px 12px; font-size:11px; white-space:nowrap; }
-            .table-scroll { margin:0 -14px; padding:0 14px; }
-            .login-box { width:calc(100% - 32px); padding:24px 20px; margin:16px; }
-            .filters { gap:6px; }
-            .filter-group { flex-wrap:wrap; }
         }
 
-        /* RESPONSIVE — SMALL MOBILE (≤400px) */
-        @media(max-width:400px) {
-            .stats-row { grid-template-columns:1fr; }
-            .stat-card .value { font-size:20px; }
-            .header-brand .logo { width:32px; height:32px; font-size:14px; }
-        }
-
-        /* ZONE FILTER BAR */
-        .zone-bar { background:#fff; border-radius:var(--radius); padding:12px 18px; box-shadow:var(--shadow); margin-bottom:16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-        .zone-bar label { font-size:12px; font-weight:600; color:var(--text-sec); white-space:nowrap; }
-        .zone-bar select { min-width:180px; }
-        .zone-bar .divider { width:1px; height:24px; background:var(--border); }
-        .zone-bar .info { font-size:11.5px; color:var(--text-muted); }
+        /* ═══ ANIMATION ═══ */
+        .fade-in { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .thinking-dots::after { content:''; animation: dots 1.5s steps(4,end) infinite; }
+        @keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
     </style>
 </head>
 <body>
-    <!-- HEADER -->
     <div class="header">
-        <div class="header-top">
-            <div class="header-brand">
-                <div class="logo"><i class="fas fa-train"></i></div>
-                <div>
-                    <h1>Nirvaan <span class="tag">Indian Railways</span></h1>
-                </div>
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-icon"><i class="fas fa-brain"></i></div>
+                <h1>Nirvaan<span>AI</span></h1>
             </div>
-            <button class="hamburger" onclick="document.querySelector('.header-nav').classList.toggle('open')"><i class="fas fa-bars"></i></button>
-            <div class="header-user">
+            <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+            <div class="nav-links">
+                <a class="active" onclick="show('brain')">AI Brain</a>
+                <a onclick="show('blocks')">Blocks</a>
+                <a onclick="show('trains')">Trains</a>
+                <a onclick="show('defects')">Defects</a>
+                <a onclick="show('tokens')">Tokens</a>
+                <a onclick="show('crew')">Crew</a>
+            </div>
+            <div class="header-right">
+                <div class="ai-status" id="aiStatus">
+                    <div class="ai-dot" id="aiDot"></div>
+                    <span id="aiStatusText">Ready</span>
+                </div>
                 <div id="userArea">
-                    <button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff" onclick="showLogin()">
-                        <i class="fas fa-user"></i> Login
-                    </button>
+                    <button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff;font-size:12px" onclick="showLogin()"><i class="fas fa-user"></i> Login</button>
                 </div>
             </div>
-        </div>
-        <div class="header-nav">
-            <a href="#" class="active" onclick="showSection('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-            <a href="#" onclick="showSection('blocks')"><i class="fas fa-road"></i> Blocks</a>
-            <a href="#" onclick="showSection('trains')"><i class="fas fa-train"></i> Trains</a>
-            <a href="#" onclick="showSection('defects')"><i class="fas fa-exclamation-triangle"></i> Defects</a>
-            <a href="#" onclick="showSection('maintenance')"><i class="fas fa-wrench"></i> Maintenance</a>
-            <a href="#" onclick="showSection('tokens')"><i class="fas fa-key"></i> Token Locks</a>
-            <a href="#" onclick="showSection('crew')"><i class="fas fa-users"></i> Crew</a>
-            <a href="#" onclick="showSection('emergency')"><i class="fas fa-bell"></i> Emergency</a>
-            <a href="#" onclick="showSection('ai')"><i class="fas fa-brain"></i> AI Engine</a>
         </div>
     </div>
 
-    <!-- ZONE FILTER -->
     <div class="main">
+        <!-- ZONE FILTER -->
         <div class="zone-bar">
             <label><i class="fas fa-map-marker-alt"></i> Zone:</label>
-            <select id="zoneFilter" onchange="onZoneChange()">
-                <option value="">All India (15 Zones)</option>
-            </select>
+            <select id="zoneFilter" onchange="onZoneChange()"><option value="">All India (15 Zones)</option></select>
             <div class="divider"></div>
             <label>Division:</label>
-            <select id="divisionFilter" onchange="loadData()">
-                <option value="">All Divisions</option>
-            </select>
-            <div class="divider"></div>
-            <span class="info" id="dataInfo">Loading...</span>
+            <select id="divisionFilter" onchange="loadData()"><option value="">All Divisions</option></select>
         </div>
 
-        <!-- DASHBOARD -->
-        <div id="sec-dashboard">
-            <div class="stats-row" id="statsRow"></div>
-            <div class="grid-2">
-                <div class="section">
-                    <div class="section-header"><h2><i class="fas fa-lightbulb"></i> AI Recommendations</h2></div>
-                    <div class="section-body" id="recsList"></div>
+        <!-- ═══ AI BRAIN ═══ -->
+        <div id="sec-brain">
+            <div class="brain-panel">
+                <div class="brain-header">
+                    <div class="brain-title">
+                        <i class="fas fa-brain"></i>
+                        <h2>Nirvaan AI Brain</h2>
+                    </div>
+                    <button class="brain-btn primary" id="thinkBtn" onclick="runAI()">
+                        <i class="fas fa-play"></i> Think & Auto-Schedule
+                    </button>
                 </div>
-                <div class="section">
-                    <div class="section-header"><h2><i class="fas fa-building"></i> Department Blocks</h2></div>
-                    <div class="section-body" id="deptList"></div>
+                <div class="brain-steps" id="brainSteps">
+                    <div style="text-align:center;padding:30px;color:#64748b;font-size:13px">
+                        <i class="fas fa-brain" style="font-size:32px;margin-bottom:12px;display:block;color:#3b82f6"></i>
+                        Click <strong>"Think & Auto-Schedule"</strong> to let the AI analyze defects, detect conflicts, and auto-schedule blocks.
+                    </div>
                 </div>
             </div>
-            <div class="section" style="margin-top:18px">
-                <div class="section-header"><h2><i class="fas fa-train"></i> Recent Trains</h2></div>
-                <div class="section-body no-pad" id="recentTrains"></div>
+
+            <!-- SCORE GAUGES -->
+            <div class="score-panel" id="scorePanel" style="display:none"></div>
+
+            <!-- AI DECISIONS -->
+            <div id="decisionsArea" style="display:none">
+                <h3 style="font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                    <i class="fas fa-gavel" style="color:var(--primary)"></i> AI Decisions — Approve or Reject
+                </h3>
+                <div class="decisions-grid" id="decisionsGrid"></div>
+            </div>
+
+            <!-- SCHEDULED BLOCKS -->
+            <div id="scheduledArea" style="display:none">
+                <h3 style="font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                    <i class="fas fa-calendar-check" style="color:var(--success)"></i> Auto-Scheduled Blocks
+                </h3>
+                <div class="schedule-grid" id="scheduleGrid"></div>
+            </div>
+
+            <!-- CONFLICTS -->
+            <div id="conflictsArea" style="display:none">
+                <h3 style="font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                    <i class="fas fa-exclamation-triangle" style="color:var(--warning)"></i> Detected Conflicts
+                </h3>
+                <div class="conflict-list" id="conflictList"></div>
             </div>
         </div>
 
-        <!-- BLOCKS -->
+        <!-- ═══ BLOCKS ═══ -->
         <div id="sec-blocks" style="display:none">
             <div class="section">
-                <div class="section-header">
-                    <h2><i class="fas fa-road"></i> Block Planning</h2>
-                    <div class="actions">
-                        <button class="btn btn-outline btn-sm" onclick="loadBlocks()"><i class="fas fa-sync"></i> Refresh</button>
-                    </div>
-                </div>
-                <div class="tabs" id="blockTabs">
-                    <div class="tab active" onclick="filterBlockStatus('all',this)">All</div>
-                    <div class="tab" onclick="filterBlockStatus('planned',this)">Planned</div>
-                    <div class="tab" onclick="filterBlockStatus('approved',this)">Approved</div>
-                    <div class="tab" onclick="filterBlockStatus('in_progress',this)">In Progress</div>
-                    <div class="tab" onclick="filterBlockStatus('completed',this)">Completed</div>
-                </div>
-                <div class="section-body no-pad" id="blocksTable"></div>
+                <div class="section-hdr"><h2><i class="fas fa-road"></i> All Blocks</h2></div>
+                <div class="section-body no-pad"><div class="tbl-scroll" id="blocksTbl"></div></div>
             </div>
         </div>
 
-        <!-- TRAINS -->
+        <!-- ═══ TRAINS ═══ -->
         <div id="sec-trains" style="display:none">
             <div class="section">
-                <div class="section-header">
-                    <h2><i class="fas fa-train"></i> Train Schedule <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px" id="trainCount"></span></h2>
-                    <div class="actions">
-                        <input type="text" id="trainSearch" placeholder="Search train..." style="width:200px" oninput="filterTrains()">
-                        <button class="btn btn-outline btn-sm" onclick="loadTrains()"><i class="fas fa-sync"></i></button>
-                    </div>
+                <div class="section-hdr">
+                    <h2><i class="fas fa-train"></i> Train Schedule</h2>
+                    <input type="text" id="trainSearch" placeholder="Search..." style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;width:180px" oninput="filterTrains()">
                 </div>
-                <div class="section-body no-pad" id="trainsTable"></div>
+                <div class="section-body no-pad"><div class="tbl-scroll" id="trainsTbl"></div></div>
             </div>
         </div>
 
-        <!-- DEFECTS -->
+        <!-- ═══ DEFECTS ═══ -->
         <div id="sec-defects" style="display:none">
             <div class="section">
-                <div class="section-header">
-                    <h2><i class="fas fa-exclamation-triangle"></i> Defect Tracking</h2>
-                    <div class="actions">
-                        <select id="defectFilter" onchange="loadDefects()">
-                            <option value="all">All Priorities</option>
-                            <option value="critical">Critical</option>
-                            <option value="high">High</option>
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="section-body no-pad" id="defectsTable"></div>
+                <div class="section-hdr"><h2><i class="fas fa-exclamation-triangle"></i> Pending Defects</h2></div>
+                <div class="section-body no-pad"><div class="tbl-scroll" id="defectsTbl"></div></div>
             </div>
         </div>
 
-        <!-- MAINTENANCE -->
-        <div id="sec-maintenance" style="display:none">
-            <div class="stats-row" id="maintStats"></div>
-            <div class="grid-3" id="maintCards"></div>
-        </div>
-
-        <!-- TOKENS -->
+        <!-- ═══ TOKENS ═══ -->
         <div id="sec-tokens" style="display:none">
             <div class="section">
-                <div class="section-header"><h2><i class="fas fa-key"></i> Directional Token Locks</h2></div>
-                <div class="section-body no-pad" id="tokensTable"></div>
+                <div class="section-hdr"><h2><i class="fas fa-key"></i> Token Locks</h2></div>
+                <div class="section-body no-pad"><div class="tbl-scroll" id="tokensTbl"></div></div>
             </div>
         </div>
 
-        <!-- CREW -->
+        <!-- ═══ CREW ═══ -->
         <div id="sec-crew" style="display:none">
-            <div class="stats-row" id="crewStats"></div>
             <div class="section">
-                <div class="section-header"><h2><i class="fas fa-users"></i> Crew Duty Status (HOER Compliance)</h2></div>
-                <div class="section-body no-pad" id="crewTable"></div>
-            </div>
-        </div>
-
-        <!-- EMERGENCY -->
-        <div id="sec-emergency" style="display:none">
-            <div class="grid-2">
-                <div class="section">
-                    <div class="section-header"><h2><i class="fas fa-bell"></i> Emergency Pushes</h2></div>
-                    <div class="section-body" id="emergencyList"></div>
-                </div>
-                <div class="section">
-                    <div class="section-header"><h2><i class="fas fa-shield-alt"></i> VVIP Protection</h2></div>
-                    <div class="section-body" id="vvipList"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- AI -->
-        <div id="sec-ai" style="display:none">
-            <div class="stats-row" id="aiStats"></div>
-            <div class="section">
-                <div class="section-header"><h2><i class="fas fa-brain"></i> AI Optimization Recommendations</h2></div>
-                <div class="section-body" id="aiRecs"></div>
-            </div>
-            <div class="stats-row" id="aiMilp"></div>
-            <div class="section">
-                <div class="section-header"><h2><i class="fas fa-exclamation-triangle"></i> Schedule Conflicts</h2></div>
-                <div class="section-body" id="aiConflicts"></div>
-            </div>
-            <div class="section">
-                <div class="section-header"><h2><i class="fas fa-database"></i> Data Harmonization (TMS/SMMS/TDMS)</h2></div>
-                <div class="section-body" id="aiHarmonize"></div>
+                <div class="section-hdr"><h2><i class="fas fa-users"></i> Crew HOER Status</h2></div>
+                <div class="section-body no-pad"><div class="tbl-scroll" id="crewTbl"></div></div>
             </div>
         </div>
     </div>
 
-    <!-- LOGIN OVERLAY -->
+    <!-- LOGIN -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
-            <div style="text-align:center;margin-bottom:16px"><i class="fas fa-train" style="font-size:32px;color:var(--primary)"></i></div>
+            <div style="text-align:center;margin-bottom:16px"><i class="fas fa-brain" style="font-size:32px;color:var(--primary)"></i></div>
             <h2>Nirvaan Login</h2>
-            <p>Indian Railways Block Planning System</p>
+            <p>AI-Powered Block Planning System</p>
             <div class="field"><label>Username</label><input type="text" id="loginUser" value="admin"></div>
             <div class="field"><label>Password</label><input type="password" id="loginPass" value="admin123" onkeypress="if(event.key==='Enter')doLogin()"></div>
-            <div class="error" id="loginError"></div>
-            <button class="btn btn-primary" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+            <div id="loginErr" style="color:var(--danger);font-size:12px;margin-top:8px;display:none"></div>
+            <button class="btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
         </div>
     </div>
 
@@ -483,365 +406,379 @@
 const API = window.location.hostname === 'localhost' ? '' : 'https://railblock-ai-k8xm.onrender.com';
 let token = localStorage.getItem('nirvaan_token');
 let currentUser = JSON.parse(localStorage.getItem('nirvaan_user') || 'null');
-let allTrains = [];
-let allBlocks = [];
-let zones = [];
-let divisions = [];
+let allTrains = [], allBlocks = [], zones = [];
 
-// AUTH
 function showLogin() { document.getElementById('loginOverlay').classList.add('show'); }
-function hideLogin() { document.getElementById('loginOverlay').classList.remove('show'); }
-
 async function doLogin() {
     const u = document.getElementById('loginUser').value;
     const p = document.getElementById('loginPass').value;
     try {
         const r = await fetch(API+'/api/auth/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:u,password:p})});
         const d = await r.json();
-        if (!r.ok) throw new Error(d.detail || 'Login failed');
+        if (!r.ok) throw new Error(d.detail || 'Failed');
         token = d.token; currentUser = d.user;
         localStorage.setItem('nirvaan_token', token);
         localStorage.setItem('nirvaan_user', JSON.stringify(currentUser));
-        updateUserUI(); hideLogin(); loadData();
-    } catch(e) {
-        document.getElementById('loginError').textContent = e.message;
-        document.getElementById('loginError').style.display = 'block';
-    }
+        updateUserUI(); document.getElementById('loginOverlay').classList.remove('show');
+    } catch(e) { document.getElementById('loginErr').textContent = e.message; document.getElementById('loginErr').style.display = 'block'; }
 }
-
-function logout() {
-    token = null; currentUser = null;
-    localStorage.removeItem('nirvaan_token');
-    localStorage.removeItem('nirvaan_user');
-    updateUserUI();
-}
-
+function logout() { token=null; currentUser=null; localStorage.removeItem('nirvaan_token'); localStorage.removeItem('nirvaan_user'); updateUserUI(); }
 function updateUserUI() {
-    const area = document.getElementById('userArea');
+    const a = document.getElementById('userArea');
     if (currentUser) {
-        area.innerHTML = `<span class="badge"><i class="fas fa-user"></i> ${currentUser.full_name}</span>
-            <span class="badge" style="background:rgba(255,255,255,0.15)">${currentUser.role}</span>
-            <button class="btn btn-outline btn-sm" style="border-color:rgba(255,255,255,0.3);color:#fff" onclick="logout()">Logout</button>`;
+        a.innerHTML = `<span style="color:rgba(255,255,255,0.8);font-size:12px;margin-right:8px">${currentUser.full_name}</span><button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff;font-size:11px" onclick="logout()">Logout</button>`;
     } else {
-        area.innerHTML = `<button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff" onclick="showLogin()"><i class="fas fa-user"></i> Login</button>`;
+        a.innerHTML = `<button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff;font-size:12px" onclick="showLogin()"><i class="fas fa-user"></i> Login</button>`;
     }
 }
 
-function headers() { return token ? {'Authorization':'Bearer '+token,'Content-Type':'application/json'} : {'Content-Type':'application/json'}; }
-
-// NAVIGATION
-function showSection(id) {
-    document.querySelectorAll('[id^="sec-"]').forEach(s => s.style.display = 'none');
-    document.getElementById('sec-'+id).style.display = '';
-    document.querySelectorAll('.header-nav a').forEach(a => a.classList.remove('active'));
+function show(id) {
+    document.querySelectorAll('[id^="sec-"]').forEach(s => s.style.display='none');
+    document.getElementById('sec-'+id).style.display='';
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
     event.target.closest('a').classList.add('active');
-    document.querySelector('.header-nav').classList.remove('open');
+    document.querySelector('.nav-links').classList.remove('open');
     if (id==='blocks') loadBlocks();
     if (id==='trains') loadTrains();
     if (id==='defects') loadDefects();
-    if (id==='maintenance') loadMaintenance();
     if (id==='tokens') loadTokens();
     if (id==='crew') loadCrew();
-    if (id==='emergency') loadEmergency();
-    if (id==='ai') loadAI();
 }
 
-// ZONE/DIVISION FILTERS
+// ═══ AI BRAIN ═══
+async function runAI() {
+    const btn = document.getElementById('thinkBtn');
+    const dot = document.getElementById('aiDot');
+    const statusText = document.getElementById('aiStatusText');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Thinking...';
+    dot.classList.add('thinking');
+    statusText.textContent = 'Analyzing...';
+
+    const stepsEl = document.getElementById('brainSteps');
+    stepsEl.innerHTML = '';
+
+    try {
+        const r = await fetch(API+'/api/ai/think');
+        const data = await r.json();
+
+        // Animate steps
+        for (let i = 0; i < data.steps.length; i++) {
+            const step = data.steps[i];
+            const el = document.createElement('div');
+            el.className = 'brain-step fade-in';
+            el.innerHTML = `
+                <div class="step-icon"><i class="fas fa-${step.icon}"></i></div>
+                <div class="step-content">
+                    <div class="step-title">${step.title}</div>
+                    <div class="step-detail">${step.detail}</div>
+                    ${step.thoughts ? renderThoughts(step.thoughts) : ''}
+                    ${step.score ? renderMiniScore(step.score) : ''}
+                    ${step.recommendations ? renderRecsInline(step.recommendations) : ''}
+                </div>
+            `;
+            stepsEl.appendChild(el);
+
+            // Mark previous as done
+            if (i > 0) stepsEl.children[i-1].classList.remove('active');
+            stepsEl.children[i].classList.add('active');
+
+            await new Promise(r => setTimeout(r, 600));
+        }
+        // Mark last as done
+        stepsEl.lastElementChild.classList.remove('active');
+        stepsEl.lastElementChild.classList.add('done');
+
+        // Render scores
+        renderScores(data.score);
+
+        // Render scheduled blocks
+        renderScheduled(data.scheduled_blocks);
+
+        // Render conflicts
+        renderConflicts(data.conflicts);
+
+        // Render decisions
+        renderDecisions(data.recommendations, data.scheduled_blocks);
+
+        dot.classList.remove('thinking');
+        statusText.textContent = 'Done';
+        btn.innerHTML = '<i class="fas fa-check"></i> Analysis Complete';
+    } catch(e) {
+        dot.classList.remove('thinking');
+        statusText.textContent = 'Error';
+        btn.innerHTML = '<i class="fas fa-redo"></i> Retry';
+        btn.disabled = false;
+        stepsEl.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444"><i class="fas fa-exclamation-circle" style="font-size:24px;margin-bottom:8px;display:block"></i>AI engine error. Check backend.`;
+    }
+}
+
+function renderThoughts(thoughts) {
+    if (!thoughts || !thoughts.length) return '';
+    return `<div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${thoughts.map(t => `
+        <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:8px 12px;font-size:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;color:#e2e8f0">${t.defect}</span>
+                <span style="font-family:'JetBrains Mono',monospace;color:${t.score>60?'#4ade80':t.score>30?'#facc15':'#f87171'}">${Math.round(t.score)}%</span>
+            </div>
+            <div style="color:#94a3b8;font-size:11px">
+                ${t.dept} | <span class="badge b-${t.priority}" style="font-size:9px">${t.priority}</span> → ${t.decision}
+                ${t.night_window ? ' <span class="tag tag-night" style="font-size:9px">NIGHT</span>' : ''}
+                ${t.vvip_safe ? ' <span class="tag tag-safe" style="font-size:9px">VVIP SAFE</span>' : ' <span class="tag tag-risk" style="font-size:9px">VVIP RISK</span>'}
+            </div>
+        </div>
+    `).join('')}</div>`;
+}
+
+function renderMiniScore(score) {
+    return `<div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap">
+        <span style="font-size:11px;color:#94a3b8">Grade: <strong style="color:#60a5fa;font-family:'JetBrains Mono',monospace">${score.grade}</strong></span>
+        <span style="font-size:11px;color:#94a3b8">Score: <strong style="color:#4ade80;font-family:'JetBrains Mono',monospace">${score.overall_score}/100</strong></span>
+    </div>`;
+}
+
+function renderRecsInline(recs) {
+    if (!recs || !recs.length) return '';
+    return `<div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${recs.map(r => `
+        <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:8px 12px;font-size:12px;display:flex;align-items:center;gap:10px">
+            <i class="fas fa-${r.type==='critical'?'exclamation-circle':r.type==='optimize'?'chart-line':'lightbulb'}" style="color:${r.type==='critical'?'#f87171':r.type==='optimize'?'#60a5fa':'#facc15'}"></i>
+            <div style="flex:1"><strong style="color:#e2e8f0">${r.title}</strong><div style="color:#94a3b8;font-size:11px">${r.action}</div></div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#4ade80">${r.confidence}%</span>
+        </div>
+    `).join('')}</div>`;
+}
+
+function renderScores(score) {
+    const panel = document.getElementById('scorePanel');
+    panel.style.display = '';
+    const factors = score.factors || {};
+    const items = [
+        { label:'Overall', value:score.overall_score, color:'#3b82f6' },
+        { label:'Train Disruption', value:factors.train_disruption, color:'#22c55e' },
+        { label:'Night Utilization', value:factors.night_utilization, color:'#8b5cf6' },
+        { label:'VVIP Protection', value:factors.vvip_protection, color:'#f59e0b' },
+        { label:'Dept Balance', value:factors.department_balance, color:'#06b6d4' },
+        { label:'Safety', value:factors.single_line_safety, color:'#ef4444' },
+    ];
+    panel.innerHTML = items.map(item => {
+        const v = Math.round(item.value || 0);
+        const circ = 2 * Math.PI * 34;
+        const offset = circ - (v / 100) * circ;
+        return `<div class="score-card fade-in">
+            <div class="gauge">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="34" class="gauge-bg"/>
+                    <circle cx="40" cy="40" r="34" class="gauge-fill" stroke="${item.color}" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"/>
+                </svg>
+                <div class="gauge-label" style="color:${item.color}">${v}</div>
+            </div>
+            <div class="score-label">${item.label}</div>
+        </div>`;
+    }).join('');
+}
+
+function renderScheduled(blocks) {
+    if (!blocks || !blocks.length) return;
+    const area = document.getElementById('scheduledArea');
+    area.style.display = '';
+    const grid = document.getElementById('scheduleGrid');
+    grid.innerHTML = blocks.map(b => {
+        const d = b.defect;
+        const s = b.result;
+        const deptClass = d.department_id===1?'dept-eng':d.department_id===3?'dept-sig':'dept-trd';
+        const deptName = d.department_id===1?'ENG':d.department_id===3?'SIG':'TRD';
+        return `<div class="block-card fade-in">
+            <div class="block-top">
+                <span class="block-dept ${deptClass}">${deptName}</span>
+                <span class="block-score" style="color:${s.score>70?'var(--success)':s.score>40?'var(--warning)':'var(--danger)'}">${Math.round(s.score)}%</span>
+            </div>
+            <div class="block-title">${d.title}</div>
+            <div class="block-meta">
+                <span><i class="fas fa-clock"></i>${s.start_time} - ${s.end_time}</span>
+                <span><i class="fas fa-calendar"></i>${s.date}</span>
+                <span><i class="fas fa-map-marker-alt"></i>${d.location||'N/A'}</span>
+            </div>
+            <div class="block-tags">
+                ${s.night_window ? '<span class="tag tag-night">NIGHT WINDOW</span>' : ''}
+                ${s.vvip_safe ? '<span class="tag tag-vvip">VVIP SAFE</span>' : '<span class="tag tag-risk">VVIP RISK</span>'}
+                ${s.violations.length===0 ? '<span class="tag tag-safe">NO VIOLATIONS</span>' : `<span class="tag tag-risk">${s.violations.length} ISSUES</span>`}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderConflicts(conflicts) {
+    if (!conflicts || !conflicts.total) return;
+    const area = document.getElementById('conflictsArea');
+    area.style.display = '';
+    const list = document.getElementById('conflictList');
+    const all = [...(conflicts.block_train||[]), ...(conflicts.department_overlap||[]), ...(conflicts.single_line||[])];
+    list.innerHTML = all.map(c => `
+        <div class="conflict-item fade-in">
+            <div class="conflict-sev sev-${c.severity}"></div>
+            <div class="conflict-info">
+                <div class="title">${c.type.replace(/_/g,' ').toUpperCase()}</div>
+                <div class="desc">${c.description}</div>
+            </div>
+            <div class="conflict-res"><i class="fas fa-magic"></i> ${c.resolution}</div>
+        </div>
+    `).join('');
+}
+
+function renderDecisions(recs, scheduled) {
+    const area = document.getElementById('decisionsArea');
+    area.style.display = '';
+    const grid = document.getElementById('decisionsGrid');
+    const cards = [];
+
+    // Recommendation cards
+    if (recs) recs.forEach(r => {
+        cards.push(`<div class="decision-card ${r.type} fade-in">
+            <div class="decision-head">
+                <h3><i class="fas fa-${r.type==='critical'?'exclamation-circle':r.type==='optimize'?'chart-line':r.type==='warning'?'shield-alt':'lightbulb'}" style="color:var(--${r.type==='critical'?'danger':r.type==='optimize'?'info':r.type==='warning'?'warning':'success'})"></i> ${r.title}</h3>
+                <span class="conf ${r.confidence>=90?'high':r.confidence>=70?'med':'low'}">${r.confidence}%</span>
+            </div>
+            <div class="decision-body">
+                <p>${r.action}</p>
+                <div class="decision-actions">
+                    <button class="btn btn-approve" onclick="approveDecision(this)"><i class="fas fa-check"></i> Approve</button>
+                    <button class="btn btn-reject" onclick="rejectDecision(this)"><i class="fas fa-times"></i> Reject</button>
+                </div>
+            </div>
+        </div>`);
+    });
+
+    // Auto-schedule approval cards
+    if (scheduled) scheduled.forEach(b => {
+        cards.push(`<div class="decision-card success fade-in">
+            <div class="decision-head">
+                <h3><i class="fas fa-calendar-plus" style="color:var(--success)"></i> Auto-Schedule: ${b.defect.title}</h3>
+                <span class="conf high">${Math.round(b.result.score)}%</span>
+            </div>
+            <div class="decision-body">
+                <p>${b.result.start_time}-${b.result.end_time} on ${b.result.date} | ${b.result.violations.length===0?'No conflicts':'Has violations'}</p>
+                <div class="decision-actions">
+                    <button class="btn btn-approve" onclick="approveDecision(this)"><i class="fas fa-check"></i> Approve Block</button>
+                    <button class="btn btn-reject" onclick="rejectDecision(this)"><i class="fas fa-times"></i> Reject</button>
+                    <button class="btn btn-auto" onclick="autoResolve(this)"><i class="fas fa-magic"></i> AI Auto-Resolve</button>
+                </div>
+            </div>
+        </div>`);
+    });
+
+    grid.innerHTML = cards.join('');
+}
+
+function approveDecision(btn) {
+    const card = btn.closest('.decision-card');
+    card.style.borderLeftColor = 'var(--success)';
+    card.querySelector('.decision-body').innerHTML = '<p style="color:var(--success);font-weight:600"><i class="fas fa-check-circle"></i> Approved</p>';
+}
+function rejectDecision(btn) {
+    const card = btn.closest('.decision-card');
+    card.style.borderLeftColor = 'var(--danger)';
+    card.querySelector('.decision-body').innerHTML = '<p style="color:var(--danger);font-weight:600"><i class="fas fa-times-circle"></i> Rejected</p>';
+}
+function autoResolve(btn) {
+    const card = btn.closest('.decision-card');
+    card.querySelector('.decision-body').innerHTML = '<p style="color:var(--info);font-weight:600"><i class="fas fa-robot"></i> AI resolving... rescheduling to night window</p>';
+    setTimeout(() => approveDecision(btn), 1500);
+}
+
+// ═══ DATA ═══
 async function loadZones() {
     zones = await (await fetch(API+'/api/zones')).json();
     const sel = document.getElementById('zoneFilter');
-    zones.forEach(z => { const o = document.createElement('option'); o.value = z.id; o.textContent = `${z.zone_code} - ${z.zone_name} (${z.hq_city})`; sel.appendChild(o); });
+    zones.forEach(z => { const o = document.createElement('option'); o.value=z.id; o.textContent=`${z.zone_code} - ${z.zone_name}`; sel.appendChild(o); });
 }
-
 async function onZoneChange() {
     const zid = document.getElementById('zoneFilter').value;
     const sel = document.getElementById('divisionFilter');
     sel.innerHTML = '<option value="">All Divisions</option>';
-    if (zid) {
-        divisions = await (await fetch(API+'/api/divisions?zone_id='+zid)).json();
-        divisions.forEach(d => { const o = document.createElement('option'); o.value = d.id; o.textContent = d.div_name; sel.appendChild(o); });
-    }
+    if (zid) { const divs = await (await fetch(API+'/api/divisions?zone_id='+zid)).json(); divs.forEach(d => { const o = document.createElement('option'); o.value=d.id; o.textContent=d.div_name; sel.appendChild(o); }); }
     loadData();
 }
-
-// LOAD DATA
 async function loadData() {
-    const zid = document.getElementById('zoneFilter').value;
-    const did = document.getElementById('divisionFilter').value;
-    const params = new URLSearchParams();
-    if (zid) params.set('zone_id', zid);
-    if (did) params.set('division_id', did);
-    const qs = params.toString() ? '?'+params.toString() : '';
-
-    const stats = await (await fetch(API+'/api/dashboard/stats'+qs)).json();
-    const zoneLabel = zid ? zones.find(z=>z.id==zid)?.zone_name : 'All India';
-    document.getElementById('dataInfo').textContent = `${zoneLabel} | ${stats.total_blocks} blocks | ${stats.pending_defects} defects | ${stats.active_emergencies} emergencies`;
-
-    document.getElementById('statsRow').innerHTML = `
-        <div class="stat-card"><div class="label">Total Blocks</div><div class="value">${stats.total_blocks}</div><div class="sub">${stats.active_blocks} active</div></div>
-        <div class="stat-card accent"><div class="label">Pending Defects</div><div class="value">${stats.pending_defects}</div><div class="sub">${stats.critical_defects} critical</div></div>
-        <div class="stat-card success"><div class="label">Asset Availability</div><div class="value">${stats.asset_availability}%</div><div class="sub">Network average</div></div>
-        <div class="stat-card info"><div class="label">AI Efficiency</div><div class="value">${stats.ai_efficiency}%</div><div class="sub">Optimization gain</div></div>
-        <div class="stat-card warning"><div class="label">Token Locks</div><div class="value">${stats.token_locked}</div><div class="sub">Sections locked</div></div>
-        <div class="stat-card danger"><div class="label">Crew Violations</div><div class="value">${stats.crew_violations}</div><div class="sub">HOER breaches</div></div>
-    `;
-
-    document.getElementById('recsList').innerHTML = (stats.recommendations||[]).map(r => `
-        <div class="rec-item">
-            <div class="rec-icon ${r.type}"><i class="fas fa-${r.type==='merge'?'object-group':r.type==='reschedule'?'clock':r.type==='prioritize'?'fire':r.type==='optimize'?'chart-line':r.type==='vvip'?'shield-alt':'users'}"></i></div>
-            <div class="rec-text"><div class="title">${r.title}</div><div class="desc">${r.description}</div></div>
-            <div class="rec-score">${Math.round(r.score)}%</div>
-        </div>
-    `).join('') || '<p style="color:var(--text-muted);font-size:12px">No recommendations</p>';
-
-    document.getElementById('deptList').innerHTML = (stats.departments||[]).map(d => `
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f1f5">
-            <div style="width:10px;height:10px;border-radius:3px;background:${d.color};flex-shrink:0"></div>
-            <div style="flex:1"><div style="font-size:12.5px;font-weight:500">${d.name}</div><div style="font-size:11px;color:var(--text-muted)">${d.code}</div></div>
-            <div style="font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px">${d.blocks}</div>
-        </div>
-    `).join('');
-
-    const trains = await (await fetch(API+'/api/trains'+qs)).json();
-    document.getElementById('recentTrains').innerHTML = `<table>
-        <thead><tr><th>Train No</th><th>Name</th><th>Route</th><th>Departure</th><th>Arrival</th><th>Type</th><th>VVIP</th></tr></thead>
-        <tbody>${trains.slice(0,10).map(t => `<tr>
-            <td><strong>${t.number}</strong></td><td>${t.name}</td>
-            <td>${t.origin} → ${t.destination}</td><td>${t.departure||'-'}</td><td>${t.arrival||'-'}</td>
-            <td><span class="train-type-badge type-${t.type}">${t.type}</span></td>
-            <td>${t.is_vvip?'<span class="badge badge-vvip"><i class="fas fa-crown"></i> VVIP</span>':''}</td>
-        </tr>`).join('')}</tbody></table>`;
+    runAI();
 }
 
-// BLOCKS
 async function loadBlocks() {
     const zid = document.getElementById('zoneFilter').value;
     const qs = zid ? '?zone_id='+zid : '';
     allBlocks = await (await fetch(API+'/api/blocks'+qs)).json();
-    renderBlocks(allBlocks);
-}
-function renderBlocks(blocks) {
-    document.getElementById('blocksTable').innerHTML = `<table>
-        <thead><tr><th>Block ID</th><th>Corridor</th><th>Department</th><th>Date</th><th>Time</th><th>Category</th><th>AI Score</th><th>Status</th></tr></thead>
-        <tbody>${blocks.map(b => `<tr>
+    document.getElementById('blocksTbl').innerHTML = `<table>
+        <thead><tr><th>Block ID</th><th>Corridor</th><th>Department</th><th>Date</th><th>Time</th><th>Category</th><th>Score</th><th>Status</th></tr></thead>
+        <tbody>${allBlocks.map(b => `<tr>
             <td><strong>${b.block_id}</strong></td><td>${b.route_name||'-'}</td>
-            <td><span style="color:${b.dl}">${b.dn}</span></td><td>${b.block_date}</td>
-            <td><span style="font-family:'JetBrains Mono',monospace">${b.start_time} - ${b.end_time}</span></td>
-            <td><span class="badge badge-${b.maintenance_category}">${b.maintenance_category}</span></td>
-            <td><span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:${b.ai_score>80?'var(--success)':b.ai_score>60?'var(--warning)':'var(--text-muted)'}">${Math.round(b.ai_score)}%</span></td>
-            <td><span class="badge badge-${b.status}">${b.status}</span></td>
+            <td>${b.dn}</td><td>${b.block_date}</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${b.start_time}-${b.end_time}</td>
+            <td><span class="badge b-${b.maintenance_category}">${b.maintenance_category}</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-weight:600;color:${b.ai_score>80?'var(--success)':b.ai_score>60?'var(--warning)':'var(--text-muted)'}">${Math.round(b.ai_score)}%</span></td>
+            <td><span class="badge b-${b.status}">${b.status}</span></td>
         </tr>`).join('')}</tbody></table>`;
 }
-function filterBlockStatus(status, el) {
-    document.querySelectorAll('#blockTabs .tab').forEach(t=>t.classList.remove('active'));
-    el.classList.add('active');
-    renderBlocks(status==='all'?allBlocks:allBlocks.filter(b=>b.status===status));
-}
 
-// TRAINS
 async function loadTrains() {
     const zid = document.getElementById('zoneFilter').value;
     const qs = zid ? '?zone_id='+zid : '';
     allTrains = await (await fetch(API+'/api/trains'+qs)).json();
     renderTrains(allTrains);
-    document.getElementById('trainCount').textContent = `(${allTrains.length} trains)`;
 }
 function renderTrains(trains) {
-    document.getElementById('trainsTable').innerHTML = `<table>
-        <thead><tr><th>Train No</th><th>Name</th><th>Origin</th><th>Destination</th><th>Dep</th><th>Arr</th><th>Days</th><th>Type</th><th>VVIP</th></tr></thead>
+    document.getElementById('trainsTbl').innerHTML = `<table>
+        <thead><tr><th>No</th><th>Name</th><th>From</th><th>To</th><th>Dep</th><th>Arr</th><th>Type</th><th>VVIP</th></tr></thead>
         <tbody>${trains.map(t => `<tr>
             <td><strong>${t.number}</strong></td><td>${t.name}</td>
             <td>${t.origin}</td><td>${t.destination}</td>
-            <td><span style="font-family:'JetBrains Mono',monospace">${t.departure||'-'}</span></td>
-            <td><span style="font-family:'JetBrains Mono',monospace">${t.arrival||'-'}</span></td>
-            <td style="font-size:11px">${formatDays(t.days)}</td>
-            <td><span class="train-type-badge type-${t.type}">${t.type}</span></td>
-            <td>${t.is_vvip?'<span class="badge badge-vvip"><i class="fas fa-crown"></i></span>':''}</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${t.departure||'-'}</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${t.arrival||'-'}</td>
+            <td><span class="badge b-medium">${t.type}</span></td>
+            <td>${t.is_vvip?'<span class="badge b-high"><i class="fas fa-crown"></i></span>':''}</td>
         </tr>`).join('')}</tbody></table>`;
 }
 function filterTrains() {
     const q = document.getElementById('trainSearch').value.toLowerCase();
-    renderTrains(allTrains.filter(t => t.number.includes(q) || t.name.toLowerCase().includes(q) || t.origin.toLowerCase().includes(q) || t.destination.toLowerCase().includes(q)));
-}
-function formatDays(d) {
-    if (!d) return '-';
-    const map = {1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat',7:'Sun'};
-    if (d==='1,2,3,4,5,6,7') return '<span class="badge badge-active">Daily</span>';
-    return d.split(',').map(x=>map[x]||x).join(' ');
+    renderTrains(allTrains.filter(t => t.number.includes(q) || t.name.toLowerCase().includes(q)));
 }
 
-// DEFECTS
 async function loadDefects() {
-    const pf = document.getElementById('defectFilter').value;
-    const zid = document.getElementById('zoneFilter').value;
-    let qs = '?priority='+pf;
-    if (zid) qs += '&zone_id='+zid;
-    const data = await (await fetch(API+'/api/defects'+qs)).json();
-    document.getElementById('defectsTable').innerHTML = `<table>
-        <thead><tr><th>Defect ID</th><th>Title</th><th>Department</th><th>Location</th><th>Priority</th><th>Type</th><th>Status</th></tr></thead>
+    const data = await (await fetch(API+'/api/defects')).json();
+    document.getElementById('defectsTbl').innerHTML = `<table>
+        <thead><tr><th>ID</th><th>Title</th><th>Dept</th><th>Location</th><th>Priority</th><th>Type</th><th>Status</th></tr></thead>
         <tbody>${data.map(d => `<tr>
             <td><strong>${d.defect_id}</strong></td><td>${d.title}</td>
-            <td><span style="color:${d.dl}">${d.dc}</span></td><td>${d.location||'-'}</td>
-            <td><span class="badge badge-${d.priority}"><span class="badge-dot dot-${d.priority==='critical'?'red':d.priority==='high'?'yellow':'green'}"></span> ${d.priority}</span></td>
-            <td><span class="badge badge-${d.maintenance_type}">${d.maintenance_type}</span></td>
+            <td>${d.dc}</td><td style="font-size:11px">${d.location||'-'}</td>
+            <td><span class="badge b-${d.priority}">${d.priority}</span></td>
+            <td><span class="badge b-${d.maintenance_type}">${d.maintenance_type}</span></td>
             <td>${d.status}</td>
         </tr>`).join('')}</tbody></table>`;
 }
 
-// MAINTENANCE
-async function loadMaintenance() {
-    const zid = document.getElementById('zoneFilter').value;
-    const qs = zid ? '?zone_id='+zid : '';
-    const data = await (await fetch(API+'/api/maintenance/engine'+qs)).json();
-    const cats = data.categories;
-    document.getElementById('maintStats').innerHTML = `
-        <div class="stat-card"><div class="label">Total Pending</div><div class="value">${data.total_pending}</div></div>
-        <div class="stat-card info"><div class="label">Routine (SLA 7d)</div><div class="value">${cats.routine.count}</div></div>
-        <div class="stat-card warning"><div class="label">Fault (SLA 24h)</div><div class="value">${cats.fault.count}</div></div>
-        <div class="stat-card danger"><div class="label">Urgent (SLA 4h)</div><div class="value">${cats.urgent.count}</div></div>
-    `;
-    document.getElementById('maintCards').innerHTML = ['routine','fault','urgent'].map(cat => `
-        <div class="section">
-            <div class="section-header"><h2><i class="fas fa-${cat==='routine'?'clock':cat==='fault'?'wrench':'bolt'}"></i> ${cat.charAt(0).toUpperCase()+cat.slice(1)}</h2></div>
-            <div class="section-body">
-                ${cats[cat].items.map(i => `<div style="padding:8px 0;border-bottom:1px solid #f0f1f5">
-                    <div style="font-size:12.5px;font-weight:600">${i.title}</div>
-                    <div style="font-size:11px;color:var(--text-muted)">${i.location} | <span class="badge badge-${i.priority}" style="font-size:10px">${i.priority}</span></div>
-                </div>`).join('') || '<p style="color:var(--text-muted);font-size:12px">None</p>'}
-            </div>
-        </div>
-    `).join('');
-}
-
-// TOKENS
 async function loadTokens() {
     const data = await (await fetch(API+'/api/token/locks')).json();
-    document.getElementById('tokensTable').innerHTML = `<table>
-        <thead><tr><th>Section</th><th>Direction</th><th>Status</th><th>Locked By</th><th>Lock Time</th></tr></thead>
+    document.getElementById('tokensTbl').innerHTML = `<table>
+        <thead><tr><th>Section</th><th>Direction</th><th>Status</th><th>Locked By</th><th>Time</th></tr></thead>
         <tbody>${data.map(t => `<tr>
             <td><strong>${t.section}</strong></td>
-            <td><span style="font-family:'JetBrains Mono',monospace;font-weight:600">${t.direction}</span></td>
-            <td><span class="badge badge-${t.status}"><span class="badge-dot dot-${t.status==='locked'?'red':'green'}"></span> ${t.status}</span></td>
+            <td style="font-family:'JetBrains Mono',monospace">${t.direction}</td>
+            <td><span class="badge b-${t.status}">${t.status}</span></td>
             <td>${t.locked_by||'-'}</td>
-            <td style="font-size:11px">${t.lock_time ? new Date(t.lock_time).toLocaleString() : '-'}</td>
+            <td style="font-size:11px">${t.lock_time?new Date(t.lock_time).toLocaleString():'-'}</td>
         </tr>`).join('')}</tbody></table>`;
 }
 
-// CREW
 async function loadCrew() {
-    const zid = document.getElementById('zoneFilter').value;
-    const qs = zid ? '?zone_id='+zid : '';
-    const data = await (await fetch(API+'/api/crew/duty'+qs)).json();
-    document.getElementById('crewStats').innerHTML = `
-        <div class="stat-card danger"><div class="label">HOER Violations</div><div class="value">${data.total_violations}</div></div>
-        <div class="stat-card warning"><div class="label">At Risk (&lt;1h left)</div><div class="value">${data.at_risk_count}</div></div>
-        <div class="stat-card success"><div class="label">Compliant Crew</div><div class="value">${data.crew.length - data.total_violations}</div></div>
-    `;
-    document.getElementById('crewTable').innerHTML = `<table>
-        <thead><tr><th>Crew ID</th><th>Name</th><th>Role</th><th>Duty</th><th>Hours</th><th>Remaining</th><th>Status</th><th>Train</th></tr></thead>
+    const data = await (await fetch(API+'/api/crew/duty')).json();
+    document.getElementById('crewTbl').innerHTML = `<table>
+        <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Duty</th><th>Hours</th><th>Remaining</th><th>Status</th></tr></thead>
         <tbody>${data.crew.map(c => `<tr style="${c.status==='violation'?'background:#fff5f5':''}">
             <td><strong>${c.crew_id}</strong></td><td>${c.name}</td>
             <td style="font-size:11px;text-transform:capitalize">${c.role.replace('_',' ')}</td>
-            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${c.duty_start} - ${c.duty_end}</td>
-            <td><div style="display:flex;align-items:center;gap:8px">
-                <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:${Math.min(100,c.hours_worked/c.max_hours*100)}%;background:${c.remaining_hours<=0?'var(--danger)':c.remaining_hours<=1?'var(--warning)':'var(--success)'}"></div></div>
-                <span style="font-family:'JetBrains Mono',monospace;font-size:11px">${c.hours_worked}/${c.max_hours}h</span>
-            </div></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${c.duty_start}-${c.duty_end}</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${c.hours_worked}/${c.max_hours}h</td>
             <td style="font-family:'JetBrains Mono',monospace;font-weight:600;color:${c.remaining_hours<=0?'var(--danger)':c.remaining_hours<=1?'var(--warning)':'var(--success)'}">${c.remaining_hours}h</td>
-            <td><span class="badge badge-${c.status}">${c.status}</span></td>
-            <td>${c.current_train||'-'}</td>
+            <td><span class="badge b-${c.status}">${c.status}</span></td>
         </tr>`).join('')}</tbody></table>`;
-}
-
-// EMERGENCY
-async function loadEmergency() {
-    const [emergencies, vvip] = await Promise.all([
-        fetch(API+'/api/emergency/pushes').then(r=>r.json()),
-        fetch(API+'/api/emergency/vvip-status').then(r=>r.json())
-    ]);
-    document.getElementById('emergencyList').innerHTML = emergencies.map(e => `
-        <div class="emergency-item">
-            <div class="pulse"></div>
-            <div class="emergency-info">
-                <div class="train">${e.train_number} - ${e.train_name}</div>
-                <div class="desc">${e.description}</div>
-                <div style="margin-top:4px"><span class="badge badge-${e.type==='critical_push'?'critical':e.type==='vvip_protect'?'vvip':'medium'}">${e.type}</span>
-                <span class="badge badge-${e.status}" style="margin-left:4px">${e.status}</span>
-                <span style="font-size:11px;color:var(--text-muted);margin-left:4px">Delay: ${e.delay_hours}h</span></div>
-            </div>
-        </div>
-    `).join('') || '<p style="color:var(--text-muted)">No active emergencies</p>';
-
-    document.getElementById('vvipList').innerHTML = `
-        <div style="margin-bottom:12px"><strong style="font-size:13px">Protected VVIP Trains</strong></div>
-        ${vvip.vvip_trains.map(t => `<div style="padding:6px 0;border-bottom:1px solid #f0f1f5;display:flex;align-items:center;gap:8px">
-            <span class="badge badge-vvip"><i class="fas fa-crown"></i></span>
-            <strong>${t.number}</strong> <span style="color:var(--text-sec)">${t.name}</span>
-            <span style="font-size:11px;color:var(--text-muted);margin-left:auto">${t.origin} → ${t.destination}</span>
-        </div>`).join('')}
-        <div style="margin-top:16px"><strong style="font-size:13px">Protection Rules</strong></div>
-        ${vvip.protection_rules.slice(0,5).map(r => `<div style="padding:6px 0;border-bottom:1px solid #f0f1f5;font-size:11.5px;color:var(--text-sec)">
-            <i class="fas fa-shield-alt" style="color:var(--accent)"></i> ${r.rule}
-        </div>`).join('')}
-    `;
-}
-
-// AI
-async function loadAI() {
-    const data = await (await fetch(API+'/api/ai/optimize')).json();
-    const factors = data.factors || {};
-    document.getElementById('aiStats').innerHTML = `
-        <div class="stat-card"><div class="label">Schedule Grade</div><div class="value">${data.grade}</div></div>
-        <div class="stat-card success"><div class="label">Overall Score</div><div class="value">${data.overall_score}/100</div></div>
-        <div class="stat-card info"><div class="label">Train Disruption</div><div class="value">${factors.train_disruption||0}%</div></div>
-        <div class="stat-card accent"><div class="label">Night Utilization</div><div class="value">${factors.night_utilization||0}%</div></div>
-        <div class="stat-card warning"><div class="label">VVIP Protection</div><div class="value">${factors.vvip_protection||0}%</div></div>
-    `;
-    document.getElementById('aiRecs').innerHTML = (data.recommendations||[]).map(r => `
-        <div class="rec-item">
-            <div class="rec-icon ${r.type}"><i class="fas fa-${r.type==='merge'?'object-group':r.type==='vvip'?'star':'clock'}"></i></div>
-            <div class="rec-text"><div class="title">${r.title}</div><div class="desc">${r.description}</div></div>
-            <div class="rec-score">${Math.round(r.impact)}%</div>
-        </div>
-    `).join('');
-
-    // Load MILP results
-    const milp = await (await fetch(API+'/api/ai/milp-solve')).json();
-    const milpEl = document.getElementById('aiMilp');
-    if (milpEl) {
-        milpEl.innerHTML = `
-            <div class="stat-card success"><div class="label">MILP Blocks Scheduled</div><div class="value">${milp.blocks_scheduled}/${milp.total_defects}</div></div>
-            <div class="stat-card info"><div class="label">Objective Value</div><div class="value">${milp.objective_value}</div></div>
-            <div class="stat-card"><div class="label">Constraints Satisfied</div><div class="value">${milp.constraints_satisfied}</div></div>
-        `;
-    }
-
-    // Load conflicts
-    const conflicts = await (await fetch(API+'/api/ai/conflicts')).json();
-    const confEl = document.getElementById('aiConflicts');
-    if (confEl) {
-        const bySev = conflicts.by_severity || {};
-        confEl.innerHTML = `
-            <div class="stat-card warning"><div class="label">Total Conflicts</div><div class="value">${conflicts.total}</div></div>
-            <div class="stat-card"><div class="label">Critical</div><div class="value">${bySev.critical||0}</div></div>
-            <div class="stat-card info"><div class="label">High</div><div class="value">${bySev.high||0}</div></div>
-            <div class="stat-card success"><div class="label">Low</div><div class="value">${bySev.low||0}</div></div>
-        `;
-    }
-
-    // Load harmonize
-    const harmonized = await (await fetch(API+'/api/ai/harmonize')).json();
-    const harmEl = document.getElementById('aiHarmonize');
-    if (harmEl) {
-        const deptSummary = harmonized.department_summary || {};
-        harmEl.innerHTML = Object.entries(deptSummary).map(([dept, info]) => `
-            <div class="rec-item">
-                <div class="rec-icon merge"><i class="fas fa-database"></i></div>
-                <div class="rec-text"><div class="title">${dept}</div><div class="desc">${info.count} defects | Avg urgency: ${info.avg_urgency} | Sources: ${info.sources.join(', ')}</div></div>
-                <div class="rec-score">${info.critical} critical</div>
-            </div>
-        `).join('');
-    }
 }
 
 // INIT

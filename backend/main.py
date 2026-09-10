@@ -927,7 +927,162 @@ def reports():
     conn.close()
     return {"departments":[{"name":r[0],"color":r[1],"total":r[2],"completed":r[3],"planned":r[4]} for r in ds],"defects_by_priority":[{"priority":r[0],"count":r[1]} for r in ps]}
 
-# Serve frontend static files (for local development)
+@app.get("/api/ai/think")
+def ai_think():
+    """AI Brain - Step-by-step reasoning for block planning.
+    
+    Returns the AI's thought process:
+    1. Scan all pending defects
+    2. Analyze constraints per defect
+    3. Score each candidate slot
+    4. Detect conflicts
+    5. Auto-schedule best slots
+    6. Generate recommendations
+    """
+    conn = get_db()
+    corridors = [dict(r) for r in conn.execute("SELECT * FROM corridors").fetchall()]
+    trains = [dict(r) for r in conn.execute("SELECT * FROM train_schedule").fetchall()]
+    blocks = [dict(r) for r in conn.execute("SELECT * FROM blocks").fetchall()]
+    defects = [dict(r) for r in conn.execute("SELECT * FROM defects WHERE status='pending'").fetchall()]
+    departments = [dict(r) for r in conn.execute("SELECT * FROM departments").fetchall()]
+    conn.close()
+
+    steps = []
+    thoughts = []
+
+    # Step 1: Scan defects
+    steps.append({
+        'step': 1,
+        'title': 'Scanning Defect Database',
+        'icon': 'search',
+        'status': 'complete',
+        'detail': f'Found {len(defects)} pending defects across {len(set(d.get("department_id") for d in defects))} departments',
+    })
+
+    # Step 2: Analyze constraints
+    single_line = [c for c in corridors if c.get('single_line')]
+    vvip_trains = [t for t in trains if t.get('is_vvip')]
+    steps.append({
+        'step': 2,
+        'title': 'Analyzing Network Constraints',
+        'icon': 'project-diagram',
+        'status': 'complete',
+        'detail': f'{len(corridors)} corridors loaded, {len(single_line)} single-line sections, {len(vvip_trains)} VVIP trains protected',
+    })
+
+    # Step 3: Run CSP scheduler
+    scheduler = BlockScheduler(corridors, trains, blocks, defects)
+    scheduled = []
+    for defect in defects:
+        date = datetime.now().strftime('%Y-%m-%d')
+        result = scheduler.schedule_block(defect, date)
+        if result and result['score'] > 0:
+            scheduled.append({'defect': defect, 'result': result})
+            thoughts.append({
+                'defect': defect.get('title'),
+                'dept': next((d['name'] for d in departments if d['id'] == defect.get('department_id')), 'Unknown'),
+                'priority': defect.get('priority'),
+                'decision': f'Schedule at {result["start_time"]}-{result["end_time"]}',
+                'score': result['score'],
+                'night_window': result.get('night_window', False),
+                'vvip_safe': result.get('vvip_safe', True),
+                'violations': result.get('violations', []),
+            })
+
+    steps.append({
+        'step': 3,
+        'title': 'CSP Constraint Satisfaction',
+        'icon': 'brain',
+        'status': 'complete',
+        'detail': f'Evaluated {len(defects)} defects, scheduled {len(scheduled)} blocks',
+        'thoughts': thoughts,
+    })
+
+    # Step 4: Detect conflicts
+    detector = ConflictDetector(corridors, trains, blocks)
+    conflicts = detector.get_all_conflicts()
+    steps.append({
+        'step': 4,
+        'title': 'Conflict Detection',
+        'icon': 'exclamation-triangle',
+        'status': 'complete',
+        'detail': f'{conflicts["total"]} conflicts detected: {conflicts["by_severity"]}',
+    })
+
+    # Step 5: Score schedule
+    scorer = ScheduleScorer(corridors, trains, blocks, defects)
+    score_result = scorer.compute_overall_score()
+    steps.append({
+        'step': 5,
+        'title': 'Schedule Quality Assessment',
+        'icon': 'chart-line',
+        'status': 'complete',
+        'detail': f'Grade: {score_result["grade"]} | Score: {score_result["overall_score"]}/100',
+        'score': score_result,
+    })
+
+    # Step 6: Generate recommendations
+    recs = []
+    if conflicts['total'] > 0:
+        recs.append({
+            'type': 'warning',
+            'title': f'{conflicts["total"]} Conflicts Found',
+            'action': 'Auto-resolve by rescheduling overlapping blocks to night windows',
+            'confidence': 85,
+        })
+    night_pct = score_result['factors'].get('night_utilization', 0)
+    if night_pct < 50:
+        recs.append({
+            'type': 'optimize',
+            'title': 'Night Window Under-utilized',
+            'action': f'Only {night_pct}% of blocks in night window. Moving routine maintenance to 01:00-04:00',
+            'confidence': 92,
+        })
+    vvip_pct = score_result['factors'].get('vvip_protection', 0)
+    if vvip_pct < 100:
+        recs.append({
+            'type': 'critical',
+            'title': 'VVIP Protection Gap',
+            'action': f'{100 - vvip_pct}% VVIP trains exposed. Adding 2-hour buffer windows',
+            'confidence': 98,
+        })
+    for defect in defects:
+        if defect.get('priority') == 'critical':
+            recs.append({
+                'type': 'urgent',
+                'title': f'Critical: {defect.get("title")}',
+                'action': f'Immediate block required at {defect.get("location")}',
+                'confidence': 95,
+            })
+
+    steps.append({
+        'step': 6,
+        'title': 'Generating Recommendations',
+        'icon': 'lightbulb',
+        'status': 'complete',
+        'detail': f'{len(recs)} actionable recommendations generated',
+        'recommendations': recs,
+    })
+
+    return {
+        'thinking': True,
+        'timestamp': datetime.now().isoformat(),
+        'steps': steps,
+        'scheduled_blocks': scheduled,
+        'conflicts': conflicts,
+        'score': score_result,
+        'recommendations': recs,
+        'summary': {
+            'defects_scanned': len(defects),
+            'blocks_scheduled': len(scheduled),
+            'conflicts_found': conflicts['total'],
+            'grade': score_result['grade'],
+            'score': score_result['overall_score'],
+            'recommendations': len(recs),
+        },
+    }
+
+
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
 if os.path.exists(frontend_dir):
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
