@@ -56,7 +56,8 @@ http://localhost:8000
 ```
 sih-railways/
 ├── backend/
-│   └── main.py          # FastAPI application (all endpoints)
+│   ├── main.py          # FastAPI application (all endpoints)
+│   └── ai_engine.py     # AI optimization algorithms
 ├── frontend/
 │   ├── index.html       # IRCTC-style main dashboard
 │   └── admin.html       # Admin panel
@@ -69,7 +70,54 @@ sih-railways/
 └── README.md
 ```
 
+## AI Algorithms Implemented
+
+### 1. Constraint-Based Block Scheduler (CSP)
+- Corridor conflict checking (no overlapping blocks on same corridor)
+- Single-line section mutual exclusion (UP/DOWN tokens)
+- VVIP protection windows (2h before/after Rajdhani/Shatabdi)
+- Night window preference (01:00-04:00 for routine maintenance)
+- Department workload balancing (max 2 concurrent blocks per dept)
+
+### 2. Genetic Algorithm (GA)
+- Population: 50, Generations: 100, Mutation: 0.15
+- Multi-objective fitness: train disruption + night utilization + department balance + single-line safety
+- Elitism with top 10% survival
+- Tournament selection for parent choice
+
+### 3. Mixed Integer Linear Programming (MILP) Solver
+- OR-Tools style constraint programming formulation
+- Decision variables: x[i,j,t] = 1 if block i assigned to corridor j at time t
+- Constraints: corridor exclusivity, department limits, VVIP protection, single-line safety
+- Greedy heuristic with constraint propagation for fast solving
+
+### 4. Monthly Predictive Planning
+- Asset degradation model: routine (0.5/week), fault (2.0/week), urgent (5.0/week)
+- Projects critical defects 4 weeks ahead
+- Generates weekly execution plans with block bundling
+- Identifies mega-block opportunities (3+ defects in same corridor)
+
+### 5. Network Graph Topology
+- Node-edge graph representation of railway network
+- BFS shortest path finding between stations
+- Station connectivity analysis (major junctions)
+- Single-line vs multi-line section classification
+
+### 6. Data Harmonization & Priority Engine
+- Normalizes multi-department data (TMS/SMMS/TDMS)
+- Urgency scoring: critical=9, high=7, medium=5, low=3
+- Type multiplier: urgent=1.5x, fault=1.2x, routine=1.0x
+- Department summary with source system tracking
+
+### 7. Conflict Detection & Resolution
+- Block-train conflict detection (VVIP severity levels)
+- Department overlap detection (same dept, same corridor)
+- Single-line deadlock detection
+- Scoring: train disruption (25%) + night utilization (20%) + VVIP protection (20%) + department balance (15%) + single-line safety (10%) + defect urgency (10%)
+
 ## API Endpoints
+
+### Core Endpoints
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/api/auth/login` | POST | User authentication |
@@ -86,9 +134,32 @@ sih-railways/
 | `/api/crew/duty` | GET | Crew HOER compliance |
 | `/api/emergency/pushes` | GET | Emergency push history |
 | `/api/emergency/vvip-status` | GET | VVIP protection rules |
-| `/api/ai/optimize` | GET | Run AI optimization |
-| `/api/ai/generate-plan` | GET | Generate weekly block plan |
-| `/api/admin/*` | GET/POST/PUT/DELETE | Admin CRUD operations |
+
+### AI Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/ai/optimize` | GET | Run AI optimization (conflict + scoring) |
+| `/api/ai/generate-plan` | GET | Generate weekly block plan (GA) |
+| `/api/ai/conflicts` | GET | Get all detected conflicts |
+| `/api/ai/score` | GET | Get multi-factor schedule score |
+| `/api/ai/milp-solve` | GET | Run MILP solver (OR-Tools style) |
+| `/api/ai/monthly-plan` | GET | Generate monthly predictive plan |
+| `/api/ai/network-graph` | GET | Get network graph topology |
+| `/api/ai/network-path` | GET | Find shortest path between stations |
+| `/api/ai/harmonize` | GET | Run data harmonization (TMS/SMMS/TDMS) |
+
+### Admin Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/admin/stats` | GET | Admin dashboard stats |
+| `/api/admin/users` | GET | List all users |
+| `/api/admin/blocks` | GET | List all blocks |
+| `/api/admin/blocks` | POST | Create block |
+| `/api/admin/blocks/{id}` | PUT | Update block status |
+| `/api/admin/defects` | GET | List all defects |
+| `/api/admin/defects` | POST | Create defect |
+| `/api/admin/corridors` | GET | List all corridors |
+| `/api/admin/corridors` | POST | Create corridor |
 
 ## System Architecture
 
@@ -117,6 +188,15 @@ graph TB
         VP[VVIP Protection Engine]
     end
 
+    subgraph AIEngines["AI Algorithms"]
+        CSP[Constraint-Based Scheduler]
+        GA[Genetic Algorithm]
+        MILP[MILP Solver - OR-Tools Style]
+        MP[Monthly Predictive Planner]
+        NG[Network Graph Topology]
+        DH[Data Harmonization Engine]
+    end
+
     subgraph DataSources["External Data"]
         NTES[NTES - Train Data]
         ZONES[15 Railway Zones]
@@ -143,17 +223,18 @@ graph TB
     API --> HC
     API --> VP
 
+    AI --> CSP
+    AI --> GA
+    AI --> MILP
+    AI --> MP
+    AI --> NG
+    AI --> DH
+
     NTES --> DB
     ZONES --> DB
     DIVS --> DB
     TRNS --> DB
     CORS --> DB
-
-    AI --> DB
-    ME2 --> DB
-    TK --> DB
-    HC --> DB
-    VP --> DB
 ```
 
 ## Block Planning Workflow
@@ -242,6 +323,24 @@ sequenceDiagram
     D-->>A: Token status
     A-->>F: UP/DOWN lock status
     F-->>U: Visual lock indicators
+
+    U->>F: Run MILP Solver
+    F->>A: GET /api/ai/milp-solve
+    A->>D: Fetch defects, corridors
+    D-->>A: Pending defects
+    A->>AI: MILP optimization
+    AI-->>A: Optimal block assignments
+    A-->>F: Solver results
+    F-->>U: Optimized schedule
+
+    U->>F: Monthly Plan
+    F->>A: GET /api/ai/monthly-plan
+    A->>D: Fetch defects, corridors
+    D-->>A: All pending defects
+    A->>AI: Degradation model
+    AI-->>A: 4-week predictive plan
+    A-->>F: Monthly schedule
+    F-->>U: Future maintenance blocks
 ```
 
 ## Credentials
