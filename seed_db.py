@@ -147,20 +147,61 @@ def init():
     ]
     c.executemany("INSERT INTO corridors(corridor_id,route_name,length_km,zone_id,division_id,single_line) VALUES(?,?,?,?,?,?)", cors)
 
-    # DEFECTS
+    # DEFECTS (simulated TMS/SMMS/TDMS data - official datasets are proprietary)
+    # Based on realistic Indian Railway defect patterns with urgency scores 1-10
     defs = [
-        ('DEF-001',1,1,1,'Rail Wear Exceeding Limit','Rail head wear near Thane exceeds 6mm','Track 2, Km 124','critical','fault'),
-        ('DEF-002',2,1,1,'OHE Wire Sagging','Overhead equipment wire sag near Kalyan','OHE Km 89','critical','fault'),
-        ('DEF-003',3,1,1,'Signal Light Failure','Home signal intermittent red','Signal TH-12','high','fault'),
-        ('DEF-004',1,3,11,'Point Machine Misalignment','Point 5 alignment error','Delhi Junction','high','fault'),
-        ('DEF-005',2,5,21,'Feeder Trip Issue','Recurrent tripping Feeder 4','Chennai Feeder','medium','routine'),
-        ('DEF-006',3,4,16,'Track Circuit Faulty','False occupied status','Howrah Circuit','high','fault'),
-        ('DEF-007',1,8,33,'Ballast Deficiency','Below required level','Jaipur Section','low','routine'),
-        ('DEF-008',2,6,25,'Insulator Contamination','Porcelain insulators contaminated','Secunderabad','medium','routine'),
-        ('DEF-009',3,11,43,'Bonding Wire Damage','Rail bonding wire damaged','Patna Crossing','low','routine'),
-        ('DEF-010',1,14,50,'Sleeper Damage','Concrete sleepers cracked','Bangalore Track','high','fault'),
+        # TMS - Track Management System (Engineering)
+        ('DEF-001',1,1,1,'Rail Wear Exceeding Limit','Rail head wear near Thane exceeds 6mm limit','Track 2, Km 124','critical','fault'),
+        ('DEF-004',1,3,11,'Point Machine Misalignment','Point 5 alignment error at Delhi Junction','Delhi Junction','high','fault'),
+        ('DEF-007',1,8,33,'Ballast Deficiency','Ballast below required level, drainage affected','Jaipur Section','low','routine'),
+        ('DEF-010',1,14,50,'Sleeper Damage','Concrete sleepers cracked, replacement needed','Bangalore Track','high','fault'),
         ('DEF-011',1,7,30,'Emergency Rail Fracture','Rail fracture detected near Prayagraj','Prayagraj Track','critical','urgent'),
+        ('DEF-013',1,1,3,'Rail Corrosion','Severe corrosion on coastal section rails','Mumbai-Pune Line','medium','routine'),
+        ('DEF-014',1,4,16,'Sleeper Settlement','Uneven sleeper settlement causing gauge variation','Howrah-Kharagpur','high','fault'),
+        ('DEF-015',1,5,21,'Turnout Wear','Heavy turnout wear at busy junction','Chennai Central','medium','routine'),
+        ('DEF-016',1,9,38,'Embankment Sliding','Embankment slipping during monsoon season','Guwahati Section','critical','urgent'),
+        ('DEF-017',1,12,45,'Rail Flaw Detection','Ultrasonic flaw detected in rail','Bhubaneswar Track','high','fault'),
+        ('DEF-018',1,6,25,'Track Geometry Defect','Gauge widening detected at curves','Secunderabad-Vijayawada','medium','fault'),
+        ('DEF-019',1,15,41,'Bridge Bearing Failure','Bridge bearing needs replacement','Narmada Bridge','critical','urgent'),
+        ('DEF-020',1,13,40,'Ballast Cleaning Required','Fouled ballast affecting drainage','Bilaspur-Nagpur','low','routine'),
+        
+        # TDMS - Traction Distribution Management System (Traction)
+        ('DEF-002',2,1,3,'OHE Wire Sagging','Overhead equipment wire sag near Kalyan','OHE Km 89','critical','fault'),
+        ('DEF-005',2,5,21,'Feeder Trip Issue','Recurrent tripping Feeder 4','Chennai Feeder','medium','routine'),
+        ('DEF-008',2,6,25,'Insulator Contamination','Porcelain insulators contaminated','Secunderabad','medium','routine'),
         ('DEF-012',2,12,45,'OHE Catenary Snap Risk','Catenary 40% tensile reduction','Bhubaneswar OHE','critical','urgent'),
+        ('DEF-021',2,1,3,'Pantograph Damage','Pantograph carbon strip worn out','Mumbai suburban','high','fault'),
+        ('DEF-022',2,3,11,'Traction Motor Overheating','Motor temperature exceeding limits','Delhi-Mumbai corridor','medium','fault'),
+        ('DEF-023',2,4,16,'Grid Substation Trip','33kV substation tripping frequently','Howrah Substation','high','fault'),
+        ('DEF-024',2,5,21,'OHE Registration Defect','OHE height out of tolerance','Chennai-Ernakulam','critical','urgent'),
+        ('DEF-025',2,9,38,'Feeder Section Earth Fault','Earth fault in Feeder Section 7','Guwahati OHE','high','fault'),
+        ('DEF-026',2,14,50,'Transformer Oil Leakage','Main transformer oil leak detected','Bangalore Traction','medium','routine'),
+        ('DEF-027',2,7,30,'OHE Anchor Failure','Anchor assembly loose at tower','Prayagraj Section','critical','urgent'),
+        ('DEF-028',2,8,33,'Regenerative Braking Issue','Feedback not working properly','Jaipur-Mumbai','low','routine'),
+        
+        # SMMS - Signal Management System (Signal & Telecom)
+        ('DEF-003',3,1,3,'Signal Light Failure','Home signal intermittent red','Signal TH-12','high','fault'),
+        ('DEF-006',3,4,16,'Track Circuit Faulty','False occupied status','Howrah Circuit','high','fault'),
+        ('DEF-009',3,11,43,'Bonding Wire Damage','Rail bonding wire damaged','Patna Crossing','low','routine'),
+        ('DEF-029',3,3,11,'Point Position Detection Error','Wrong indication on panel','Delhi Junction','critical','urgent'),
+        ('DEF-030',3,1,3,'Interlocking Failure','Complete interlocking failure','Mumbai CST','critical','urgent'),
+        ('DEF-031',3,5,21,'ATC Malfunction','Automatic Train Control glitch','Chennai Suburban','high','fault'),
+        ('DEF-032',3,6,25,'Axle Counter Failure','Axle counter showing wrong count','Secunderabad','medium','fault'),
+        ('DEF-033',3,4,16,'Level Crossing Accident','BOOM failure at LC number 45','Howrah Rural','critical','urgent'),
+        ('DEF-034',3,9,38,'Color Light Signal Defect','Aspect not changing properly','Guwahati Junction','medium','routine'),
+        ('DEF-035',3,12,45,'Telecom Cable Fault','Fiber optic cable cut detected','Bhubaneswar-Balasore','high','fault'),
+        ('DEF-036',3,7,30,'Switch Machine Failure','Point machine jammed','Prayagraj Yard','medium','fault'),
+        ('DEF-037',3,14,50,'Block Instrument Fault','Block working disrupted','Bangalore-Mysore','low','routine'),
+        
+        # MCH - Mechanical (additional department)
+        ('DEF-038',4,1,3,'Bogie Defect','Crack detected in bogie frame','Wagon Shop Mumbai','critical','urgent'),
+        ('DEF-039',4,3,11,'Brake System Failure','Air brake pressure dropping','Delhi Yard','high','fault'),
+        ('DEF-040',4,5,21,'Axle Bearing Defect','Hot axle bearing detected','Chennai Workshop','critical','urgent'),
+        
+        # ELC - Electrical (additional department)
+        ('DEF-041',5,1,3,'Diesel Engine Overhaul','Engine running hours exceeded','Mumbai Diesel Shed','high','fault'),
+        ('DEF-042',5,4,16,'Coach AC Failure','AC coach compressor failure','Howrah Coaching Yard','medium','routine'),
+        ('DEF-043',5,6,25,'Generator Car Issue','Dual mode car not starting','Secunderabad Depot','medium','fault'),
     ]
     c.executemany("INSERT INTO defects(defect_id,department_id,zone_id,division_id,title,description,location,priority,maintenance_type) VALUES(?,?,?,?,?,?,?,?,?)", defs)
 

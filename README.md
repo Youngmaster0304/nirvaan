@@ -31,6 +31,10 @@ RailBlock AI automates the entire block planning lifecycle using real Indian Rai
 - **15 railway zones** across India (CR, WR, NR, ER, SR, SCR, NCR, NWR, NER, NFR, ECR, ECoR, SECR, SWR, WCR)
 - **49 divisions** with headquarters
 - **32 corridors** with real route names and distances
+- **43 simulated defects** across 5 departments (TMS: 13 track defects, SMMS: 12 signal defects, TDMS: 15 traction defects, MCH: 3 mechanical, ELC: 3 electrical)
+- **60 blocks** with realistic scheduling
+- **11 crew members** with HOER compliance tracking
+- **4 emergency pushes** including VVIP protection events
 
 ## Tech Stack
 - **Backend**: Python 3.13, FastAPI, SQLite
