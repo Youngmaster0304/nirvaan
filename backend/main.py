@@ -9,7 +9,7 @@ from pydantic import BaseModel
 import random
 from backend.ai_engine import BlockScheduler, GeneticOptimizer, ConflictDetector, ScheduleScorer, MILPSolver, MonthlyPlanner, NetworkGraph, DataHarmonizer
 
-app = FastAPI(title="Nirvaan", version="5.0.0")
+app = FastAPI(title="Niravaan", version="5.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 # Use /tmp for SQLite on Render (ephemeral disk)

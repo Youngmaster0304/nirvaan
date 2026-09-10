@@ -71,13 +71,13 @@ for shape in slide2.shapes:
         if text == 'IDEA TITLE' or text == '\x0bIDEA TITLE':
             for p in shape.text_frame.paragraphs:
                 if 'IDEA TITLE' in p.text:
-                    set_paragraph_text(p, 'Nirvaan: Intelligent Block Planning System')
+                    set_paragraph_text(p, 'Niravaan: Intelligent Block Planning System')
         
         # Proposed Solution box
         if 'Proposed Solution' in text:
             for p in shape.text_frame.paragraphs:
                 if 'Proposed Solution' in p.text:
-                    set_paragraph_text(p, 'Proposed Solution: Nirvaan - AI-Powered Block Planning System', font_size=14, bold=True)
+                    set_paragraph_text(p, 'Proposed Solution: Niravaan - AI-Powered Block Planning System', font_size=14, bold=True)
                 elif 'Detailed explanation' in p.text:
                     # Replace with actual content
                     lines = [
@@ -269,7 +269,7 @@ for shape in slide6.shapes:
                 set_paragraph_text(p, '[YOUR TEAM NAME]', font_size=10, bold=True)
 
 # Save the filled template
-output_path = r'C:\Users\Abhinav\sih-railways\presentation\SIH26027_Nirvaan_FILLED.pptx'
+output_path = r'C:\Users\Abhinav\sih-railways\presentation\SIH26027_Niravaan_FILLED.pptx'
 prs.save(output_path)
 print(f"Filled presentation saved to: {output_path}")
 print("Template design/colors preserved - only content filled in.")

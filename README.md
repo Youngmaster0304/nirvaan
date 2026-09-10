@@ -1,4 +1,4 @@
-# Nirvaan - Automatic Block Planning for Indian Railways
+# Niravaan - Automatic Block Planning for Indian Railways
 
 **SIH 2026 Problem Statement #26027** | Ministry of Railways | Category: Software
 
@@ -25,7 +25,7 @@ Indian Railways manages 131,000+ km of track with thousands of daily maintenance
 - Safety incidents from delayed maintenance (Kanchanjunga, Khatauli)
 
 ## Solution
-Nirvaan automates the entire block planning lifecycle using real Indian Railway data.
+Niravaan automates the entire block planning lifecycle using real Indian Railway data.
 
 ### Core Features
 - **Block Planning Calendar** - AI-generated weekly block schedules across 15 zones
@@ -80,7 +80,7 @@ sih-railways/
 │   ├── index.html       # IRCTC-style main dashboard
 │   └── admin.html       # Admin panel
 ├── presentation/
-│   └── SIH26027_Nirvaan_FILLED.pptx
+│   └── SIH26027_Niravaan_FILLED.pptx
 ├── seed_db.py           # Database seeder (real train data)
 ├── real_trains.json     # 300 real Indian Railway trains
 ├── download_trains.py   # Data processing script

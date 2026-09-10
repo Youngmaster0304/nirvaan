@@ -1,4 +1,4 @@
-// Nirvaan - Main Application JavaScript
+// Niravaan - Main Application JavaScript
 
 // ============================================
 // DATA
