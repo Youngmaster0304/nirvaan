@@ -832,12 +832,12 @@ def admin_stats(user: dict = Depends(require_admin)):
 @app.get("/api/admin/users")
 def admin_users(user: dict = Depends(require_admin)):
     conn = get_db(); rows = conn.execute("SELECT u.*,z.zone_name,d.div_name FROM users u LEFT JOIN zones z ON u.zone_id=z.id LEFT JOIN divisions d ON u.division_id=d.id ORDER BY u.created_at DESC").fetchall(); conn.close()
-    return [{"id":r[0],"username":r[1],"full_name":r[3],"role":r[4],"zone_id":r[5],"division_id":r[6],"email":r[7],"phone":r[8],"is_active":r[9],"created_at":r[10],"last_login":r[11],"zone_name":r[12],"div_name":r[13]} for r in rows]
+    return [{"id":r[0],"username":r[1],"full_name":r[3],"role":r[4],"zone_id":r[5],"division_id":r[6],"email":r[7],"phone":r[8],"is_active":r[9],"created_at":r[10],"last_login":r[11],"zone_name":r[12],"div_name":r[13],"division":r[13],"department":None} for r in rows]
 
 @app.get("/api/admin/blocks")
 def admin_blocks(user: dict = Depends(require_auth)):
     conn = get_db(); rows = conn.execute("SELECT b.*,dep.name as dn,dep.code as dc,c.route_name FROM blocks b JOIN departments dep ON b.department_id=dep.id LEFT JOIN corridors c ON b.corridor_id=c.id ORDER BY b.block_date DESC").fetchall(); conn.close()
-    return [{"id":r[0],"block_id":r[1],"department_id":r[2],"corridor_id":r[3],"defect_id":r[4],"block_date":r[5],"start_time":r[6],"end_time":r[7],"block_type":r[8],"maintenance_category":r[9],"status":r[10],"ai_score":r[11],"is_emergency":r[12],"zone_id":r[14],"division_id":r[15],"dn":r[18],"dc":r[19],"route_name":r[20]} for r in rows]
+    return [{"id":r[0],"block_id":r[1],"department_id":r[2],"corridor_id":r[3],"defect_id":r[4],"block_date":r[5],"start_time":r[6],"end_time":r[7],"block_type":r[8],"maintenance_category":r[9],"status":r[10],"ai_score":r[11],"is_emergency":r[12],"zone_id":r[14],"division_id":r[15],"dept_name":r[18],"dept_code":r[19],"route_name":r[20]} for r in rows]
 
 @app.post("/api/admin/blocks")
 def admin_create_block(block: BlockCreate, user: dict = Depends(require_auth)):
@@ -861,7 +861,7 @@ def admin_del_block(bid: int, user: dict = Depends(require_admin)):
 @app.get("/api/admin/defects")
 def admin_defects(user: dict = Depends(require_auth)):
     conn = get_db(); rows = conn.execute("SELECT d.*,dep.name as dn,dep.code as dc FROM defects d JOIN departments dep ON d.department_id=dep.id ORDER BY CASE d.priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END").fetchall(); conn.close()
-    return [{"id":r[0],"defect_id":r[1],"department_id":r[2],"zone_id":r[3],"division_id":r[4],"title":r[5],"description":r[6],"location":r[7],"priority":r[8],"maintenance_type":r[9],"status":r[10],"dn":r[12],"dc":r[13]} for r in rows]
+    return [{"id":r[0],"defect_id":r[1],"department_id":r[2],"zone_id":r[3],"division_id":r[4],"title":r[5],"description":r[6],"location":r[7],"priority":r[8],"maintenance_type":r[9],"status":r[10],"dept_name":r[12],"dept_code":r[13]} for r in rows]
 
 @app.post("/api/admin/defects")
 def admin_create_defect(d: DefectCreate, user: dict = Depends(require_auth)):
