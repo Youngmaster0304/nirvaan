@@ -281,6 +281,8 @@
                 <a onclick="show('energy')">Energy</a>
                 <a onclick="show('demand')">Demand</a>
                 <a onclick="show('multizone')">Multi-Zone</a>
+                <a onclick="show('crewmgmt')">Crew</a>
+                <a onclick="show('rl')">RL Scheduler</a>
             </div>
             <div class="header-right">
                 <div class="ai-status" id="aiStatus">
@@ -607,6 +609,64 @@
                     <div class="section" style="margin-bottom:0">
                         <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-lightbulb"></i> Recommendations</h2></div>
                         <div class="section-body" id="mzRecs"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-crewmgmt" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr">
+                    <h2><i class="fas fa-users-cog"></i> Crew & Resource Management</h2>
+                    <button class="btn btn-auto" onclick="loadCrewMgmt()" id="crewMgmtBtn"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="section-body">
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="crewKPIs"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-user-check"></i> Crew Assignments</h2></div>
+                            <div class="section-body" id="crewAssignments" style="max-height:360px;overflow-y:auto"></div>
+                        </div>
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-chart-bar"></i> Utilization</h2></div>
+                            <div class="section-body" id="crewUtilization" style="max-height:360px;overflow-y:auto"></div>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-layer-group"></i> Job Bundles</h2></div>
+                            <div class="section-body" id="crewBundles" style="max-height:280px;overflow-y:auto"></div>
+                        </div>
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-exclamation-circle"></i> Unassigned Blocks</h2></div>
+                            <div class="section-body" id="crewUnassigned" style="max-height:280px;overflow-y:auto"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-rl" style="display:none">
+            <div class="section" style="margin-bottom:16px">
+                <div class="section-hdr">
+                    <h2><i class="fas fa-robot"></i> RL Scheduler</h2>
+                    <button class="btn btn-auto" onclick="loadRL()" id="rlBtn"><i class="fas fa-play"></i> Train Agent</button>
+                </div>
+                <div class="section-body">
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="rlKPIs"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-chart-line"></i> Reward Convergence</h2></div>
+                            <div class="section-body" id="rlConvergence"></div>
+                        </div>
+                        <div class="section" style="margin-bottom:0">
+                            <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-th"></i> Q-Table (Top Values)</h2></div>
+                            <div class="section-body" id="rlQTable" style="max-height:300px;overflow-y:auto"></div>
+                        </div>
+                    </div>
+                    <div class="section" style="margin-bottom:0">
+                        <div class="section-hdr"><h2 style="font-size:13px"><i class="fas fa-history"></i> Episode History</h2></div>
+                        <div class="section-body" id="rlEpisodes" style="max-height:280px;overflow-y:auto"></div>
                     </div>
                 </div>
             </div>
@@ -1424,6 +1484,132 @@ async function loadMultiZone() {
         `).join('') : '<p style="color:var(--dim);padding:12px">All zones coordinated</p>';
     } catch(e) { console.error(e); }
     btn.innerHTML = '<i class="fas fa-sync"></i> Refresh';
+}
+
+// ═══ CREW MANAGEMENT ═══
+async function loadCrewMgmt() {
+    const btn = document.getElementById('crewMgmtBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const r = await fetch(API + '/api/ai/crew-management', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await r.json();
+        document.getElementById('crewKPIs').innerHTML = [
+            { l: 'Avg Utilization', v: d.avg_utilization + '%', c: 'var(--primary)' },
+            { l: 'Optimal Crew', v: d.optimal_crew, c: 'var(--accent)' },
+            { l: 'Underutilized', v: d.underutilized_crew, c: 'var(--warning)' },
+            { l: 'Overloaded', v: d.overloaded_crew, c: 'var(--danger)' },
+        ].map(k => `<div class="stat-card" style="border-left:3px solid ${k.c}"><div class="stat-val">${k.v}</div><div class="stat-lbl">${k.l}</div></div>`).join('');
+
+        document.getElementById('crewAssignments').innerHTML = d.assignments.length ? d.assignments.slice(0, 20).map(a => `
+            <div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--border)">
+                <div class="tag tag-${a.status === 'confirmed' ? 'success' : a.status === 'pending' ? 'warning' : 'info'}" style="flex-shrink:0;font-size:10px">${a.status}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:12px;font-weight:600">${a.crew_name} → ${a.block_id}</div>
+                    <div style="font-size:11px;color:var(--dim)">${a.route} | ${a.hours_allocated}h | Skill: ${a.skill_match}%</div>
+                </div>
+            </div>
+        `).join('') : '<p style="color:var(--dim);padding:12px">No assignments</p>';
+
+        document.getElementById('crewUtilization').innerHTML = d.crew_utilization.length ? d.crew_utilization.map(c => {
+            const color = c.status === 'optimal' ? 'var(--accent)' : c.status === 'underutilized' ? 'var(--warning)' : 'var(--danger)';
+            return `
+            <div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--border)">
+                <div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:12px;font-weight:600">${c.name}</div>
+                    <div style="font-size:11px;color:var(--dim)">${c.department} | ${c.blocks_assigned} blocks | ${c.assigned_hours}h/${c.available_hours}h</div>
+                </div>
+                <div style="width:60px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0">
+                    <div style="height:100%;width:${c.utilization_pct}%;background:${color};border-radius:3px"></div>
+                </div>
+                <div style="font-size:11px;font-weight:600;color:${color};width:36px;text-align:right">${c.utilization_pct}%</div>
+            </div>`;
+        }).join('') : '';
+
+        document.getElementById('crewBundles').innerHTML = d.bundles.length ? d.bundles.map(b => `
+            <div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--border)">
+                <div class="tag tag-success" style="flex-shrink:0">+${b.efficiency_gain}%</div>
+                <div style="flex:1">
+                    <div style="font-size:12px;font-weight:600">${b.crew_name}</div>
+                    <div style="font-size:11px;color:var(--dim)">${b.blocks_bundled} blocks bundled | ${b.total_hours}h | ${b.routes.join(', ')}</div>
+                </div>
+            </div>
+        `).join('') : '<p style="color:var(--dim);padding:12px">No bundles — assign more blocks</p>';
+
+        document.getElementById('crewUnassigned').innerHTML = d.unassigned_blocks.length ? d.unassigned_blocks.map(u => `
+            <div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--border)">
+                <i class="fas fa-exclamation-circle" style="color:var(--danger);flex-shrink:0;font-size:12px"></i>
+                <div style="flex:1">
+                    <div style="font-size:12px;font-weight:600">${u.block_id} — ${u.route}</div>
+                    <div style="font-size:11px;color:var(--dim)">${u.department} | ${u.reason}</div>
+                </div>
+            </div>
+        `).join('') : '<p style="color:var(--accent);padding:12px">All blocks have crew assigned</p>';
+    } catch(e) { console.error(e); }
+    btn.innerHTML = '<i class="fas fa-sync"></i> Refresh';
+}
+
+// ═══ RL SCHEDULER ═══
+async function loadRL() {
+    const btn = document.getElementById('rlBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Training...';
+    try {
+        const r = await fetch(API + '/api/ai/rl-scheduler', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await r.json();
+        document.getElementById('rlKPIs').innerHTML = [
+            { l: 'Episodes Run', v: d.episodes_run, c: 'var(--primary)' },
+            { l: 'Best Reward', v: d.best_reward, c: 'var(--accent)' },
+            { l: 'Convergence', v: d.convergence_improvement + '%', c: 'var(--success)' },
+            { l: 'Final Epsilon', v: d.final_epsilon, c: 'var(--warning)' },
+        ].map(k => `<div class="stat-card" style="border-left:3px solid ${k.c}"><div class="stat-val">${k.v}</div><div class="stat-lbl">${k.l}</div></div>`).join('');
+
+        // Convergence SVG
+        const hist = d.episode_history || [];
+        const maxR = Math.max(...hist.map(h => h.reward), 1);
+        const minR = Math.min(...hist.map(h => h.reward), 0);
+        const range = maxR - minR || 1;
+        const pts = hist.map((h, i) => `${i * (400 / hist.length) + 4},${160 - ((h.reward - minR) / range) * 140}`).join(' ');
+        const epsPts = hist.map((h, i) => `${i * (400 / hist.length) + 4},${160 - h.epsilon * 140}`).join(' ');
+
+        document.getElementById('rlConvergence').innerHTML = `
+            <svg viewBox="0 0 410 180" style="width:100%;height:180px">
+                <defs><linearGradient id="rlGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--accent)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0.01"/></linearGradient></defs>
+                <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+                <polygon points="4,160 ${pts} 404,160" fill="url(#rlGrad)"/>
+                <polyline points="${epsPts}" fill="none" stroke="var(--warning)" stroke-width="1" stroke-dasharray="4,3"/>
+                <text x="10" y="14" font-size="9" fill="var(--accent)">Reward</text>
+                <text x="60" y="14" font-size="9" fill="var(--warning)">Epsilon</text>
+                <text x="10" y="175" font-size="8" fill="var(--dim)">Ep 1</text>
+                <text x="370" y="175" font-size="8" fill="var(--dim)">Ep ${d.episodes_run}</text>
+            </svg>`;
+
+        document.getElementById('rlQTable').innerHTML = d.top_q_values.length ? `
+            <table style="width:100%;font-size:12px;border-collapse:collapse">
+                <thead><tr style="border-bottom:2px solid var(--border)"><th style="text-align:left;padding:6px;color:var(--dim)">State</th><th style="text-align:left;padding:6px;color:var(--dim)">Action</th><th style="text-align:right;padding:6px;color:var(--dim)">Q-Value</th></tr></thead>
+                <tbody>${d.top_q_values.map(q => `
+                    <tr style="border-bottom:1px solid var(--border)">
+                        <td style="padding:6px;font-weight:500">${q.state}</td>
+                        <td style="padding:6px"><span class="tag tag-engineering">${q.action}</span></td>
+                        <td style="padding:6px;text-align:right;font-weight:700;color:var(--accent)">${q.q_value}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>` : '';
+
+        document.getElementById('rlEpisodes').innerHTML = hist.length ? `
+            <table style="width:100%;font-size:12px;border-collapse:collapse">
+                <thead><tr style="border-bottom:2px solid var(--border)"><th style="text-align:left;padding:6px;color:var(--dim)">Ep</th><th style="text-align:left;padding:6px;color:var(--dim)">Action</th><th style="text-align:right;padding:6px;color:var(--dim)">Reward</th><th style="text-align:right;padding:6px;color:var(--dim)">Epsilon</th><th style="text-align:right;padding:6px;color:var(--dim)">Q-Max</th></tr></thead>
+                <tbody>${hist.slice(-15).map(h => `
+                    <tr style="border-bottom:1px solid var(--border)">
+                        <td style="padding:6px">${h.episode}</td>
+                        <td style="padding:6px"><span class="tag tag-engineering">${h.action}</span></td>
+                        <td style="padding:6px;text-align:right;font-weight:600;color:${h.reward > 0 ? 'var(--accent)' : 'var(--danger)'}">${h.reward}</td>
+                        <td style="padding:6px;text-align:right">${h.epsilon}</td>
+                        <td style="padding:6px;text-align:right;font-weight:600">${h.q_max}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>` : '';
+    } catch(e) { console.error(e); }
+    btn.innerHTML = '<i class="fas fa-play"></i> Train Agent';
 }
 </script>
 </body>
