@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RailBlock AI - Indian Railways Block Planning</title>
+    <title>Yantra - Indian Railways Block Planning</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -226,7 +226,7 @@
             <div class="header-brand">
                 <div class="logo"><i class="fas fa-train"></i></div>
                 <div>
-                    <h1>RailBlock AI <span class="tag">Indian Railways</span></h1>
+                    <h1>Yantra <span class="tag">Indian Railways</span></h1>
                 </div>
             </div>
             <div class="header-user">
@@ -398,7 +398,7 @@
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
             <div style="text-align:center;margin-bottom:16px"><i class="fas fa-train" style="font-size:32px;color:var(--primary)"></i></div>
-            <h2>RailBlock AI Login</h2>
+            <h2>Yantra Login</h2>
             <p>Indian Railways Block Planning System</p>
             <div class="field"><label>Username</label><input type="text" id="loginUser" value="admin"></div>
             <div class="field"><label>Password</label><input type="password" id="loginPass" value="admin123" onkeypress="if(event.key==='Enter')doLogin()"></div>
@@ -409,8 +409,8 @@
 
 <script>
 const API = window.location.hostname === 'localhost' ? '' : 'https://railblock-ai-k8xm.onrender.com';
-let token = localStorage.getItem('railblock_token');
-let currentUser = JSON.parse(localStorage.getItem('railblock_user') || 'null');
+let token = localStorage.getItem('yantra_token');
+let currentUser = JSON.parse(localStorage.getItem('yantra_user') || 'null');
 let allTrains = [];
 let allBlocks = [];
 let zones = [];
@@ -428,8 +428,8 @@ async function doLogin() {
         const d = await r.json();
         if (!r.ok) throw new Error(d.detail || 'Login failed');
         token = d.token; currentUser = d.user;
-        localStorage.setItem('railblock_token', token);
-        localStorage.setItem('railblock_user', JSON.stringify(currentUser));
+        localStorage.setItem('yantra_token', token);
+        localStorage.setItem('yantra_user', JSON.stringify(currentUser));
         updateUserUI(); hideLogin(); loadData();
     } catch(e) {
         document.getElementById('loginError').textContent = e.message;
@@ -439,8 +439,8 @@ async function doLogin() {
 
 function logout() {
     token = null; currentUser = null;
-    localStorage.removeItem('railblock_token');
-    localStorage.removeItem('railblock_user');
+    localStorage.removeItem('yantra_token');
+    localStorage.removeItem('yantra_user');
     updateUserUI();
 }
 

@@ -1,4 +1,4 @@
-// RailBlock AI - Main Application JavaScript
+// Yantra - Main Application JavaScript
 
 // ============================================
 // DATA
