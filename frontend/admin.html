@@ -6,31 +6,27 @@
     <title>Niravaan - Admin Panel</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
-            --blue-900: #0c1d36;
-            --blue-800: #132c52;
-            --blue-700: #1a3a6a;
-            --blue-600: #1e4480;
-            --blue-500: #2563a8;
-            --blue-100: #e8eef6;
-            --blue-50: #f3f7fc;
+            --primary: #CA8A04;
+            --primary-light: #EAB308;
+            --primary-glow: rgba(202,138,4,0.1);
             --white: #ffffff;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-            --green-500: #16a34a;
-            --green-100: #dcfce7;
-            --green-700: #15803d;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --green-500: #059669;
+            --green-100: #d1fae5;
+            --green-700: #047857;
             --amber-500: #d97706;
             --amber-100: #fef3c7;
             --amber-700: #b45309;
@@ -39,21 +35,23 @@
             --red-700: #b91c1c;
             --violet-500: #7c3aed;
             --violet-100: #ede9fe;
-            --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+            --shadow-xs: 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-sm: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(15,23,42,0.07), 0 2px 4px -2px rgba(15,23,42,0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(15,23,42,0.08), 0 4px 6px -4px rgba(15,23,42,0.04);
             --radius: 6px;
             --radius-lg: 8px;
+            --font-sans: 'Fira Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Fira Code', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--gray-100);
+            font-family: var(--font-sans);
+            background: var(--gray-50);
             color: var(--gray-800);
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.55;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -65,7 +63,7 @@
         }
         .login-left {
             flex: 1;
-            background: var(--blue-700);
+            background: var(--primary);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -113,7 +111,7 @@
         }
         .brand-emblem i { font-size: 36px; color: var(--white); }
         .brand-name {
-            font-family: 'Lexend', sans-serif;
+            font-family: var(--font-sans);
             font-size: 32px;
             font-weight: 700;
             margin-bottom: 8px;
@@ -159,7 +157,7 @@
             margin-bottom: 36px;
         }
         .login-form-header h2 {
-            font-family: 'Lexend', sans-serif;
+            font-family: var(--font-sans);
             font-size: 24px;
             font-weight: 600;
             color: var(--gray-900);
@@ -186,14 +184,14 @@
             border: 1px solid var(--gray-300);
             border-radius: var(--radius);
             font-size: 14px;
-            font-family: 'Source Sans 3', sans-serif;
+            font-family: var(--font-sans);
             color: var(--gray-800);
             background: var(--white);
             transition: border-color 0.15s, box-shadow 0.15s;
             outline: none;
         }
         .form-row input:focus {
-            border-color: var(--blue-500);
+            border-color: var(--primary-light);
             box-shadow: 0 0 0 3px rgba(37,99,168,0.1);
         }
         .form-row input::placeholder { color: var(--gray-400); }
@@ -201,19 +199,19 @@
         .btn-login {
             width: 100%;
             padding: 11px 20px;
-            background: var(--blue-700);
+            background: var(--primary);
             border: none;
             border-radius: var(--radius);
             font-size: 14px;
             font-weight: 600;
-            font-family: 'Source Sans 3', sans-serif;
+            font-family: var(--font-sans);
             color: var(--white);
             cursor: pointer;
             transition: background 0.15s;
             margin-top: 4px;
         }
-        .btn-login:hover { background: var(--blue-800); }
-        .btn-login:active { background: var(--blue-900); }
+        .btn-login:hover { background: var(--gray-800); }
+        .btn-login:active { background: var(--gray-900); }
 
         .login-error {
             background: var(--red-100);
@@ -254,10 +252,10 @@
         }
         .cred-user { color: var(--gray-600); }
         .cred-pass {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 12px;
-            color: var(--blue-600);
-            background: var(--blue-50);
+            color: var(--gray-700);
+            background: var(--primary-glow);
             padding: 1px 6px;
             border-radius: 3px;
         }
@@ -293,7 +291,7 @@
             width: 32px;
             height: 32px;
             border-radius: 6px;
-            background: var(--blue-700);
+            background: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -301,7 +299,7 @@
             font-size: 14px;
         }
         .topbar-brand-text {
-            font-family: 'Lexend', sans-serif;
+            font-family: var(--font-sans);
             font-size: 15px;
             font-weight: 600;
             color: var(--gray-900);
@@ -321,7 +319,7 @@
             gap: 16px;
         }
         .topbar-time {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 12px;
             color: var(--gray-400);
         }
@@ -339,12 +337,12 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background: var(--blue-100);
-            color: var(--blue-700);
+            background: var(--gray-100);
+            color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Lexend', sans-serif;
+            font-family: var(--font-sans);
             font-size: 12px;
             font-weight: 600;
         }
@@ -397,9 +395,9 @@
             color: var(--gray-800);
         }
         .nav-link.active {
-            background: var(--blue-50);
-            color: var(--blue-700);
-            border-left-color: var(--blue-700);
+            background: var(--primary-glow);
+            color: var(--primary);
+            border-left-color: var(--primary);
             font-weight: 600;
         }
         .nav-link i {
@@ -420,7 +418,7 @@
             border-radius: var(--radius);
             font-size: 12px;
             font-weight: 500;
-            font-family: 'Source Sans 3', sans-serif;
+            font-family: var(--font-sans);
             color: var(--gray-500);
             cursor: pointer;
             transition: all 0.15s;
@@ -450,7 +448,7 @@
             margin-bottom: 24px;
         }
         .page-header h1 {
-            font-family: 'Lexend', sans-serif;
+            font-family: var(--font-sans);
             font-size: 20px;
             font-weight: 600;
             color: var(--gray-900);
@@ -494,12 +492,12 @@
             justify-content: center;
             font-size: 13px;
         }
-        .stat-icon.blue { background: var(--blue-100); color: var(--blue-700); }
+        .stat-icon.blue { background: var(--gray-100); color: var(--primary); }
         .stat-icon.green { background: var(--green-100); color: var(--green-700); }
         .stat-icon.amber { background: var(--amber-100); color: var(--amber-700); }
         .stat-icon.red { background: var(--red-100); color: var(--red-700); }
         .stat-value {
-            font-family: 'Lexend', sans-serif;
+            font-family: var(--font-sans);
             font-size: 28px;
             font-weight: 700;
             color: var(--gray-900);
@@ -520,7 +518,7 @@
             border-bottom: 1px solid var(--gray-200);
         }
         .card-header h3 {
-            font-family: 'Lexend', sans-serif;
+            font-family: var(--font-sans);
             font-size: 15px;
             font-weight: 600;
             color: var(--gray-800);
@@ -554,7 +552,7 @@
         tbody tr:hover td { background: var(--gray-50); }
         tbody tr:last-child td { border-bottom: none; }
         td strong {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 12px;
             color: var(--gray-800);
         }
@@ -569,7 +567,7 @@
             border-radius: 4px;
         }
         .badge-green { background: var(--green-100); color: var(--green-700); }
-        .badge-blue { background: var(--blue-100); color: var(--blue-700); }
+        .badge-blue { background: var(--gray-100); color: var(--primary); }
         .badge-amber { background: var(--amber-100); color: var(--amber-700); }
         .badge-red { background: var(--red-100); color: var(--red-700); }
         .badge-violet { background: var(--violet-100); color: var(--violet-500); }
@@ -586,13 +584,13 @@
             border: none;
             font-size: 13px;
             font-weight: 600;
-            font-family: 'Source Sans 3', sans-serif;
+            font-family: var(--font-sans);
             cursor: pointer;
             transition: all 0.15s;
         }
         .btn-sm { padding: 5px 10px; font-size: 12px; }
-        .btn-primary { background: var(--blue-700); color: var(--white); }
-        .btn-primary:hover { background: var(--blue-800); }
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--gray-800); }
         .btn-success { background: var(--green-500); color: var(--white); }
         .btn-success:hover { background: var(--green-700); }
         .btn-danger { background: var(--red-500); color: var(--white); }
@@ -659,7 +657,7 @@
             justify-content: space-between;
         }
         .modal-head h3 {
-            font-family: 'Lexend', sans-serif;
+            font-family: var(--font-sans);
             font-size: 16px;
             font-weight: 600;
             color: var(--gray-800);
@@ -696,7 +694,7 @@
             border: 1px solid var(--gray-300);
             border-radius: var(--radius);
             font-size: 13px;
-            font-family: 'Source Sans 3', sans-serif;
+            font-family: var(--font-sans);
             color: var(--gray-800);
             background: var(--white);
             outline: none;
@@ -704,7 +702,7 @@
         }
         .field-modal input:focus,
         .field-modal select:focus {
-            border-color: var(--blue-500);
+            border-color: var(--primary-light);
             box-shadow: 0 0 0 3px rgba(37,99,168,0.08);
         }
 
@@ -721,7 +719,7 @@
         .audit-action { min-width: 110px; }
         .audit-detail { color: var(--gray-500); flex: 1; }
         .audit-time {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 11px;
             color: var(--gray-400);
         }
@@ -983,7 +981,7 @@
 
                     <!-- AI Decisions -->
                     <div id="aiDecisionsArea" style="display:none">
-                        <h3 style="font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px"><i class="fas fa-gavel" style="color:var(--blue-700)"></i> AI Decisions</h3>
+                        <h3 style="font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px"><i class="fas fa-gavel" style="color:var(--primary)"></i> AI Decisions</h3>
                         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;margin-bottom:20px" id="aiDecisionsGrid"></div>
                     </div>
 
