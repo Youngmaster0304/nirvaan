@@ -3,12 +3,18 @@ from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
-from ml_engine import DemandPredictor, EnergyOptimizer, CrewAssigner, RLScheduler, DigitalTwinSim, MultiZoneCoordinator, PredictiveMaintenance, NotificationEngine
+try:
+    from backend.ml_engine import DemandPredictor, EnergyOptimizer, CrewAssigner, RLScheduler, DigitalTwinSim, MultiZoneCoordinator, PredictiveMaintenance, NotificationEngine
+except ImportError:
+    from ml_engine import DemandPredictor, EnergyOptimizer, CrewAssigner, RLScheduler, DigitalTwinSim, MultiZoneCoordinator, PredictiveMaintenance, NotificationEngine
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import random
-from ai_engine import BlockScheduler, GeneticOptimizer, ConflictDetector, ScheduleScorer, MILPSolver, MonthlyPlanner, NetworkGraph, DataHarmonizer
+try:
+    from backend.ai_engine import BlockScheduler, GeneticOptimizer, ConflictDetector, ScheduleScorer, MILPSolver, MonthlyPlanner, NetworkGraph, DataHarmonizer
+except ImportError:
+    from ai_engine import BlockScheduler, GeneticOptimizer, ConflictDetector, ScheduleScorer, MILPSolver, MonthlyPlanner, NetworkGraph, DataHarmonizer
 
 app = FastAPI(title="Niravaan", version="5.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
