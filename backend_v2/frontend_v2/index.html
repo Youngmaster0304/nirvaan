@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Niravaan RailVision</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --white:#ffffff;--bg:#f8f9fa;--card:#ffffff;--border:#e5e7eb;
+  --text:#111827;--text2:#374151;--text3:#6b7280;--text4:#9ca3af;
+  --yellow:#CA8A04;--yellow-light:#FEF3C7;--yellow-dark:#A16207;
+  --green:#16a34a;--orange:#ea580c;--red:#dc2626;--blue:#1e40af;
+  --shadow:0 1px 3px rgba(0,0,0,.08);--shadow2:0 4px 12px rgba(0,0,0,.1);
+  --radius:8px;--radius2:12px;
+}
+body{font-family:'Fira Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+.header{background:var(--white);border-bottom:2px solid var(--yellow);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:var(--yellow-dark)}
+.logo svg{width:28px;height:28px}
+.header-right{display:flex;align-items:center;gap:16px}
+.zone-filter{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:12px;background:var(--white);cursor:pointer}
+.nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0;overflow-x:auto}
+.nav button{padding:10px 16px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.nav button:hover{color:var(--text);background:var(--yellow-light)}
+.nav button.active{color:var(--yellow-dark);border-bottom-color:var(--yellow);font-weight:600}
+.main{padding:16px 24px;max-width:1400px;margin:0 auto}
+.section{display:none}
+.section.active{display:block}
+.grid{display:grid;gap:12px}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:16px;box-shadow:var(--shadow)}
+.card-header{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px}
+.card-value{font-size:28px;font-weight:700;color:var(--text);font-family:'Fira Code',monospace}
+.card-sub{font-size:11px;color:var(--text4);margin-top:4px}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-orange{background:#fff7ed;color:#9a3412}
+.badge-red{background:#fef2f2;color:#991b1b}
+.badge-darkred{background:#450a0a;color:#fca5a5}
+.badge-blue{background:#eff6ff;color:#1e40af}
+.badge-yellow{background:var(--yellow-light);color:var(--yellow-dark)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 12px;background:var(--bg);font-weight:600;color:var(--text3);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+td{padding:8px 12px;border-bottom:1px solid var(--border)}
+tr:hover{background:var(--yellow-light)}
+.status-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:6px}
+.status-fill{height:100%;border-radius:3px;transition:width .3s}
+.section-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title svg{width:20px;height:20px;color:var(--yellow)}
+.ai-card{background:linear-gradient(135deg,var(--yellow-light),#fff);border:1px solid var(--yellow);border-radius:var(--radius2);padding:16px}
+.ai-card .card-value{color:var(--yellow-dark)}
+.empty{text-align:center;padding:40px;color:var(--text4);font-size:13px}
+@media(max-width:768px){.grid-4,.grid-3{grid-template-columns:repeat(2,1fr)}.main{padding:12px}.header{padding:10px 12px}.nav{padding:0 12px}}
+@media(max-width:480px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr}}
+.loading{text-align:center;padding:20px;color:var(--text4)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+    Niravaan RailVision
+  </div>
+  <div class="header-right">
+    <select class="zone-filter" id="zoneFilter" onchange="loadData()">
+      <option value="">All Zones</option>
+    </select>
+    <span style="font-size:11px;color:var(--text4)">v2.0</span>
+  </div>
+</div>
+<div class="nav" id="nav"></div>
+<div class="main" id="main"></div>
+
+<script>
+const API = window.location.hostname === 'localhost' ? 'http://localhost:8001/api' : window.location.origin + '/api';
+const TABS = [
+  {id:'dashboard',label:'Dashboard',icon:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'},
+  {id:'blocks',label:'Blocks',icon:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>'},
+  {id:'trains',label:'Trains',icon:'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>'},
+  {id:'defects',label:'Defects',icon:'<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'},
+  {id:'corridors',label:'Corridors',icon:'<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>'},
+  {id:'crew',label:'Crew',icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>'},
+  {id:'ai-think',label:'AI Brain',icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'},
+  {id:'ai-whatif',label:'What-If',icon:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>'},
+  {id:'ai-pareto',label:'Pareto',icon:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'},
+  {id:'ai-predictive',label:'Predictive',icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'},
+  {id:'ai-digital-twin',label:'Digital Twin',icon:'<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'},
+  {id:'ai-notifications',label:'Alerts',icon:'<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>'},
+  {id:'ai-energy',label:'Energy',icon:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'},
+  {id:'ai-demand',label:'Demand',icon:'<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>'},
+  {id:'ai-multizone',label:'Multi-Zone',icon:'<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>'},
+  {id:'ai-rl',label:'RL Scheduler',icon:'<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>'},
+];
+let currentTab = 'dashboard';
+
+function initNav(){
+  const nav=document.getElementById('nav');
+  nav.innerHTML=TABS.map(t=>`<button onclick="switchTab('${t.id}')" id="tab-${t.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${t.icon}</svg> ${t.label}</button>`).join('');
+  switchTab('dashboard');
+}
+
+function switchTab(id){
+  currentTab=id;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id)?.classList.add('active');
+  loadData();
+}
+
+async function api(path){
+  try{const r=await fetch(API+path);return await r.json()}catch(e){return null}
+}
+
+function badge(status){
+  const m={'planned':'blue','approved':'yellow','completed':'green','pending':'orange','critical':'darkred','high':'red','medium':'orange','low':'green','in_progress':'yellow','scheduled':'blue','resolved':'green','on_duty':'green','available':'blue','resting':'orange','active':'red'};
+  return `<span class="badge badge-${m[status]||'blue'}">${status}</span>`;
+}
+
+function loadData(){
+  const m={
+    'dashboard':loadDashboard,'blocks':loadBlocks,'trains':loadTrains,'defects':loadDefects,
+    'corridors':loadCorridors,'crew':loadCrew,'ai-think':loadAIThink,'ai-whatif':loadWhatIf,
+    'ai-pareto':loadPareto,'ai-predictive':loadPredictive,'ai-digital-twin':loadDigitalTwin,
+    'ai-notifications':loadNotifications,'ai-energy':loadEnergy,'ai-demand':loadDemand,
+    'ai-multizone':loadMultiZone,'ai-rl':loadRL
+  };
+  (m[currentTab]||loadDashboard)();
+}
+
+async function loadDashboard(){
+  const d=await api('/dashboard');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> Dashboard Overview</div>
+    <div class="grid grid-4" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Zones</div><div class="card-value">${d.zones}</div><div class="card-sub">Indian Railway Zones</div></div>
+      <div class="ai-card"><div class="card-header">Divisions</div><div class="card-value">${d.divisions}</div><div class="card-sub">Operating Divisions</div></div>
+      <div class="ai-card"><div class="card-header">Corridors</div><div class="card-value">${d.corridors}</div><div class="card-sub">Active Routes</div></div>
+      <div class="ai-card"><div class="card-header">Trains</div><div class="card-value">${d.trains}</div><div class="card-sub">Registered Trains</div></div>
+    </div>
+    <div class="grid grid-4">
+      <div class="card"><div class="card-header">Active Blocks</div><div class="card-value">${d.blocks_active}</div><div class="card-sub">of ${d.blocks_total} total</div></div>
+      <div class="card"><div class="card-header">Total Defects</div><div class="card-value">${d.defects_total}</div><div class="card-sub">${d.defects_critical} critical</div></div>
+      <div class="card"><div class="card-header">Crew Members</div><div class="card-value">${d.crew_count}</div><div class="card-sub">Available personnel</div></div>
+      <div class="card"><div class="card-header">System Status</div><div class="card-value" style="color:var(--green);font-size:20px">Operational</div><div class="card-sub">All systems running</div></div>
+    </div>`;
+}
+
+async function loadBlocks(){
+  const d=await api('/blocks');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg> Maintenance Blocks</div>
+    <div class="card"><table><thead><tr><th>Block ID</th><th>Corridor</th><th>Date</th><th>Time</th><th>Duration</th><th>Status</th><th>Priority</th></tr></thead><tbody>
+    ${d.length?d.map(b=>`<tr><td style="font-family:'Fira Code',monospace">${b.block_id}</td><td>${b.corridor_id}</td><td>${b.block_date}</td><td>${b.start_time}-${b.end_time}</td><td>${b.duration_hours}h</td><td>${badge(b.status)}</td><td>${badge(b.priority)}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">No blocks found</td></tr>'}
+    </tbody></table></div>`;
+}
+
+async function loadTrains(){
+  const d=await api('/trains');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg> Train Schedule (${d.length} trains)</div>
+    <div class="card" style="max-height:600px;overflow:auto"><table><thead><tr><th>Number</th><th>Name</th><th>Type</th><th>Origin</th><th>Destination</th><th>Departure</th><th>Arrival</th><th>VVIP</th></tr></thead><tbody>
+    ${d.slice(0,100).map(t=>`<tr><td style="font-family:'Fira Code',monospace;font-weight:600">${t.train_number}</td><td>${t.train_name}</td><td>${t.train_type||'-'}</td><td>${t.origin||'-'}</td><td>${t.destination||'-'}</td><td>${t.departure||'-'}</td><td>${t.arrival||'-'}</td><td>${t.is_vvip?'<span class="badge badge-yellow">VVIP</span>':'-'}</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+async function loadDefects(){
+  const d=await api('/defects');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg> Defect Tracking (${d.length} defects)</div>
+    <div class="card"><table><thead><tr><th>Defect ID</th><th>Title</th><th>Location</th><th>Severity</th><th>Priority</th><th>Status</th><th>Type</th></tr></thead><tbody>
+    ${d.map(x=>`<tr><td style="font-family:'Fira Code',monospace">${x.defect_id}</td><td>${x.title}</td><td>${x.location||'-'}</td><td>${badge(x.severity)}</td><td>${badge(x.priority)}</td><td>${badge(x.status)}</td><td>${x.maintenance_type}</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+async function loadCorridors(){
+  const d=await api('/corridors');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg> Railway Corridors (${d.length} routes)</div>
+    <div class="card"><table><thead><tr><th>Code</th><th>Route</th><th>From</th><th>To</th><th>Distance</th><th>Track</th><th>Max Speed</th></tr></thead><tbody>
+    ${d.map(c=>`<tr><td style="font-family:'Fira Code',monospace;font-weight:600">${c.corridor_id}</td><td>${c.route_name}</td><td>${c.from_station}</td><td>${c.to_station}</td><td>${c.distance_km} km</td><td>${c.track_type}</td><td>${c.max_speed_kmph} km/h</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+async function loadCrew(){
+  const d=await api('/crew');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Crew Management (${d.length} members)</div>
+    <div class="card"><table><thead><tr><th>Crew ID</th><th>Name</th><th>Role</th><th>Duty</th><th>Hours</th><th>Status</th><th>Section</th></tr></thead><tbody>
+    ${d.map(c=>`<tr><td style="font-family:'Fira Code',monospace">${c.crew_id}</td><td>${c.crew_name}</td><td>${c.role}</td><td>${c.duty_start}-${c.duty_end}</td><td>${c.hours_worked}/${c.max_hours}h</td><td>${badge(c.status)}</td><td>${c.section}</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+async function loadAIThink(){
+  const d=await api('/ai/think');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14"/></svg> AI Brain - Block Scheduler</div>
+    <div class="grid grid-4" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Corridors Analyzed</div><div class="card-value">${d.corridors_analyzed}</div></div>
+      <div class="ai-card"><div class="card-header">Trains Analyzed</div><div class="card-value">${d.trains_analyzed}</div></div>
+      <div class="ai-card"><div class="card-header">Blocks Scheduled</div><div class="card-value">${d.blocks_scheduled}</div></div>
+      <div class="ai-card"><div class="card-header">Conflicts Found</div><div class="card-value">${d.conflicts_found}</div></div>
+    </div>
+    <div class="card"><div class="card-header">Schedule Output</div>
+    ${d.schedule&&d.schedule.length?`<table><thead><tr><th>Block</th><th>Corridor</th><th>Date</th><th>Time</th><th>Status</th></tr></thead><tbody>
+    ${d.schedule.map(s=>`<tr><td>${s.block_id||s.id||'-'}</td><td>${s.corridor_id||s.route||'-'}</td><td>${s.date||s.block_date||'-'}</td><td>${s.time||((s.start_time||'')+'-'+(s.end_time||''))}</td><td>${badge(s.status||'planned')}</td></tr>`).join('')}
+    </tbody></table>`:'<div class="empty">No schedule output</div>'}</div>`;
+}
+
+async function loadWhatIf(){
+  const d=await api('/ai/whatif');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/></svg> What-If Scenario Planner</div>
+    <div class="grid grid-2">${(d.scenarios||[]).map(s=>`
+      <div class="card">
+        <div class="card-header">Scenario</div>
+        <div style="font-weight:500;margin-bottom:8px">${s.scenario}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span>Impact: <strong>${(s.impact_score*100).toFixed(0)}%</strong></span>
+          <div class="status-bar" style="width:100px"><div class="status-fill" style="width:${s.impact_score*100}%;background:${s.impact_score>0.5?'var(--red)':'var(--green)'}"></div></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px">${s.recommendation}</div>
+      </div>`).join('')}</div>`;
+}
+
+async function loadPareto(){
+  const d=await api('/ai/pareto');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/></svg> Multi-Objective Pareto</div>
+    <div class="card"><table><thead><tr><th>Solution</th><th>Delay Score</th><th>Cost Score</th><th>Safety Score</th><th>Pareto Optimal</th></tr></thead><tbody>
+    ${(d.solutions||[]).map(s=>`<tr><td>#${s.id}</td><td>${(s.delay_score*100).toFixed(0)}%</td><td>${(s.cost_score*100).toFixed(0)}%</td><td>${(s.safety_score*100).toFixed(0)}%</td><td>${s.is_pareto_optimal?'<span class="badge badge-green">Optimal</span>':'-'}</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+async function loadPredictive(){
+  const d=await api('/ai/predictive');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Predictive Maintenance</div>
+    <div class="grid grid-3" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Total Defects</div><div class="card-value">${d.summary?.total_defects||0}</div></div>
+      <div class="ai-card"><div class="card-header">Critical by Week 4</div><div class="card-value">${d.summary?.critical_by_week4||0}</div></div>
+      <div class="ai-card"><div class="card-header">Algorithm</div><div class="card-value" style="font-size:14px">Survival Analysis</div></div>
+    </div>
+    <div class="card"><table><thead><tr><th>Defect</th><th>Title</th><th>Severity</th><th>Predicted Failure</th><th>Confidence</th></tr></thead><tbody>
+    ${(d.timeline||[]).slice(0,20).map(t=>`<tr><td style="font-family:'Fira Code',monospace">${t.defect_id}</td><td>${t.title}</td><td>${badge(t.severity)}</td><td>Week ${t.predicted_failure_week}</td><td>${(t.confidence*100).toFixed(0)}%</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+async function loadDigitalTwin(){
+  const d=await api('/ai/digital-twin');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg> Digital Twin Simulator</div>
+    <div class="grid grid-4">
+      <div class="ai-card"><div class="card-header">Simulated Trains</div><div class="card-value">${d.simulated_trains}</div></div>
+      <div class="ai-card"><div class="card-header">On Time</div><div class="card-value" style="color:var(--green)">${d.trains_on_time}</div></div>
+      <div class="ai-card"><div class="card-header">Delayed</div><div class="card-value" style="color:var(--red)">${d.trains_delayed}</div></div>
+      <div class="ai-card"><div class="card-header">Total Delay</div><div class="card-value">${d.total_delay_minutes}m</div></div>
+    </div>`;
+}
+
+async function loadNotifications(){
+  const d=await api('/ai/notifications');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg> Notifications & Alerts</div>
+    <div class="grid grid-3" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Total</div><div class="card-value">${d.total}</div></div>
+      <div class="ai-card"><div class="card-header">Pending Approval</div><div class="card-value">${d.pending_approval}</div></div>
+      <div class="ai-card"><div class="card-header">Sent</div><div class="card-value">${(d.notifications||[]).filter(n=>n.sent).length}</div></div>
+    </div>`;
+}
+
+async function loadEnergy(){
+  const d=await api('/ai/energy');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Energy & Cost Optimization</div>
+    <div class="grid grid-2" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Total Energy</div><div class="card-value">${d.total_energy_kwh?.toLocaleString()} kWh</div></div>
+      <div class="ai-card"><div class="card-header">Peak Demand</div><div class="card-value">${d.peak_demand_kw?.toLocaleString()} kW</div></div>
+    </div>
+    <div class="card"><div class="card-header">Recommendations</div><ul style="padding-left:16px;margin-top:8px">${(d.recommendations||[]).map(r=>`<li style="margin-bottom:4px">${r}</li>`).join('')}</ul></div>`;
+}
+
+async function loadDemand(){
+  const d=await api('/ai/demand');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg> Passenger Demand Forecast</div>
+    <div class="grid grid-3" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Peak Hours</div><div class="card-value" style="font-size:16px">${(d.peak_hours||[]).join(', ')}</div></div>
+      <div class="ai-card"><div class="card-header">Off-Peak Hours</div><div class="card-value" style="font-size:16px">${(d.off_peak_hours||[]).join(', ')}</div></div>
+      <div class="ai-card"><div class="card-header">Algorithm</div><div class="card-value" style="font-size:14px">Holt-Winters</div></div>
+    </div>
+    <div class="card"><div class="card-header">Hourly Demand Forecast</div>
+    <div style="display:flex;align-items:end;gap:4px;height:120px;margin-top:12px">
+    ${(d.forecast||[]).map(h=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="background:var(--yellow);width:100%;height:${h.demand*1.2}px;border-radius:2px 2px 0 0;min-height:2px"></div><div style="font-size:9px;color:var(--text4);margin-top:4px">${h.hour}</div></div>`).join('')}
+    </div></div>`;
+}
+
+async function loadMultiZone(){
+  const d=await api('/ai/multi-zone');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg> Multi-Zone Coordination</div>
+    <div class="card"><table><thead><tr><th>Zone</th><th>Active Blocks</th></tr></thead><tbody>
+    ${(d.zones||[]).map(z=>`<tr><td>${z.zone_name}</td><td>${z.active_blocks}</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+async function loadRL(){
+  const d=await api('/ai/rl-scheduler');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/></svg> Reinforcement Learning Scheduler</div>
+    <div class="grid grid-4">
+      <div class="ai-card"><div class="card-header">Episodes Run</div><div class="card-value">${d.episodes_run}</div></div>
+      <div class="ai-card"><div class="card-header">Best Reward</div><div class="card-value">${d.best_reward}</div></div>
+      <div class="ai-card"><div class="card-header">Convergence</div><div class="card-value">${d.convergence_improvement}%</div></div>
+      <div class="ai-card"><div class="card-header">Algorithm</div><div class="card-value" style="font-size:14px">${d.algorithm}</div></div>
+    </div>`;
+}
+
+async function loadZones(){
+  const d=await api('/zones');
+  if(!d)return;
+  const sel=document.getElementById('zoneFilter');
+  sel.innerHTML='<option value="">All Zones</option>'+d.map(z=>`<option value="${z.id}">${z.zone_name}</option>`).join('');
+}
+
+function zoneParam(){const z=document.getElementById('zoneFilter').value;return z?`?zone_id=${z}`:''}
+
+initNav();
+loadZones();
+</script>
+</body>
+</html>

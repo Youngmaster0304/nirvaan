@@ -10,7 +10,7 @@ from app.database import init_db, DB_TYPE
 from app.api.indian_routes import router as indian_router
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
-FRONTEND_DIR = BACKEND_DIR.parent / "frontend_v2"
+FRONTEND_DIR = BACKEND_DIR / "frontend_v2"
 
 _index_html = ""
 if (FRONTEND_DIR / "index.html").exists():
