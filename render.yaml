@@ -9,4 +9,4 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.8
       - key: DATABASE_URL
-        value: sqlite:///./railvision.db
+        value: sqlite:///./backend_v2/railvision.db
