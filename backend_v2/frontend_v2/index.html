@@ -11,23 +11,41 @@
   --white:#ffffff;--bg:#f8f9fa;--card:#ffffff;--border:#e5e7eb;
   --text:#111827;--text2:#374151;--text3:#6b7280;--text4:#9ca3af;
   --yellow:#CA8A04;--yellow-light:#FEF3C7;--yellow-dark:#A16207;
-  --green:#16a34a;--orange:#ea580c;--red:#dc2626;--blue:#1e40af;
+  --green:#16a34a;--green-light:#dcfce7;--orange:#ea580c;--orange-light:#fff7ed;
+  --red:#dc2626;--red-light:#fef2f2;--blue:#1e40af;--blue-light:#eff6ff;
   --shadow:0 1px 3px rgba(0,0,0,.08);--shadow2:0 4px 12px rgba(0,0,0,.1);
   --radius:8px;--radius2:12px;
 }
 body{font-family:'Fira Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#fef9c3 0%,#f8f9fa 50%,#eff6ff 100%)}
+.login-box{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:40px;width:380px;box-shadow:var(--shadow2)}
+.login-box h2{font-size:22px;font-weight:700;color:var(--yellow-dark);margin-bottom:4px}
+.login-box .sub{font-size:12px;color:var(--text3);margin-bottom:24px}
+.login-box label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;margin-top:12px}
+.login-box input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:13px;transition:border .15s}
+.login-box input:focus{outline:none;border-color:var(--yellow)}
+.login-box .err{color:var(--red);font-size:11px;margin-top:8px;min-height:16px}
+.login-box button{width:100%;padding:10px;margin-top:16px;background:var(--yellow);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.login-box button:hover{background:var(--yellow-dark)}
+.login-box button:disabled{opacity:.6;cursor:not-allowed}
+
+.app-wrap{display:none}
 .header{background:var(--white);border-bottom:2px solid var(--yellow);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:var(--yellow-dark)}
 .logo svg{width:28px;height:28px}
-.header-right{display:flex;align-items:center;gap:16px}
+.header-right{display:flex;align-items:center;gap:12px}
 .zone-filter{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:12px;background:var(--white);cursor:pointer}
+.user-pill{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);background:var(--bg);padding:4px 12px;border-radius:16px;border:1px solid var(--border)}
+.user-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.btn-sm{padding:4px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:11px;background:var(--white);cursor:pointer;color:var(--text3);transition:all .15s}
+.btn-sm:hover{border-color:var(--red);color:var(--red)}
+
 .nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0;overflow-x:auto}
 .nav button{padding:10px 16px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
 .nav button:hover{color:var(--text);background:var(--yellow-light)}
 .nav button.active{color:var(--yellow-dark);border-bottom-color:var(--yellow);font-weight:600}
 .main{padding:16px 24px;max-width:1400px;margin:0 auto}
-.section{display:none}
-.section.active{display:block}
 .grid{display:grid;gap:12px}
 .grid-4{grid-template-columns:repeat(4,1fr)}
 .grid-3{grid-template-columns:repeat(3,1fr)}
@@ -37,11 +55,11 @@ body{font-family:'Fira Sans',sans-serif;background:var(--bg);color:var(--text);f
 .card-value{font-size:28px;font-weight:700;color:var(--text);font-family:'Fira Code',monospace}
 .card-sub{font-size:11px;color:var(--text4);margin-top:4px}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
-.badge-green{background:#dcfce7;color:#166534}
-.badge-orange{background:#fff7ed;color:#9a3412}
-.badge-red{background:#fef2f2;color:#991b1b}
+.badge-green{background:var(--green-light);color:#166534}
+.badge-orange{background:var(--orange-light);color:#9a3412}
+.badge-red{background:var(--red-light);color:#991b1b}
 .badge-darkred{background:#450a0a;color:#fca5a5}
-.badge-blue{background:#eff6ff;color:#1e40af}
+.badge-blue{background:var(--blue-light);color:#1e40af}
 .badge-yellow{background:var(--yellow-light);color:var(--yellow-dark)}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{text-align:left;padding:8px 12px;background:var(--bg);font-weight:600;color:var(--text3);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.3px}
@@ -54,29 +72,58 @@ tr:hover{background:var(--yellow-light)}
 .ai-card{background:linear-gradient(135deg,var(--yellow-light),#fff);border:1px solid var(--yellow);border-radius:var(--radius2);padding:16px}
 .ai-card .card-value{color:var(--yellow-dark)}
 .empty{text-align:center;padding:40px;color:var(--text4);font-size:13px}
+.loading{text-align:center;padding:40px;color:var(--text4)}
+.loading::after{content:'';display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--yellow);border-radius:50%;animation:spin .6s linear infinite;margin-left:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:768px){.grid-4,.grid-3{grid-template-columns:repeat(2,1fr)}.main{padding:12px}.header{padding:10px 12px}.nav{padding:0 12px}}
 @media(max-width:480px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr}}
-.loading{text-align:center;padding:20px;color:var(--text4)}
 </style>
 </head>
 <body>
-<div class="header">
-  <div class="logo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-    Niravaan RailVision
-  </div>
-  <div class="header-right">
-    <select class="zone-filter" id="zoneFilter" onchange="loadData()">
-      <option value="">All Zones</option>
-    </select>
-    <span style="font-size:11px;color:var(--text4)">v2.0</span>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:36px;height:36px;color:var(--yellow);margin-bottom:8px"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+    <h2>Niravaan RailVision</h2>
+    <div class="sub">AI-Powered Block Planning for Indian Railways</div>
+    <label>Username</label>
+    <input type="text" id="loginUser" placeholder="admin" autofocus>
+    <label>Password</label>
+    <input type="password" id="loginPass" placeholder="admin123">
+    <div class="err" id="loginErr"></div>
+    <button id="loginBtn" onclick="doLogin()">Sign In</button>
+    <div style="margin-top:16px;font-size:11px;color:var(--text4);text-align:center">
+      Demo: admin / admin123
+    </div>
   </div>
 </div>
-<div class="nav" id="nav"></div>
-<div class="main" id="main"></div>
+
+<!-- APP -->
+<div class="app-wrap" id="appWrap">
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      Niravaan RailVision
+    </div>
+    <div class="header-right">
+      <select class="zone-filter" id="zoneFilter" onchange="loadData()">
+        <option value="">All Zones</option>
+      </select>
+      <div class="user-pill"><span class="dot"></span><span id="userName">Admin</span></div>
+      <button class="btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+  <div class="nav" id="nav"></div>
+  <div class="main" id="main"></div>
+</div>
 
 <script>
 const API = window.location.hostname === 'localhost' ? 'http://localhost:8001/api' : window.location.origin + '/api';
+
+let authToken = localStorage.getItem('nirvaan_token');
+let currentUser = null;
+
 const TABS = [
   {id:'dashboard',label:'Dashboard',icon:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'},
   {id:'blocks',label:'Blocks',icon:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>'},
@@ -94,6 +141,8 @@ const TABS = [
   {id:'ai-demand',label:'Demand',icon:'<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>'},
   {id:'ai-multizone',label:'Multi-Zone',icon:'<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>'},
   {id:'ai-rl',label:'RL Scheduler',icon:'<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>'},
+  {id:'ai-analytics',label:'Analytics',icon:'<path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/>'},
+  {id:'ai-crew-mgmt',label:'Crew AI',icon:'<path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/>'},
 ];
 let currentTab = 'dashboard';
 
@@ -110,13 +159,28 @@ function switchTab(id){
   loadData();
 }
 
-async function api(path){
-  try{const r=await fetch(API+path);return await r.json()}catch(e){return null}
+async function api(path,opts={}){
+  try{
+    const headers={'Content-Type':'application/json',...(opts.headers||{})};
+    if(authToken)headers['Authorization']='Bearer '+authToken;
+    const r=await fetch(API+path,{...opts,headers});
+    if(r.status===401){doLogout();return null}
+    return await r.json();
+  }catch(e){return null}
 }
 
 function badge(status){
-  const m={'planned':'blue','approved':'yellow','completed':'green','pending':'orange','critical':'darkred','high':'red','medium':'orange','low':'green','in_progress':'yellow','scheduled':'blue','resolved':'green','on_duty':'green','available':'blue','resting':'orange','active':'red'};
+  const m={'planned':'blue','approved':'yellow','completed':'green','pending':'orange','critical':'darkred','high':'red','medium':'orange','low':'green','in_progress':'yellow','scheduled':'blue','resolved':'green','on_duty':'green','available':'blue','resting':'orange','active':'red','overdue':'darkred'};
   return `<span class="badge badge-${m[status]||'blue'}">${status}</span>`;
+}
+
+function zoneParam(){
+  const z=document.getElementById('zoneFilter')?.value;
+  return z?`?zone_id=${z}`:'';
+}
+
+function showLoading(msg){
+  document.getElementById('main').innerHTML=`<div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14"/></svg> ${msg||'Loading'}<span class="loading"></span></div>`;
 }
 
 function loadData(){
@@ -125,13 +189,14 @@ function loadData(){
     'corridors':loadCorridors,'crew':loadCrew,'ai-think':loadAIThink,'ai-whatif':loadWhatIf,
     'ai-pareto':loadPareto,'ai-predictive':loadPredictive,'ai-digital-twin':loadDigitalTwin,
     'ai-notifications':loadNotifications,'ai-energy':loadEnergy,'ai-demand':loadDemand,
-    'ai-multizone':loadMultiZone,'ai-rl':loadRL
+    'ai-multizone':loadMultiZone,'ai-rl':loadRL,'ai-analytics':loadAnalytics,'ai-crew-mgmt':loadCrewAI
   };
+  showLoading(TABS.find(t=>t.id===currentTab)?.label||'Loading');
   (m[currentTab]||loadDashboard)();
 }
 
 async function loadDashboard(){
-  const d=await api('/dashboard');
+  const d=await api('/dashboard'+zoneParam());
   if(!d)return;
   document.getElementById('main').innerHTML=`
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> Dashboard Overview</div>
@@ -150,42 +215,42 @@ async function loadDashboard(){
 }
 
 async function loadBlocks(){
-  const d=await api('/blocks');
+  const d=await api('/blocks'+zoneParam());
   if(!d)return;
   document.getElementById('main').innerHTML=`
-    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg> Maintenance Blocks</div>
-    <div class="card"><table><thead><tr><th>Block ID</th><th>Corridor</th><th>Date</th><th>Time</th><th>Duration</th><th>Status</th><th>Priority</th></tr></thead><tbody>
-    ${d.length?d.map(b=>`<tr><td style="font-family:'Fira Code',monospace">${b.block_id}</td><td>${b.corridor_id}</td><td>${b.block_date}</td><td>${b.start_time}-${b.end_time}</td><td>${b.duration_hours}h</td><td>${badge(b.status)}</td><td>${badge(b.priority)}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">No blocks found</td></tr>'}
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg> Maintenance Blocks (${d.length})</div>
+    <div class="card" style="max-height:600px;overflow:auto"><table><thead><tr><th>Block ID</th><th>Corridor</th><th>Date</th><th>Time</th><th>Duration</th><th>Status</th><th>Priority</th><th>Description</th></tr></thead><tbody>
+    ${d.length?d.map(b=>`<tr><td style="font-family:'Fira Code',monospace">${b.block_id}</td><td>${b.corridor_id}</td><td>${b.block_date}</td><td>${b.start_time}-${b.end_time}</td><td>${b.duration_hours}h</td><td>${badge(b.status)}</td><td>${badge(b.priority)}</td><td style="font-size:11px;color:var(--text3);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.description||''}">${b.description||'-'}</td></tr>`).join(''):'<tr><td colspan="8" class="empty">No blocks found</td></tr>'}
     </tbody></table></div>`;
 }
 
 async function loadTrains(){
-  const d=await api('/trains');
+  const d=await api('/trains'+zoneParam());
   if(!d)return;
   document.getElementById('main').innerHTML=`
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg> Train Schedule (${d.length} trains)</div>
-    <div class="card" style="max-height:600px;overflow:auto"><table><thead><tr><th>Number</th><th>Name</th><th>Type</th><th>Origin</th><th>Destination</th><th>Departure</th><th>Arrival</th><th>VVIP</th></tr></thead><tbody>
-    ${d.slice(0,100).map(t=>`<tr><td style="font-family:'Fira Code',monospace;font-weight:600">${t.train_number}</td><td>${t.train_name}</td><td>${t.train_type||'-'}</td><td>${t.origin||'-'}</td><td>${t.destination||'-'}</td><td>${t.departure||'-'}</td><td>${t.arrival||'-'}</td><td>${t.is_vvip?'<span class="badge badge-yellow">VVIP</span>':'-'}</td></tr>`).join('')}
+    <div class="card" style="max-height:600px;overflow:auto"><table><thead><tr><th>Number</th><th>Name</th><th>Type</th><th>Origin</th><th>Destination</th><th>Departure</th><th>Arrival</th><th>Distance</th><th>VVIP</th></tr></thead><tbody>
+    ${d.slice(0,100).map(t=>`<tr><td style="font-family:'Fira Code',monospace;font-weight:600">${t.train_number}</td><td>${t.train_name}</td><td>${t.train_type||'-'}</td><td>${t.origin||'-'}</td><td>${t.destination||'-'}</td><td>${t.departure||'-'}</td><td>${t.arrival||'-'}</td><td>${t.distance_km?t.distance_km+' km':'-'}</td><td>${t.is_vvip?'<span class="badge badge-yellow">VVIP</span>':'-'}</td></tr>`).join('')}
     </tbody></table></div>`;
 }
 
 async function loadDefects(){
-  const d=await api('/defects');
+  const d=await api('/defects'+zoneParam());
   if(!d)return;
   document.getElementById('main').innerHTML=`
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg> Defect Tracking (${d.length} defects)</div>
-    <div class="card"><table><thead><tr><th>Defect ID</th><th>Title</th><th>Location</th><th>Severity</th><th>Priority</th><th>Status</th><th>Type</th></tr></thead><tbody>
-    ${d.map(x=>`<tr><td style="font-family:'Fira Code',monospace">${x.defect_id}</td><td>${x.title}</td><td>${x.location||'-'}</td><td>${badge(x.severity)}</td><td>${badge(x.priority)}</td><td>${badge(x.status)}</td><td>${x.maintenance_type}</td></tr>`).join('')}
+    <div class="card" style="max-height:600px;overflow:auto"><table><thead><tr><th>Defect ID</th><th>Title</th><th>Location</th><th>Severity</th><th>Priority</th><th>Status</th><th>Type</th><th>Corridor</th></tr></thead><tbody>
+    ${d.map(x=>`<tr><td style="font-family:'Fira Code',monospace">${x.defect_id}</td><td>${x.title}</td><td>${x.location||'-'}</td><td>${badge(x.severity)}</td><td>${badge(x.priority)}</td><td>${badge(x.status)}</td><td>${x.maintenance_type}</td><td>${x.corridor_id}</td></tr>`).join('')}
     </tbody></table></div>`;
 }
 
 async function loadCorridors(){
-  const d=await api('/corridors');
+  const d=await api('/corridors'+zoneParam());
   if(!d)return;
   document.getElementById('main').innerHTML=`
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg> Railway Corridors (${d.length} routes)</div>
-    <div class="card"><table><thead><tr><th>Code</th><th>Route</th><th>From</th><th>To</th><th>Distance</th><th>Track</th><th>Max Speed</th></tr></thead><tbody>
-    ${d.map(c=>`<tr><td style="font-family:'Fira Code',monospace;font-weight:600">${c.corridor_id}</td><td>${c.route_name}</td><td>${c.from_station}</td><td>${c.to_station}</td><td>${c.distance_km} km</td><td>${c.track_type}</td><td>${c.max_speed_kmph} km/h</td></tr>`).join('')}
+    <div class="card" style="max-height:600px;overflow:auto"><table><thead><tr><th>Code</th><th>Route</th><th>From</th><th>To</th><th>Distance</th><th>Track</th><th>Max Speed</th><th>Zone</th></tr></thead><tbody>
+    ${d.map(c=>`<tr><td style="font-family:'Fira Code',monospace;font-weight:600">${c.corridor_id}</td><td>${c.route_name}</td><td>${c.from_station}</td><td>${c.to_station}</td><td>${c.distance_km} km</td><td>${badge(c.track_type)}</td><td>${c.max_speed_kmph} km/h</td><td>${c.zone_id}</td></tr>`).join('')}
     </tbody></table></div>`;
 }
 
@@ -194,13 +259,18 @@ async function loadCrew(){
   if(!d)return;
   document.getElementById('main').innerHTML=`
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Crew Management (${d.length} members)</div>
-    <div class="card"><table><thead><tr><th>Crew ID</th><th>Name</th><th>Role</th><th>Duty</th><th>Hours</th><th>Status</th><th>Section</th></tr></thead><tbody>
-    ${d.map(c=>`<tr><td style="font-family:'Fira Code',monospace">${c.crew_id}</td><td>${c.crew_name}</td><td>${c.role}</td><td>${c.duty_start}-${c.duty_end}</td><td>${c.hours_worked}/${c.max_hours}h</td><td>${badge(c.status)}</td><td>${c.section}</td></tr>`).join('')}
+    <div class="grid grid-3" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Total Crew</div><div class="card-value">${d.length}</div></div>
+      <div class="ai-card"><div class="card-header">On Duty</div><div class="card-value">${d.filter(c=>c.status==='on_duty').length}</div></div>
+      <div class="ai-card"><div class="card-header">Available</div><div class="card-value">${d.filter(c=>c.status==='available').length}</div></div>
+    </div>
+    <div class="card" style="max-height:500px;overflow:auto"><table><thead><tr><th>Crew ID</th><th>Name</th><th>Role</th><th>Duty</th><th>Hours</th><th>Status</th><th>Section</th><th>Train</th></tr></thead><tbody>
+    ${d.map(c=>`<tr><td style="font-family:'Fira Code',monospace">${c.crew_id}</td><td>${c.crew_name}</td><td>${c.role}</td><td>${c.duty_start}-${c.duty_end}</td><td>${c.hours_worked}/${c.max_hours}h</td><td>${badge(c.status)}</td><td>${c.section}</td><td>${c.current_train||'-'}</td></tr>`).join('')}
     </tbody></table></div>`;
 }
 
 async function loadAIThink(){
-  const d=await api('/ai/think');
+  const d=await api('/ai/think'+zoneParam());
   if(!d)return;
   document.getElementById('main').innerHTML=`
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14"/></svg> AI Brain - Block Scheduler</div>
@@ -213,33 +283,39 @@ async function loadAIThink(){
     <div class="card"><div class="card-header">Schedule Output</div>
     ${d.schedule&&d.schedule.length?`<table><thead><tr><th>Block</th><th>Corridor</th><th>Date</th><th>Time</th><th>Status</th></tr></thead><tbody>
     ${d.schedule.map(s=>`<tr><td>${s.block_id||s.id||'-'}</td><td>${s.corridor_id||s.route||'-'}</td><td>${s.date||s.block_date||'-'}</td><td>${s.time||((s.start_time||'')+'-'+(s.end_time||''))}</td><td>${badge(s.status||'planned')}</td></tr>`).join('')}
-    </tbody></table>`:'<div class="empty">No schedule output</div>'}</div>`;
+    </tbody></table>`:'<div class="empty">No schedule output — try selecting a zone or wait for computation</div>'}</div>`;
 }
 
 async function loadWhatIf(){
-  const d=await api('/ai/whatif');
+  const d=await api('/ai/whatif'+zoneParam());
   if(!d)return;
   document.getElementById('main').innerHTML=`
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/></svg> What-If Scenario Planner</div>
-    <div class="grid grid-2">${(d.scenarios||[]).map(s=>`
-      <div class="card">
-        <div class="card-header">Scenario</div>
+    <div class="grid grid-2">${(d.scenarios||[]).map((s,i)=>`
+      <div class="card" style="border-left:4px solid ${s.impact_score>0.5?'var(--red)':'var(--green)'}">
+        <div class="card-header">Scenario ${i+1}</div>
         <div style="font-weight:500;margin-bottom:8px">${s.scenario}</div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span>Impact: <strong>${(s.impact_score*100).toFixed(0)}%</strong></span>
-          <div class="status-bar" style="width:100px"><div class="status-fill" style="width:${s.impact_score*100}%;background:${s.impact_score>0.5?'var(--red)':'var(--green)'}"></div></div>
+          <div class="status-bar" style="width:120px"><div class="status-fill" style="width:${s.impact_score*100}%;background:${s.impact_score>0.5?'var(--red)':'var(--green)'}"></div></div>
         </div>
-        <div style="font-size:11px;color:var(--text3);margin-top:8px">${s.recommendation}</div>
+        <div style="font-size:11px;color:var(--text3)">${s.recommendation}</div>
       </div>`).join('')}</div>`;
 }
 
 async function loadPareto(){
   const d=await api('/ai/pareto');
   if(!d)return;
+  const paretoCount=(d.pareto_front||[]).length;
   document.getElementById('main').innerHTML=`
-    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/></svg> Multi-Objective Pareto</div>
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Multi-Objective Pareto Analysis</div>
+    <div class="grid grid-3" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Total Solutions</div><div class="card-value">${(d.solutions||[]).length}</div></div>
+      <div class="ai-card"><div class="card-header">Pareto Optimal</div><div class="card-value">${paretoCount}</div></div>
+      <div class="ai-card"><div class="card-header">Trade-off Ratio</div><div class="card-value">${((d.solutions||[]).length?((d.solutions.length-paretoCount)/d.solutions.length*100).toFixed(0):0)}%</div></div>
+    </div>
     <div class="card"><table><thead><tr><th>Solution</th><th>Delay Score</th><th>Cost Score</th><th>Safety Score</th><th>Pareto Optimal</th></tr></thead><tbody>
-    ${(d.solutions||[]).map(s=>`<tr><td>#${s.id}</td><td>${(s.delay_score*100).toFixed(0)}%</td><td>${(s.cost_score*100).toFixed(0)}%</td><td>${(s.safety_score*100).toFixed(0)}%</td><td>${s.is_pareto_optimal?'<span class="badge badge-green">Optimal</span>':'-'}</td></tr>`).join('')}
+    ${(d.solutions||[]).map(s=>`<tr style="${s.is_pareto_optimal?'background:var(--green-light)':''}"><td>#${s.id}</td><td>${(s.delay_score*100).toFixed(0)}%</td><td>${(s.cost_score*100).toFixed(0)}%</td><td>${(s.safety_score*100).toFixed(0)}%</td><td>${s.is_pareto_optimal?'<span class="badge badge-green">Optimal</span>':'-'}</td></tr>`).join('')}
     </tbody></table></div>`;
 }
 
@@ -250,37 +326,43 @@ async function loadPredictive(){
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Predictive Maintenance</div>
     <div class="grid grid-3" style="margin-bottom:16px">
       <div class="ai-card"><div class="card-header">Total Defects</div><div class="card-value">${d.summary?.total_defects||0}</div></div>
-      <div class="ai-card"><div class="card-header">Critical by Week 4</div><div class="card-value">${d.summary?.critical_by_week4||0}</div></div>
+      <div class="ai-card"><div class="card-header">Critical by Week 4</div><div class="card-value" style="color:var(--red)">${d.summary?.critical_by_week4||0}</div></div>
       <div class="ai-card"><div class="card-header">Algorithm</div><div class="card-value" style="font-size:14px">Survival Analysis</div></div>
     </div>
-    <div class="card"><table><thead><tr><th>Defect</th><th>Title</th><th>Severity</th><th>Predicted Failure</th><th>Confidence</th></tr></thead><tbody>
-    ${(d.timeline||[]).slice(0,20).map(t=>`<tr><td style="font-family:'Fira Code',monospace">${t.defect_id}</td><td>${t.title}</td><td>${badge(t.severity)}</td><td>Week ${t.predicted_failure_week}</td><td>${(t.confidence*100).toFixed(0)}%</td></tr>`).join('')}
+    <div class="card" style="max-height:500px;overflow:auto"><table><thead><tr><th>Defect</th><th>Title</th><th>Severity</th><th>Predicted Failure</th><th>Confidence</th><th>Risk Bar</th></tr></thead><tbody>
+    ${(d.timeline||[]).slice(0,20).map(t=>`<tr><td style="font-family:'Fira Code',monospace">${t.defect_id}</td><td>${t.title}</td><td>${badge(t.severity)}</td><td>Week ${t.predicted_failure_week}</td><td>${(t.confidence*100).toFixed(0)}%</td><td><div class="status-bar" style="width:80px"><div class="status-fill" style="width:${t.confidence*100}%;background:${t.predicted_failure_week<=4?'var(--red)':t.predicted_failure_week<=6?'var(--orange)':'var(--green)'}"></div></div></td></tr>`).join('')}
     </tbody></table></div>`;
 }
 
 async function loadDigitalTwin(){
   const d=await api('/ai/digital-twin');
   if(!d)return;
+  const onTimePct=d.simulated_trains?((d.trains_on_time/d.simulated_trains)*100).toFixed(1):0;
   document.getElementById('main').innerHTML=`
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg> Digital Twin Simulator</div>
-    <div class="grid grid-4">
+    <div class="grid grid-4" style="margin-bottom:16px">
       <div class="ai-card"><div class="card-header">Simulated Trains</div><div class="card-value">${d.simulated_trains}</div></div>
-      <div class="ai-card"><div class="card-header">On Time</div><div class="card-value" style="color:var(--green)">${d.trains_on_time}</div></div>
+      <div class="ai-card"><div class="card-header">On Time</div><div class="card-value" style="color:var(--green)">${d.trains_on_time} <span style="font-size:14px">(${onTimePct}%)</span></div></div>
       <div class="ai-card"><div class="card-header">Delayed</div><div class="card-value" style="color:var(--red)">${d.trains_delayed}</div></div>
       <div class="ai-card"><div class="card-header">Total Delay</div><div class="card-value">${d.total_delay_minutes}m</div></div>
-    </div>`;
+    </div>
+    ${(d.block_impacts||[]).length?`<div class="card"><div class="card-header">Block Impacts</div><table><thead><tr><th>Block</th><th>Impact</th></tr></thead><tbody>${d.block_impacts.map(b=>`<tr><td>${b.block_id||b}</td><td>${b.impact||'-'}</td></tr>`).join('')}</tbody></table></div>`:''}`;
 }
 
 async function loadNotifications(){
   const d=await api('/ai/notifications');
   if(!d)return;
+  const sent=(d.notifications||[]).filter(n=>n.sent).length;
   document.getElementById('main').innerHTML=`
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg> Notifications & Alerts</div>
     <div class="grid grid-3" style="margin-bottom:16px">
       <div class="ai-card"><div class="card-header">Total</div><div class="card-value">${d.total}</div></div>
       <div class="ai-card"><div class="card-header">Pending Approval</div><div class="card-value">${d.pending_approval}</div></div>
-      <div class="ai-card"><div class="card-header">Sent</div><div class="card-value">${(d.notifications||[]).filter(n=>n.sent).length}</div></div>
-    </div>`;
+      <div class="ai-card"><div class="card-header">Sent</div><div class="card-value">${sent}</div></div>
+    </div>
+    ${(d.notifications||[]).length?`<div class="card" style="max-height:400px;overflow:auto"><table><thead><tr><th>Block</th><th>Department</th><th>Date</th><th>Status</th><th>Sent</th></tr></thead><tbody>
+    ${d.notifications.map(n=>`<tr><td style="font-family:'Fira Code',monospace">${n.block_id}</td><td>${n.department}</td><td>${n.date}</td><td>${badge(n.status)}</td><td>${n.sent?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-orange">Pending</span>'}</td></tr>`).join('')}
+    </tbody></table></div>`:'<div class="empty">No notifications</div>'}`;
 }
 
 async function loadEnergy(){
@@ -292,22 +374,23 @@ async function loadEnergy(){
       <div class="ai-card"><div class="card-header">Total Energy</div><div class="card-value">${d.total_energy_kwh?.toLocaleString()} kWh</div></div>
       <div class="ai-card"><div class="card-header">Peak Demand</div><div class="card-value">${d.peak_demand_kw?.toLocaleString()} kW</div></div>
     </div>
-    <div class="card"><div class="card-header">Recommendations</div><ul style="padding-left:16px;margin-top:8px">${(d.recommendations||[]).map(r=>`<li style="margin-bottom:4px">${r}</li>`).join('')}</ul></div>`;
+    <div class="card"><div class="card-header">Recommendations</div><ul style="padding-left:16px;margin-top:8px">${(d.recommendations||[]).map(r=>`<li style="margin-bottom:6px;padding:4px 8px;background:var(--yellow-light);border-radius:4px">${r}</li>`).join('')}</ul></div>`;
 }
 
 async function loadDemand(){
   const d=await api('/ai/demand');
   if(!d)return;
+  const maxDemand=Math.max(...(d.forecast||[]).map(h=>h.demand),1);
   document.getElementById('main').innerHTML=`
-    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg> Passenger Demand Forecast</div>
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg> Passenger Demand Forecast</div>
     <div class="grid grid-3" style="margin-bottom:16px">
       <div class="ai-card"><div class="card-header">Peak Hours</div><div class="card-value" style="font-size:16px">${(d.peak_hours||[]).join(', ')}</div></div>
       <div class="ai-card"><div class="card-header">Off-Peak Hours</div><div class="card-value" style="font-size:16px">${(d.off_peak_hours||[]).join(', ')}</div></div>
       <div class="ai-card"><div class="card-header">Algorithm</div><div class="card-value" style="font-size:14px">Holt-Winters</div></div>
     </div>
     <div class="card"><div class="card-header">Hourly Demand Forecast</div>
-    <div style="display:flex;align-items:end;gap:4px;height:120px;margin-top:12px">
-    ${(d.forecast||[]).map(h=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="background:var(--yellow);width:100%;height:${h.demand*1.2}px;border-radius:2px 2px 0 0;min-height:2px"></div><div style="font-size:9px;color:var(--text4);margin-top:4px">${h.hour}</div></div>`).join('')}
+    <div style="display:flex;align-items:end;gap:3px;height:140px;margin-top:12px;padding-bottom:20px;position:relative">
+    ${(d.forecast||[]).map(h=>{const isPeak=(d.peak_hours||[]).includes(h.hour);return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;position:relative"><div style="background:${isPeak?'var(--yellow-dark)':'var(--yellow)'};width:100%;height:${(h.demand/maxDemand)*110}px;border-radius:2px 2px 0 0;min-height:2px;transition:height .3s"></div><div style="font-size:9px;color:${isPeak?'var(--yellow-dark)':'var(--text4)'};margin-top:4px;font-weight:${isPeak?'600':'400'}">${h.hour}</div></div>`}).join('')}
     </div></div>`;
 }
 
@@ -316,8 +399,13 @@ async function loadMultiZone(){
   if(!d)return;
   document.getElementById('main').innerHTML=`
     <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg> Multi-Zone Coordination</div>
-    <div class="card"><table><thead><tr><th>Zone</th><th>Active Blocks</th></tr></thead><tbody>
-    ${(d.zones||[]).map(z=>`<tr><td>${z.zone_name}</td><td>${z.active_blocks}</td></tr>`).join('')}
+    <div class="grid grid-3" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Total Zones</div><div class="card-value">${(d.zones||[]).length}</div></div>
+      <div class="ai-card"><div class="card-header">Cross-Zone Conflicts</div><div class="card-value">${(d.cross_zone_conflicts||[]).length}</div></div>
+      <div class="ai-card"><div class="card-header">Total Active Blocks</div><div class="card-value">${(d.zones||[]).reduce((a,z)=>a+z.active_blocks,0)}</div></div>
+    </div>
+    <div class="card"><div class="card-header">Zone Activity</div><table><thead><tr><th>Zone</th><th>Active Blocks</th><th>Status</th></tr></thead><tbody>
+    ${(d.zones||[]).map(z=>`<tr><td>${z.zone_name}</td><td>${z.active_blocks}</td><td>${badge(z.active_blocks>5?'active':'scheduled')}</td></tr>`).join('')}
     </tbody></table></div>`;
 }
 
@@ -334,17 +422,97 @@ async function loadRL(){
     </div>`;
 }
 
+async function loadAnalytics(){
+  const d=await api('/ai/analytics');
+  if(!d)return;
+  const kpis=d.kpis||{};
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/></svg> Analytics Overview</div>
+    <div class="grid grid-4" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Total Corridors</div><div class="card-value">${kpis.total_corridors||0}</div></div>
+      <div class="ai-card"><div class="card-header">Total Trains</div><div class="card-value">${kpis.total_trains||0}</div></div>
+      <div class="ai-card"><div class="card-header">Total Blocks</div><div class="card-value">${kpis.total_blocks||0}</div></div>
+      <div class="ai-card"><div class="card-header">Total Defects</div><div class="card-value">${kpis.total_defects||0}</div></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card"><div class="card-header">Department Performance</div>
+      ${(d.department_performance||[]).length?`<table><thead><tr><th>Department</th><th>Score</th></tr></thead><tbody>${d.department_performance.map(p=>`<tr><td>${p.department||p.name||'-'}</td><td>${p.score||'-'}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">No department data</div>'}</div>
+      <div class="card"><div class="card-header">Score Distribution</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          ${Object.entries(d.score_distribution||{}).map(([k,v])=>`<div style="flex:1;text-align:center"><div style="font-size:20px;font-weight:700;font-family:'Fira Code',monospace;color:var(--${k==='green'?'green':k==='orange'?'orange':k==='red'?'red':'text'})">${v}</div><div style="font-size:10px;text-transform:uppercase;color:var(--text3)">${k}</div></div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+async function loadCrewAI(){
+  const d=await api('/ai/crew-management');
+  if(!d)return;
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg> AI Crew Assignment</div>
+    <div class="grid grid-3" style="margin-bottom:16px">
+      <div class="ai-card"><div class="card-header">Total Crew</div><div class="card-value">${d.total_crew}</div></div>
+      <div class="ai-card"><div class="card-header">Utilization</div><div class="card-value">${d.utilization}%</div></div>
+      <div class="ai-card"><div class="card-header">Algorithm</div><div class="card-value" style="font-size:14px">${d.algorithm}</div></div>
+    </div>
+    ${(d.assignments||[]).length?`<div class="card"><div class="card-header">Assignments</div><table><thead><tr><th>Crew</th><th>Train</th><th>Shift</th></tr></thead><tbody>${d.assignments.map(a=>`<tr><td>${a.crew_name||a.crew_id||'-'}</td><td>${a.train||a.train_number||'-'}</td><td>${a.shift||'-'}</td></tr>`).join('')}</tbody></table></div>`:'<div class="card"><div class="empty">No assignments generated yet</div></div>'}`;
+}
+
 async function loadZones(){
   const d=await api('/zones');
   if(!d)return;
   const sel=document.getElementById('zoneFilter');
-  sel.innerHTML='<option value="">All Zones</option>'+d.map(z=>`<option value="${z.id}">${z.zone_name}</option>`).join('');
+  sel.innerHTML='<option value="">All Zones</option>'+d.map(z=>`<option value="${z.id}">${z.zone_code} - ${z.zone_name}</option>`).join('');
 }
 
-function zoneParam(){const z=document.getElementById('zoneFilter').value;return z?`?zone_id=${z}`:''}
+async function doLogin(){
+  const user=document.getElementById('loginUser').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginErr');
+  const btn=document.getElementById('loginBtn');
+  if(!user||!pass){errEl.textContent='Enter username and password';return}
+  btn.disabled=true;btn.textContent='Signing in...';errEl.textContent='';
+  try{
+    const r=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pass})});
+    const d=await r.json();
+    if(!r.ok){errEl.textContent=d.detail||'Invalid credentials';btn.disabled=false;btn.textContent='Sign In';return}
+    authToken=d.token;currentUser=d.user;
+    localStorage.setItem('nirvaan_token',authToken);
+    localStorage.setItem('nirvaan_user',JSON.stringify(currentUser));
+    showApp();
+  }catch(e){errEl.textContent='Connection failed';btn.disabled=false;btn.textContent='Sign In'}
+}
 
-initNav();
-loadZones();
+function doLogout(){
+  if(authToken)fetch(API+'/auth/logout',{method:'POST',headers:{'Authorization':'Bearer '+authToken}}).catch(()=>{});
+  authToken=null;currentUser=null;
+  localStorage.removeItem('nirvaan_token');
+  localStorage.removeItem('nirvaan_user');
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('appWrap').style.display='none';
+}
+
+function showApp(){
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('appWrap').style.display='block';
+  if(currentUser){
+    document.getElementById('userName').textContent=currentUser.full_name||currentUser.username;
+  }
+  initNav();
+  loadZones();
+}
+
+// Check existing session
+if(authToken){
+  api('/auth/me').then(d=>{
+    if(d){currentUser=d;showApp()}
+    else{localStorage.removeItem('nirvaan_token');localStorage.removeItem('nirvaan_user')}
+  });
+}
+
+// Enter key on login
+document.getElementById('loginPass')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('loginUser')?.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPass').focus()});
 </script>
 </body>
 </html>
