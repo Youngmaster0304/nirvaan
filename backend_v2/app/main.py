@@ -2,16 +2,19 @@ from contextlib import asynccontextmanager
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
+from pathlib import Path
 
 from app.config import settings
 from app.database import init_db, DB_TYPE
 from app.api.indian_routes import router as indian_router
 
-BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROJECT_DIR = os.path.dirname(BACKEND_DIR)
-FRONTEND_DIR = os.path.join(PROJECT_DIR, "frontend_v2")
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = BACKEND_DIR.parent / "frontend_v2"
+
+_index_html = ""
+if (FRONTEND_DIR / "index.html").exists():
+    _index_html = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
 
 
 @asynccontextmanager
@@ -38,16 +41,11 @@ app.add_middleware(
 app.include_router(indian_router, prefix="/api")
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    index_path = os.path.join(FRONTEND_DIR, "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    return {"name": "Niravaan RailVision", "version": "2.0.0", "docs": "/docs"}
-
-
-if os.path.exists(FRONTEND_DIR):
-    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="frontend")
+    if _index_html:
+        return HTMLResponse(content=_index_html)
+    return HTMLResponse(content="<h1>Niravaan RailVision v2.0</h1><p><a href='/docs'>API Docs</a></p>")
 
 
 if __name__ == "__main__":
