@@ -1663,8 +1663,17 @@ def rl_scheduler():
 
 
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
+
+@app.get("/", include_in_schema=False)
+async def serve_frontend():
+    from fastapi.responses import FileResponse
+    index = os.path.join(frontend_dir, "index.html")
+    if os.path.exists(index):
+        return FileResponse(index)
+    return {"message": "Niravaan API"}
+
 if os.path.exists(frontend_dir):
-    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+    app.mount("/static", StaticFiles(directory=frontend_dir), name="frontend")
 
 if __name__ == "__main__":
     import uvicorn; uvicorn.run(app, host="0.0.0.0", port=8000)

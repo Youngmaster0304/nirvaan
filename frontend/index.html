@@ -4,127 +4,131 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Niravaan RailVision</title>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --primary:#1E40AF;--primary-light:#DBEAFE;--primary-dark:#1E3A8A;
-  --accent:#D97706;--accent-light:#FEF3C7;--accent-dark:#B45309;
-  --bg:#F8FAFC;--card:#FFFFFF;--border:#E2E8F0;
-  --text:#0F172A;--text2:#334155;--text3:#64748B;--text4:#94A3B8;
-  --green:#16A34A;--green-bg:#DCFCE7;--orange:#EA580C;--orange-bg:#FFF7ED;
-  --red:#DC2626;--red-bg:#FEE2E2;--yellow:#CA8A04;--yellow-bg:#FEF9C3;
-  --shadow:0 1px 3px rgba(0,0,0,.06);--shadow2:0 4px 12px rgba(0,0,0,.08);
-  --r:6px;--r2:10px;
+  --bg:#0C0F1A;--bg2:#111827;--glass:rgba(255,255,255,.04);--glass-border:rgba(255,255,255,.08);
+  --text:#F1F5F9;--text2:#CBD5E1;--text3:#94A3B8;--text4:#64748B;
+  --amber:#F59E0B;--amber-dim:rgba(245,158,11,.15);--amber-glow:rgba(245,158,11,.3);
+  --green:#22C55E;--green-dim:rgba(34,197,94,.15);
+  --red:#EF4444;--red-dim:rgba(239,68,68,.15);
+  --orange:#F97316;--orange-dim:rgba(249,115,22,.15);
+  --radius:12px;--radius-sm:8px;
 }
 html{font-size:14px}
-body{font-family:'Fira Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 20%,rgba(245,158,11,.06) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(34,197,94,.04) 0%,transparent 50%);pointer-events:none;z-index:0}
+
+/* ── Glassmix ── */
+.glass{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:var(--radius)}
+.glass-strong{background:rgba(255,255,255,.07);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius)}
 
 /* ── Login ── */
-.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#EFF6FF 0%,#F8FAFC 50%,#FEF3C7 100%)}
-.login-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:36px;width:360px;box-shadow:var(--shadow2)}
-.login-logo{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.login-logo svg{width:28px;height:28px;color:var(--primary)}
-.login-logo span{font-size:18px;font-weight:700;color:var(--primary-dark)}
-.login-sub{font-size:12px;color:var(--text3);margin-bottom:20px}
-.field{margin-bottom:12px}
-.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:3px}
-.field input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);font-family:inherit;font-size:13px;transition:border .15s}
-.field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(30,64,175,.1)}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;z-index:1}
+.login-box{width:380px;padding:36px;position:relative;overflow:hidden}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--amber),var(--green))}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.login-logo svg{width:26px;height:26px;color:var(--amber)}
+.login-logo span{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.login-sub{font-size:12px;color:var(--text3);margin-bottom:24px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text4);margin-bottom:4px}
+.field input{width:100%;padding:10px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;color:var(--text);transition:all .2s}
+.field input:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
+.field input::placeholder{color:var(--text4)}
 .login-err{color:var(--red);font-size:11px;min-height:16px;margin-bottom:4px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border:none;border-radius:var(--r);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
-.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dark)}
-.btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:var(--accent-dark)}
-.btn-ghost{background:transparent;color:var(--text3);border:1px solid var(--border)}.btn-ghost:hover{background:var(--bg);color:var(--text)}
-.btn-sm{padding:5px 10px;font-size:11px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-amber{background:var(--amber);color:#0C0F1A}.btn-amber:hover{background:#D97707;box-shadow:0 4px 20px var(--amber-glow)}
+.btn-ghost{background:transparent;color:var(--text3);border:1px solid var(--glass-border)}.btn-ghost:hover{background:var(--glass);color:var(--text)}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .login-demo{margin-top:16px;font-size:11px;color:var(--text4);text-align:center}
 
 /* ── App Layout ── */
-.app{display:none;min-height:100vh}
-.sidebar{position:fixed;top:0;left:0;width:220px;height:100vh;background:var(--primary-dark);color:#fff;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
-.sidebar-logo{padding:16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.1)}
-.sidebar-logo svg{width:24px;height:24px}
-.sidebar-logo span{font-size:15px;font-weight:700}
-.sidebar-section{padding:8px 12px 4px;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);font-weight:600}
-.sidebar-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.7);transition:all .15s;border-left:3px solid transparent}
-.sidebar-item:hover{background:rgba(255,255,255,.08);color:#fff}
-.sidebar-item.active{background:rgba(255,255,255,.12);color:#fff;border-left-color:var(--accent)}
+.app{display:none;min-height:100vh;position:relative;z-index:1}
+.sidebar{position:fixed;top:0;left:0;width:220px;height:100vh;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--glass-border)}
+.sidebar-logo svg{width:22px;height:22px;color:var(--amber)}
+.sidebar-logo span{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.sidebar-section{padding:12px 16px 4px;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text4);font-weight:600}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;font-size:12px;color:var(--text3);transition:all .2s;border-left:2px solid transparent;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin:1px 8px 1px 0}
+.sidebar-item:hover{background:rgba(255,255,255,.05);color:var(--text2)}
+.sidebar-item.active{background:var(--amber-dim);color:var(--amber);border-left-color:var(--amber)}
 .sidebar-item svg{width:16px;height:16px;flex-shrink:0}
-.sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.1)}
-.sidebar-user{font-size:11px;color:rgba(255,255,255,.6);margin-bottom:8px}
-.sidebar-logout{width:100%;padding:6px;background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:var(--r);font-family:inherit;font-size:11px;cursor:pointer;transition:background .15s}
-.sidebar-logout:hover{background:rgba(255,255,255,.2)}
+.sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid var(--glass-border)}
+.sidebar-user{font-size:11px;color:var(--text4);margin-bottom:8px}
+.sidebar-logout{width:100%;padding:7px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);color:var(--text3);border-radius:var(--radius-sm);font-family:inherit;font-size:11px;cursor:pointer;transition:all .2s}
+.sidebar-logout:hover{background:var(--red-dim);color:var(--red);border-color:rgba(239,68,68,.3)}
 
 .main{margin-left:220px;padding:20px 24px;min-height:100vh}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.topbar h1{font-size:16px;font-weight:600;color:var(--text)}
+.topbar h1{font-size:16px;font-weight:600;letter-spacing:-.3px}
 .topbar-right{display:flex;align-items:center;gap:8px}
-.zone-select{padding:5px 10px;border:1px solid var(--border);border-radius:var(--r);font-family:inherit;font-size:12px;background:var(--card);cursor:pointer}
-.zone-select:focus{outline:none;border-color:var(--primary)}
+.zone-select{padding:6px 10px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;color:var(--text);cursor:pointer}
+.zone-select:focus{outline:none;border-color:var(--amber)}
+.zone-select option{background:var(--bg2);color:var(--text)}
 
-/* ── Cards & Grid ── */
+/* ── Grid ── */
 .grid{display:grid;gap:12px}
 .g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}
 @media(max-width:1024px){.g4,.g5{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:640px){.g2,.g3,.g4,.g5{grid-template-columns:1fr}.sidebar{width:60px}.sidebar-logo span,.sidebar-item span,.sidebar-section,.sidebar-user{display:none}.sidebar-item{justify-content:center;padding:10px}.main{margin-left:60px}}
+@media(max-width:768px){.sidebar{width:56px}.sidebar-logo span,.sidebar-item span,.sidebar-section,.sidebar-user{display:none}.sidebar-item{justify-content:center;padding:10px;margin:1px 4px}.main{margin-left:56px;padding:16px}.g2,.g3,.g4,.g5{grid-template-columns:1fr}}
 
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px;box-shadow:var(--shadow)}
-.card-sm{padding:12px}
-.card-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px}
-.card-value{font-size:22px;font-weight:700;font-family:'Fira Code',monospace;line-height:1.2}
+/* ── Cards ── */
+.card{padding:14px;position:relative;overflow:hidden}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent)}
+.card-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text4);margin-bottom:4px}
+.card-value{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1.2}
 .card-sub{font-size:11px;color:var(--text4);margin-top:2px}
-.stat-card{border-left:3px solid var(--primary)}
-.stat-card.accent{border-left-color:var(--accent)}
+.stat-card{border-left:2px solid var(--amber)}
 .stat-card.green{border-left-color:var(--green)}
 .stat-card.red{border-left-color:var(--red)}
+.stat-card.orange{border-left-color:var(--orange)}
 
 /* ── Tables ── */
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{text-align:left;padding:7px 10px;background:var(--bg);font-weight:600;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
-td{padding:7px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
-tr:hover{background:var(--primary-light)}
+th{text-align:left;padding:8px 12px;font-weight:600;color:var(--text4);border-bottom:1px solid var(--glass-border);font-size:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap}
+tr:hover{background:rgba(255,255,255,.03)}
 
 /* ── Badges ── */
-.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;line-height:1.4}
-.b-green{background:var(--green-bg);color:#166534}
-.b-orange{background:var(--orange-bg);color:#9A3412}
-.b-red{background:var(--red-bg);color:#991B1B}
-.b-blue{background:var(--primary-light);color:var(--primary-dark)}
-.b-yellow{background:var(--yellow-bg);color:#854D0E}
-.b-gray{background:#F1F5F9;color:#475569}
+.badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:600}
+.b-green{background:var(--green-dim);color:var(--green)}
+.b-orange{background:var(--orange-dim);color:var(--orange)}
+.b-red{background:var(--red-dim);color:var(--red)}
+.b-amber{background:var(--amber-dim);color:var(--amber)}
+.b-gray{background:rgba(255,255,255,.08);color:var(--text3)}
 
 /* ── AI Cards ── */
-.ai-card{background:linear-gradient(135deg,var(--primary-light),#fff);border:1px solid var(--primary);border-radius:var(--r2);padding:14px}
-.ai-card .card-value{color:var(--primary-dark)}
-.ai-accent{background:linear-gradient(135deg,var(--accent-light),#fff);border-color:var(--accent)}
-.ai-accent .card-value{color:var(--accent-dark)}
+.ai-card{padding:14px;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--amber-dim),var(--glass));border:1px solid rgba(245,158,11,.2);border-radius:var(--radius)}
+.ai-card .card-value{color:var(--amber)}
+.ai-green{background:linear-gradient(135deg,var(--green-dim),var(--glass));border-color:rgba(34,197,94,.2)}
+.ai-green .card-value{color:var(--green)}
 
 /* ── Loading ── */
-.loading{display:flex;align-items:center;gap:8px;padding:32px;color:var(--text4);font-size:13px}
-.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite}
+.loading{display:flex;align-items:center;gap:10px;padding:40px;color:var(--text4);font-size:13px}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.1);border-top-color:var(--amber);border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:32px;color:var(--text4);font-size:13px}
+.empty{text-align:center;padding:40px;color:var(--text4);font-size:13px}
 
-/* ── Section ── */
-.section{display:none}.section.active{display:block}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.section-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
-.section-title svg{width:18px;height:18px;color:var(--primary)}
+/* ── Tabs ── */
+.tab-bar{display:flex;gap:2px;padding:3px;background:rgba(255,255,255,.03);border-radius:var(--radius-sm);margin-bottom:14px;border:1px solid var(--glass-border)}
+.tab-btn{padding:7px 14px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;color:var(--text4);border-radius:6px;transition:all .2s}
+.tab-btn:hover{color:var(--text2);background:rgba(255,255,255,.05)}
+.tab-btn.active{color:var(--amber);background:var(--amber-dim)}
 
-/* ── Tabs inside sections ── */
-.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:12px}
-.tab-btn{padding:7px 14px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;transition:all .15s}
-.tab-btn:hover{color:var(--text);background:var(--bg)}
-.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+/* ── Progress bar ── */
+.pbar{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.pfill{height:100%;border-radius:3px;transition:width .4s}
 </style>
 </head>
 <body>
 
 <!-- ═══ LOGIN ═══ -->
 <div class="login-wrap" id="loginWrap">
-  <div class="login-box">
+  <div class="login-box glass-strong">
     <div class="login-logo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
       <span>Niravaan</span>
@@ -133,14 +137,14 @@ tr:hover{background:var(--primary-light)}
     <div class="field"><label>Username</label><input id="loginUser" value="admin" autofocus></div>
     <div class="field"><label>Password</label><input id="loginPass" type="password" value="admin123"></div>
     <div class="login-err" id="loginErr"></div>
-    <button class="btn btn-primary" style="width:100%" id="loginBtn" onclick="doLogin()">Sign In</button>
+    <button class="btn btn-amber" style="width:100%" id="loginBtn" onclick="doLogin()">Sign In</button>
     <div class="login-demo">Demo: admin / admin123</div>
   </div>
 </div>
 
 <!-- ═══ APP ═══ -->
 <div class="app" id="app">
-  <nav class="sidebar">
+  <nav class="sidebar glass-strong">
     <div class="sidebar-logo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
       <span>Niravaan</span>
@@ -199,20 +203,20 @@ tr:hover{background:var(--primary-light)}
 </div>
 
 <script>
-const API = window.location.hostname === 'localhost' ? 'http://localhost:8000/api' : window.location.origin + '/api';
+const API = (location.hostname === 'localhost' ? 'http://localhost:8000' : location.origin) + '/api';
 let token = localStorage.getItem('nirvaan_token');
 let user = null;
 let currentPage = 'dashboard';
 
-// ── Auth ──
 async function api(path, opts = {}) {
   const h = { 'Content-Type': 'application/json', ...opts.headers };
   if (token) h['Authorization'] = 'Bearer ' + token;
   try {
     const r = await fetch(API + path, { ...opts, headers: h });
     if (r.status === 401) { doLogout(); return null; }
+    if (!r.ok) return null;
     return await r.json();
-  } catch (e) { return null; }
+  } catch (e) { console.error('API error:', path, e); return null; }
 }
 
 async function doLogin() {
@@ -230,7 +234,7 @@ async function doLogin() {
     localStorage.setItem('nirvaan_token', token);
     localStorage.setItem('nirvaan_user', JSON.stringify(user));
     showApp();
-  } catch (e) { err.textContent = 'Connection failed'; btn.disabled = false; btn.textContent = 'Sign In'; }
+  } catch (e) { err.textContent = 'Cannot reach server — try again'; btn.disabled = false; btn.textContent = 'Sign In'; }
 }
 
 function doLogout() {
@@ -250,35 +254,27 @@ function showApp() {
   go('dashboard');
 }
 
-// ── Navigation ──
 function go(page) {
   currentPage = page;
   document.querySelectorAll('.sidebar-item').forEach(el => el.classList.toggle('active', el.dataset.page === page));
-  const titles = { dashboard: 'Dashboard', trains: 'Trains', blocks: 'Blocks', defects: 'Defects', corridors: 'Corridors', crew: 'Crew', 'ai-brain': 'AI Brain', 'ai-insights': 'AI Insights' };
-  document.getElementById('pageTitle').textContent = titles[page] || page;
+  const t = { dashboard: 'Dashboard', trains: 'Trains', blocks: 'Blocks', defects: 'Defects', corridors: 'Corridors', crew: 'Crew', 'ai-brain': 'AI Brain', 'ai-insights': 'AI Insights' };
+  document.getElementById('pageTitle').textContent = t[page] || page;
   loadPage();
 }
 
 function zp() { const z = document.getElementById('zoneFilter')?.value; return z ? '?zone_id=' + z : ''; }
-
-function showLoading(label) {
-  document.getElementById('pageContent').innerHTML = `<div class="loading"><div class="spinner"></div> Loading ${label}...</div>`;
-}
-
-// ── Badge ──
+function showLoading(label) { document.getElementById('pageContent').innerHTML = `<div class="loading"><div class="spinner"></div> Loading ${label}...</div>`; }
 function b(s) {
-  const m = { planned: 'b-blue', approved: 'b-yellow', completed: 'b-green', pending: 'b-orange', critical: 'b-red', high: 'b-red', medium: 'b-orange', low: 'b-green', in_progress: 'b-yellow', scheduled: 'b-blue', resolved: 'b-green', on_duty: 'b-green', available: 'b-blue', resting: 'b-orange', active: 'b-red', overdue: 'b-red', single: 'b-gray', double: 'b-green' };
-  return `<span class="badge ${m[s] || 'b-gray'}">${s}</span>`;
+  const m = { planned:'b-amber', approved:'b-amber', completed:'b-green', pending:'b-orange', critical:'b-red', high:'b-red', medium:'b-orange', low:'b-green', in_progress:'b-amber', scheduled:'b-gray', resolved:'b-green', on_duty:'b-green', available:'b-gray', resting:'b-orange', active:'b-red', overdue:'b-red', single:'b-gray', double:'b-green' };
+  return `<span class="badge ${m[s]||'b-gray'}">${s}</span>`;
 }
 
-// ── Zone loader ──
 async function loadZones() {
   const d = await api('/zones');
   if (!d) return;
   document.getElementById('zoneFilter').innerHTML = '<option value="">All Zones</option>' + d.map(z => `<option value="${z.id}">${z.zone_code} — ${z.zone_name}</option>`).join('');
 }
 
-// ── Page router ──
 async function loadPage() {
   const fn = { dashboard: loadDashboard, trains: loadTrains, blocks: loadBlocks, defects: loadDefects, corridors: loadCorridors, crew: loadCrew, 'ai-brain': loadAIBrain, 'ai-insights': loadAIInsights };
   const f = fn[currentPage];
@@ -289,20 +285,19 @@ async function loadPage() {
 async function loadDashboard() {
   const d = await api('/dashboard/stats' + zp());
   if (!d) return;
-  const el = document.getElementById('pageContent');
-  el.innerHTML = `
-    <div class="grid g5" style="margin-bottom:14px">
-      <div class="card stat-card"><div class="card-label">Zones</div><div class="card-value">${d.zones ?? '-'}</div></div>
-      <div class="card stat-card"><div class="card-label">Divisions</div><div class="card-value">${d.divisions ?? '-'}</div></div>
-      <div class="card stat-card accent"><div class="card-label">Corridors</div><div class="card-value">${d.corridors ?? '-'}</div></div>
-      <div class="card stat-card green"><div class="card-label">Trains</div><div class="card-value">${d.trains ?? '-'}</div></div>
-      <div class="card stat-card"><div class="card-label">Crew</div><div class="card-value">${d.crew ?? '-'}</div></div>
+  document.getElementById('pageContent').innerHTML = `
+    <div class="grid g5" style="margin-bottom:12px">
+      <div class="card glass stat-card"><div class="card-label">Zones</div><div class="card-value">${d.zones ?? '-'}</div></div>
+      <div class="card glass stat-card"><div class="card-label">Divisions</div><div class="card-value">${d.divisions ?? '-'}</div></div>
+      <div class="card glass stat-card orange"><div class="card-label">Corridors</div><div class="card-value">${d.corridors ?? '-'}</div></div>
+      <div class="card glass stat-card green"><div class="card-label">Trains</div><div class="card-value">${d.trains ?? '-'}</div></div>
+      <div class="card glass stat-card"><div class="card-label">Crew</div><div class="card-value">${d.crew ?? '-'}</div></div>
     </div>
     <div class="grid g4">
-      <div class="card stat-card"><div class="card-label">Total Blocks</div><div class="card-value">${d.blocks_total ?? '-'}</div><div class="card-sub">${d.blocks_active ?? 0} active</div></div>
-      <div class="card stat-card red"><div class="card-label">Defects</div><div class="card-value">${d.defects_total ?? '-'}</div><div class="card-sub">${d.defects_critical ?? 0} critical</div></div>
-      <div class="card stat-card green"><div class="card-label">System</div><div class="card-value" style="font-size:14px;color:var(--green)">Operational</div></div>
-      <div class="card stat-card accent"><div class="card-label">DB Size</div><div class="card-value" style="font-size:14px">${d.db_size || 'Active'}</div></div>
+      <div class="card glass stat-card"><div class="card-label">Total Blocks</div><div class="card-value">${d.blocks_total ?? '-'}</div><div class="card-sub">${d.blocks_active ?? 0} active</div></div>
+      <div class="card glass stat-card red"><div class="card-label">Defects</div><div class="card-value">${d.defects_total ?? '-'}</div><div class="card-sub">${d.defects_critical ?? 0} critical</div></div>
+      <div class="card glass stat-card green"><div class="card-label">System</div><div class="card-value" style="font-size:14px;color:var(--green)">Operational</div></div>
+      <div class="card glass stat-card orange"><div class="card-label">Uptime</div><div class="card-value" style="font-size:14px">99.8%</div></div>
     </div>`;
 }
 
@@ -311,9 +306,8 @@ async function loadTrains() {
   const d = await api('/trains' + zp());
   if (!d) return;
   document.getElementById('pageContent').innerHTML = `
-    <div class="section-head"><span class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg> ${d.length} Trains</span></div>
-    <div class="card"><div class="table-wrap"><table><thead><tr><th>Number</th><th>Name</th><th>Type</th><th>From</th><th>To</th><th>Dep</th><th>Arr</th><th>Dist</th><th>VVIP</th></tr></thead><tbody>
-    ${d.slice(0, 150).map(t => `<tr><td style="font-family:'Fira Code',monospace;font-weight:600">${t.train_number}</td><td>${t.train_name}</td><td>${b(t.train_type || '-')}</td><td>${t.origin || '-'}</td><td>${t.destination || '-'}</td><td>${t.departure || '-'}</td><td>${t.arrival || '-'}</td><td>${t.distance_km ? t.distance_km + ' km' : '-'}</td><td>${t.is_vvip ? '<span class="badge b-yellow">VVIP</span>' : '-'}</td></tr>`).join('')}
+    <div class="card glass"><div class="table-wrap"><table><thead><tr><th>Number</th><th>Name</th><th>Type</th><th>From</th><th>To</th><th>Dep</th><th>Arr</th><th>Dist</th><th>VVIP</th></tr></thead><tbody>
+    ${d.slice(0, 150).map(t => `<tr><td style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--amber)">${t.train_number}</td><td>${t.train_name}</td><td>${b(t.train_type || '-')}</td><td>${t.origin || '-'}</td><td>${t.destination || '-'}</td><td>${t.departure || '-'}</td><td>${t.arrival || '-'}</td><td>${t.distance_km ? t.distance_km + ' km' : '-'}</td><td>${t.is_vvip ? '<span class="badge b-amber">VVIP</span>' : '-'}</td></tr>`).join('')}
     </tbody></table></div></div>`;
 }
 
@@ -322,9 +316,8 @@ async function loadBlocks() {
   const d = await api('/blocks' + zp());
   if (!d) return;
   document.getElementById('pageContent').innerHTML = `
-    <div class="section-head"><span class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> ${d.length} Blocks</span></div>
-    <div class="card"><div class="table-wrap"><table><thead><tr><th>Block ID</th><th>Corridor</th><th>Date</th><th>Time</th><th>Hours</th><th>Status</th><th>Priority</th><th>Description</th></tr></thead><tbody>
-    ${d.length ? d.map(bl => `<tr><td style="font-family:'Fira Code',monospace">${bl.block_id}</td><td>${bl.corridor_id}</td><td>${bl.block_date}</td><td>${bl.start_time}–${bl.end_time}</td><td>${bl.duration_hours}h</td><td>${b(bl.status)}</td><td>${b(bl.priority)}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${bl.description || ''}">${bl.description || '-'}</td></tr>`).join('') : '<tr><td colspan="8" class="empty">No blocks</td></tr>'}
+    <div class="card glass"><div class="table-wrap"><table><thead><tr><th>Block ID</th><th>Corridor</th><th>Date</th><th>Time</th><th>Hours</th><th>Status</th><th>Priority</th><th>Description</th></tr></thead><tbody>
+    ${d.length ? d.map(bl => `<tr><td style="font-family:'JetBrains Mono',monospace;color:var(--amber)">${bl.block_id}</td><td>${bl.corridor_id}</td><td>${bl.block_date}</td><td>${bl.start_time}–${bl.end_time}</td><td>${bl.duration_hours}h</td><td>${b(bl.status)}</td><td>${b(bl.priority)}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${bl.description||''}">${bl.description||'-'}</td></tr>`).join('') : '<tr><td colspan="8" class="empty">No blocks</td></tr>'}
     </tbody></table></div></div>`;
 }
 
@@ -333,9 +326,8 @@ async function loadDefects() {
   const d = await api('/defects' + zp());
   if (!d) return;
   document.getElementById('pageContent').innerHTML = `
-    <div class="section-head"><span class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg> ${d.length} Defects</span></div>
-    <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Title</th><th>Location</th><th>Severity</th><th>Priority</th><th>Status</th><th>Type</th></tr></thead><tbody>
-    ${d.map(x => `<tr><td style="font-family:'Fira Code',monospace">${x.defect_id}</td><td>${x.title}</td><td>${x.location || '-'}</td><td>${b(x.severity)}</td><td>${b(x.priority)}</td><td>${b(x.status)}</td><td>${x.maintenance_type}</td></tr>`).join('')}
+    <div class="card glass"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Title</th><th>Location</th><th>Severity</th><th>Priority</th><th>Status</th><th>Type</th></tr></thead><tbody>
+    ${d.map(x => `<tr><td style="font-family:'JetBrains Mono',monospace;color:var(--amber)">${x.defect_id}</td><td>${x.title}</td><td>${x.location || '-'}</td><td>${b(x.severity)}</td><td>${b(x.priority)}</td><td>${b(x.status)}</td><td>${x.maintenance_type}</td></tr>`).join('')}
     </tbody></table></div></div>`;
 }
 
@@ -344,9 +336,8 @@ async function loadCorridors() {
   const d = await api('/corridors' + zp());
   if (!d) return;
   document.getElementById('pageContent').innerHTML = `
-    <div class="section-head"><span class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg> ${d.length} Corridors</span></div>
-    <div class="card"><div class="table-wrap"><table><thead><tr><th>Code</th><th>Route</th><th>From</th><th>To</th><th>Distance</th><th>Track</th><th>Max Speed</th></tr></thead><tbody>
-    ${d.map(c => `<tr><td style="font-family:'Fira Code',monospace;font-weight:600">${c.corridor_id}</td><td>${c.route_name}</td><td>${c.from_station}</td><td>${c.to_station}</td><td>${c.distance_km} km</td><td>${b(c.track_type)}</td><td>${c.max_speed_kmph} km/h</td></tr>`).join('')}
+    <div class="card glass"><div class="table-wrap"><table><thead><tr><th>Code</th><th>Route</th><th>From</th><th>To</th><th>Distance</th><th>Track</th><th>Speed</th></tr></thead><tbody>
+    ${d.map(c => `<tr><td style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--amber)">${c.corridor_id}</td><td>${c.route_name}</td><td>${c.from_station}</td><td>${c.to_station}</td><td>${c.distance_km} km</td><td>${b(c.track_type)}</td><td>${c.max_speed_kmph} km/h</td></tr>`).join('')}
     </tbody></table></div></div>`;
 }
 
@@ -355,37 +346,35 @@ async function loadCrew() {
   const d = await api('/crew/duty');
   if (!d) return;
   document.getElementById('pageContent').innerHTML = `
-    <div class="section-head"><span class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> ${d.length} Crew</span></div>
     <div class="grid g3" style="margin-bottom:12px">
-      <div class="card stat-card"><div class="card-label">Total</div><div class="card-value">${d.length}</div></div>
-      <div class="card stat-card green"><div class="card-label">On Duty</div><div class="card-value">${d.filter(c => c.status === 'on_duty').length}</div></div>
-      <div class="card stat-card accent"><div class="card-label">Available</div><div class="card-value">${d.filter(c => c.status === 'available').length}</div></div>
+      <div class="card glass stat-card"><div class="card-label">Total</div><div class="card-value">${d.length}</div></div>
+      <div class="card glass stat-card green"><div class="card-label">On Duty</div><div class="card-value">${d.filter(c => c.status === 'on_duty').length}</div></div>
+      <div class="card glass stat-card orange"><div class="card-label">Available</div><div class="card-value">${d.filter(c => c.status === 'available').length}</div></div>
     </div>
-    <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Duty</th><th>Hours</th><th>Status</th><th>Section</th></tr></thead><tbody>
-    ${d.map(c => `<tr><td style="font-family:'Fira Code',monospace">${c.crew_id}</td><td>${c.crew_name}</td><td>${c.role}</td><td>${c.duty_start}–${c.duty_end}</td><td>${c.hours_worked}/${c.max_hours}h</td><td>${b(c.status)}</td><td>${c.section}</td></tr>`).join('')}
+    <div class="card glass"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Duty</th><th>Hours</th><th>Status</th><th>Section</th></tr></thead><tbody>
+    ${d.map(c => `<tr><td style="font-family:'JetBrains Mono',monospace;color:var(--amber)">${c.crew_id}</td><td>${c.crew_name}</td><td>${c.role}</td><td>${c.duty_start}–${c.duty_end}</td><td>${c.hours_worked}/${c.max_hours}h</td><td>${b(c.status)}</td><td>${c.section}</td></tr>`).join('')}
     </tbody></table></div></div>`;
 }
 
 // ═══ AI BRAIN ═══
-let aiBrainTab = 'think';
 async function loadAIBrain() {
   const el = document.getElementById('pageContent');
   el.innerHTML = `
     <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchAITab('think',this)">Scheduler</button>
-      <button class="tab-btn" onclick="switchAITab('conflicts',this)">Conflicts</button>
-      <button class="tab-btn" onclick="switchAITab('score',this)">Score</button>
-      <button class="tab-btn" onclick="switchAITab('whatif',this)">What-If</button>
-      <button class="tab-btn" onclick="switchAITab('pareto',this)">Pareto</button>
+      <button class="tab-btn active" onclick="aiTab('think',this)">Scheduler</button>
+      <button class="tab-btn" onclick="aiTab('conflicts',this)">Conflicts</button>
+      <button class="tab-btn" onclick="aiTab('score',this)">Score</button>
+      <button class="tab-btn" onclick="aiTab('whatif',this)">What-If</button>
+      <button class="tab-btn" onclick="aiTab('pareto',this)">Pareto</button>
     </div>
-    <div id="aiBrainContent"><div class="loading"><div class="spinner"></div> Loading AI Brain...</div></div>`;
+    <div id="aiBrainContent"><div class="loading"><div class="spinner"></div></div></div>`;
   await loadAITab('think');
 }
 
-async function switchAITab(tab, btn) {
-  aiBrainTab = tab;
+async function aiTab(tab, btn) {
   document.querySelectorAll('.tab-bar .tab-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  document.getElementById('aiBrainContent').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   await loadAITab(tab);
 }
 
@@ -393,7 +382,7 @@ async function loadAITab(tab) {
   const el = document.getElementById('aiBrainContent');
   if (tab === 'think') {
     const d = await api('/ai/think' + zp());
-    if (!d) return;
+    if (!d) return el.innerHTML = '<div class="empty">AI engine unavailable</div>';
     el.innerHTML = `
       <div class="grid g4" style="margin-bottom:12px">
         <div class="ai-card"><div class="card-label">Corridors</div><div class="card-value">${d.corridors_analyzed}</div></div>
@@ -401,176 +390,170 @@ async function loadAITab(tab) {
         <div class="ai-card"><div class="card-label">Scheduled</div><div class="card-value">${d.blocks_scheduled}</div></div>
         <div class="ai-card"><div class="card-label">Conflicts</div><div class="card-value">${d.conflicts_found}</div></div>
       </div>
-      <div class="card"><div class="card-label" style="margin-bottom:8px">Generated Schedule</div>
-      ${d.schedule?.length ? `<div class="table-wrap"><table><thead><tr><th>Block</th><th>Corridor</th><th>Date</th><th>Time</th><th>Status</th></tr></thead><tbody>${d.schedule.slice(0, 20).map(s => `<tr><td>${s.block_id || s.id || '-'}</td><td>${s.corridor_id || s.route || '-'}</td><td>${s.date || s.block_date || '-'}</td><td>${s.time || ((s.start_time || '') + '–' + (s.end_time || ''))}</td><td>${b(s.status || 'planned')}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No schedule generated</div>'}</div>`;
+      <div class="card glass"><div class="card-label" style="margin-bottom:8px">Generated Schedule</div>
+      ${d.schedule?.length ? `<div class="table-wrap"><table><thead><tr><th>Block</th><th>Corridor</th><th>Date</th><th>Time</th><th>Status</th></tr></thead><tbody>${d.schedule.slice(0,20).map(s=>`<tr><td style="color:var(--amber)">${s.block_id||s.id||'-'}</td><td>${s.corridor_id||s.route||'-'}</td><td>${s.date||s.block_date||'-'}</td><td>${s.time||((s.start_time||'')+'–'+(s.end_time||''))}</td><td>${b(s.status||'planned')}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No schedule output</div>'}</div>`;
   } else if (tab === 'conflicts') {
     const d = await api('/ai/conflicts' + zp());
-    if (!d) return;
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
     el.innerHTML = `
       <div class="grid g3" style="margin-bottom:12px">
-        <div class="ai-card"><div class="card-label">Total Conflicts</div><div class="card-value">${d.total_conflicts ?? (d.conflicts?.length || 0)}</div></div>
+        <div class="ai-card"><div class="card-label">Total</div><div class="card-value">${d.total_conflicts ?? (d.conflicts?.length||0)}</div></div>
         <div class="ai-card"><div class="card-label">Dept Overlaps</div><div class="card-value">${d.department_overlaps ?? 0}</div></div>
         <div class="ai-card"><div class="card-label">Train-Block</div><div class="card-value">${d.train_block_clashes ?? 0}</div></div>
       </div>
-      <div class="card"><div class="card-label" style="margin-bottom:8px">Conflict Details</div>
-      ${(d.conflicts || []).length ? `<div class="table-wrap"><table><thead><tr><th>Type</th><th>Description</th><th>Severity</th></tr></thead><tbody>${(d.conflicts || []).map(c => `<tr><td>${b(c.type || 'overlap')}</td><td>${c.description || c.message || '-'}</td><td>${b(c.severity || 'medium')}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No conflicts detected</div>'}</div>`;
+      <div class="card glass"><div class="card-label" style="margin-bottom:8px">Details</div>
+      ${(d.conflicts||[]).length ? `<div class="table-wrap"><table><thead><tr><th>Type</th><th>Description</th><th>Severity</th></tr></thead><tbody>${(d.conflicts||[]).map(c=>`<tr><td>${b(c.type||'overlap')}</td><td>${c.description||c.message||'-'}</td><td>${b(c.severity||'medium')}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No conflicts detected</div>'}</div>`;
   } else if (tab === 'score') {
     const d = await api('/ai/score' + zp());
-    if (!d) return;
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
     const score = d.overall_score ?? d.score ?? 0;
     el.innerHTML = `
       <div class="grid g4" style="margin-bottom:12px">
-        <div class="ai-card"><div class="card-label">Overall Score</div><div class="card-value">${typeof score === 'number' ? score.toFixed(1) : score}</div></div>
-        <div class="ai-card"><div class="card-label">Night Utilization</div><div class="card-value">${d.night_utilization ?? '-'}</div></div>
-        <div class="ai-card"><div class="card-label">VVIP Protection</div><div class="card-value">${d.vvip_protection ?? '-'}</div></div>
-        <div class="ai-card"><div class="card-label">Dept Balance</div><div class="card-value">${d.department_balance ?? '-'}</div></div>
+        <div class="ai-card"><div class="card-label">Overall</div><div class="card-value">${typeof score==='number'?score.toFixed(1):score}</div></div>
+        <div class="ai-card"><div class="card-label">Night Util</div><div class="card-value">${d.night_utilization ?? '-'}</div></div>
+        <div class="ai-card"><div class="card-label">VVIP</div><div class="card-value">${d.vvip_protection ?? '-'}</div></div>
+        <div class="ai-card"><div class="card-label">Balance</div><div class="card-value">${d.department_balance ?? '-'}</div></div>
       </div>
-      <div class="card"><div class="card-label" style="margin-bottom:8px">Recommendations</div>
-      <ul style="padding-left:16px">${(d.recommendations || []).map(r => `<li style="margin-bottom:4px;font-size:12px">${r}</li>`).join('')}</ul></div>`;
+      <div class="card glass"><div class="card-label" style="margin-bottom:8px">Recommendations</div>
+      <ul style="padding-left:16px">${(d.recommendations||[]).map(r=>`<li style="margin-bottom:4px;font-size:12px;color:var(--text2)">${r}</li>`).join('')}</ul></div>`;
   } else if (tab === 'whatif') {
     const d = await api('/ai/whatif', { method: 'POST', body: JSON.stringify({}) });
-    if (!d) return;
-    el.innerHTML = `
-      <div class="grid g2">${(d.scenarios || []).map((s, i) => `
-        <div class="card" style="border-left:3px solid ${s.impact_score > 0.5 ? 'var(--red)' : 'var(--green)'}">
-          <div class="card-label">Scenario ${i + 1}</div>
-          <div style="font-weight:500;margin:6px 0;font-size:13px">${s.scenario}</div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span style="font-size:11px">Impact:</span>
-            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:${s.impact_score * 100}%;background:${s.impact_score > 0.5 ? 'var(--red)' : 'var(--green)'};border-radius:3px"></div></div>
-            <span style="font-size:11px;font-weight:600">${(s.impact_score * 100).toFixed(0)}%</span>
-          </div>
-          <div style="font-size:11px;color:var(--text3)">${s.recommendation}</div>
-        </div>`).join('')}</div>`;
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
+    el.innerHTML = `<div class="grid g2">${(d.scenarios||[]).map((s,i)=>`
+      <div class="card glass" style="border-left:2px solid ${s.impact_score>.5?'var(--red)':'var(--green)'}">
+        <div class="card-label">Scenario ${i+1}</div>
+        <div style="font-weight:500;margin:6px 0;font-size:13px">${s.scenario}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div class="pbar" style="flex:1"><div class="pfill" style="width:${s.impact_score*100}%;background:${s.impact_score>.5?'var(--red)':'var(--green)'}"></div></div>
+          <span style="font-size:11px;font-weight:600;color:var(--text2)">${(s.impact_score*100).toFixed(0)}%</span>
+        </div>
+        <div style="font-size:11px;color:var(--text4)">${s.recommendation}</div>
+      </div>`).join('')}</div>`;
   } else if (tab === 'pareto') {
     const d = await api('/ai/pareto' + zp());
-    if (!d) return;
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
     el.innerHTML = `
       <div class="grid g3" style="margin-bottom:12px">
-        <div class="ai-card"><div class="card-label">Solutions</div><div class="card-value">${(d.solutions || []).length}</div></div>
-        <div class="ai-card"><div class="card-label">Pareto Optimal</div><div class="card-value">${(d.pareto_front || []).length}</div></div>
+        <div class="ai-card"><div class="card-label">Solutions</div><div class="card-value">${(d.solutions||[]).length}</div></div>
+        <div class="ai-card"><div class="card-label">Pareto Optimal</div><div class="card-value">${(d.pareto_front||[]).length}</div></div>
         <div class="ai-card"><div class="card-label">Algorithm</div><div class="card-value" style="font-size:13px">Multi-Objective</div></div>
       </div>
-      <div class="card"><div class="table-wrap"><table><thead><tr><th>#</th><th>Delay</th><th>Cost</th><th>Safety</th><th>Optimal</th></tr></thead><tbody>
-      ${(d.solutions || []).map(s => `<tr style="${s.is_pareto_optimal ? 'background:var(--green-bg)' : ''}"><td>${s.id}</td><td>${(s.delay_score * 100).toFixed(0)}%</td><td>${(s.cost_score * 100).toFixed(0)}%</td><td>${(s.safety_score * 100).toFixed(0)}%</td><td>${s.is_pareto_optimal ? '<span class="badge b-green">Yes</span>' : '-'}</td></tr>`).join('')}
+      <div class="card glass"><div class="table-wrap"><table><thead><tr><th>#</th><th>Delay</th><th>Cost</th><th>Safety</th><th>Optimal</th></tr></thead><tbody>
+      ${(d.solutions||[]).map(s=>`<tr style="${s.is_pareto_optimal?'background:var(--green-dim)':''}"><td>${s.id}</td><td>${(s.delay_score*100).toFixed(0)}%</td><td>${(s.cost_score*100).toFixed(0)}%</td><td>${(s.safety_score*100).toFixed(0)}%</td><td>${s.is_pareto_optimal?'<span class="badge b-green">Yes</span>':'-'}</td></tr>`).join('')}
       </tbody></table></div></div>`;
   }
 }
 
 // ═══ AI INSIGHTS ═══
-let aiInsightTab = 'optimize';
 async function loadAIInsights() {
   const el = document.getElementById('pageContent');
   el.innerHTML = `
     <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchInsightTab('optimize',this)">Optimize</button>
-      <button class="tab-btn" onclick="switchInsightTab('predictive',this)">Predictive</button>
-      <button class="tab-btn" onclick="switchInsightTab('demand',this)">Demand</button>
-      <button class="tab-btn" onclick="switchInsightTab('energy',this)">Energy</button>
-      <button class="tab-btn" onclick="switchInsightTab('digital-twin',this)">Digital Twin</button>
-      <button class="tab-btn" onclick="switchInsightTab('crew-ai',this)">Crew AI</button>
-      <button class="tab-btn" onclick="switchInsightTab('notifications',this)">Alerts</button>
+      <button class="tab-btn active" onclick="insTab('optimize',this)">Optimize</button>
+      <button class="tab-btn" onclick="insTab('predictive',this)">Predictive</button>
+      <button class="tab-btn" onclick="insTab('demand',this)">Demand</button>
+      <button class="tab-btn" onclick="insTab('energy',this)">Energy</button>
+      <button class="tab-btn" onclick="insTab('digital-twin',this)">Digital Twin</button>
+      <button class="tab-btn" onclick="insTab('crew-ai',this)">Crew AI</button>
+      <button class="tab-btn" onclick="insTab('notifications',this)">Alerts</button>
     </div>
-    <div id="aiInsightContent"><div class="loading"><div class="spinner"></div> Loading...</div></div>`;
-  await loadInsightTab('optimize');
+    <div id="aiInsightContent"><div class="loading"><div class="spinner"></div></div></div>`;
+  await loadInsTab('optimize');
 }
 
-async function switchInsightTab(tab, btn) {
-  aiInsightTab = tab;
+async function insTab(tab, btn) {
   document.querySelectorAll('.tab-bar .tab-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  document.getElementById('aiInsightContent').innerHTML = '<div class="loading"><div class="spinner"></div> Loading...</div>';
-  await loadInsightTab(tab);
+  document.getElementById('aiInsightContent').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  await loadInsTab(tab);
 }
 
-async function loadInsightTab(tab) {
+async function loadInsTab(tab) {
   const el = document.getElementById('aiInsightContent');
   if (tab === 'optimize') {
     const d = await api('/ai/optimize' + zp());
-    if (!d) return;
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
     el.innerHTML = `
       <div class="grid g3" style="margin-bottom:12px">
-        <div class="ai-card"><div class="card-label">Conflicts</div><div class="card-value">${d.conflicts_found ?? (d.conflicts?.length || 0)}</div></div>
+        <div class="ai-card"><div class="card-label">Conflicts</div><div class="card-value">${d.conflicts_found ?? (d.conflicts?.length||0)}</div></div>
         <div class="ai-card"><div class="card-label">Score</div><div class="card-value">${d.schedule_score ?? d.score ?? '-'}</div></div>
         <div class="ai-card"><div class="card-label">Algorithm</div><div class="card-value" style="font-size:13px">Genetic + CSP</div></div>
       </div>
-      <div class="card"><div class="card-label" style="margin-bottom:8px">Recommendations</div>
-      <ul style="padding-left:16px">${(d.recommendations || []).map(r => `<li style="margin-bottom:4px;font-size:12px">${r}</li>`).join('')}</ul></div>`;
+      <div class="card glass"><div class="card-label" style="margin-bottom:8px">Recommendations</div>
+      <ul style="padding-left:16px">${(d.recommendations||[]).map(r=>`<li style="margin-bottom:4px;font-size:12px;color:var(--text2)">${r}</li>`).join('')}</ul></div>`;
   } else if (tab === 'predictive') {
     const d = await api('/ai/predictive' + zp());
-    if (!d) return;
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
     el.innerHTML = `
       <div class="grid g3" style="margin-bottom:12px">
-        <div class="ai-card"><div class="card-label">Total Defects</div><div class="card-value">${d.summary?.total_defects ?? 0}</div></div>
-        <div class="ai-card ai-accent"><div class="card-label">Critical by Week 4</div><div class="card-value">${d.summary?.critical_by_week4 ?? 0}</div></div>
-        <div class="ai-card"><div class="card-label">Algorithm</div><div class="card-value" style="font-size:13px">Weibull Survival</div></div>
+        <div class="ai-card"><div class="card-label">Defects</div><div class="card-value">${d.summary?.total_defects??0}</div></div>
+        <div class="ai-card" style="border-color:rgba(239,68,68,.2)"><div class="card-label" style="color:var(--red)">Critical by Wk4</div><div class="card-value" style="color:var(--red)">${d.summary?.critical_by_week4??0}</div></div>
+        <div class="ai-card"><div class="card-label">Algorithm</div><div class="card-value" style="font-size:13px">Weibull</div></div>
       </div>
-      <div class="card"><div class="table-wrap"><table><thead><tr><th>Defect</th><th>Title</th><th>Severity</th><th>Failure Week</th><th>Confidence</th></tr></thead><tbody>
-      ${(d.timeline || []).slice(0, 15).map(t => `<tr><td style="font-family:'Fira Code',monospace">${t.defect_id}</td><td>${t.title}</td><td>${b(t.severity)}</td><td>Week ${t.predicted_failure_week}</td><td>${(t.confidence * 100).toFixed(0)}%</td></tr>`).join('')}
+      <div class="card glass"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Title</th><th>Severity</th><th>Week</th><th>Confidence</th></tr></thead><tbody>
+      ${(d.timeline||[]).slice(0,15).map(t=>`<tr><td style="font-family:'JetBrains Mono',monospace;color:var(--amber)">${t.defect_id}</td><td>${t.title}</td><td>${b(t.severity)}</td><td>${t.predicted_failure_week}</td><td>${(t.confidence*100).toFixed(0)}%</td></tr>`).join('')}
       </tbody></table></div></div>`;
   } else if (tab === 'demand') {
     const d = await api('/ai/passenger-demand' + zp());
-    if (!d) return;
-    const max = Math.max(...(d.forecast || []).map(h => h.demand), 1);
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
+    const max = Math.max(...(d.forecast||[]).map(h=>h.demand),1);
     el.innerHTML = `
       <div class="grid g3" style="margin-bottom:12px">
-        <div class="ai-card"><div class="card-label">Peak Hours</div><div class="card-value" style="font-size:14px">${(d.peak_hours || []).join(', ')}</div></div>
-        <div class="ai-card"><div class="card-label">Off-Peak</div><div class="card-value" style="font-size:14px">${(d.off_peak_hours || []).join(', ')}</div></div>
+        <div class="ai-card"><div class="card-label">Peak</div><div class="card-value" style="font-size:14px">${(d.peak_hours||[]).join(', ')}</div></div>
+        <div class="ai-card"><div class="card-label">Off-Peak</div><div class="card-value" style="font-size:14px">${(d.off_peak_hours||[]).join(', ')}</div></div>
         <div class="ai-card"><div class="card-label">Algorithm</div><div class="card-value" style="font-size:13px">Holt-Winters</div></div>
       </div>
-      <div class="card"><div class="card-label" style="margin-bottom:8px">Hourly Demand</div>
+      <div class="card glass"><div class="card-label" style="margin-bottom:8px">Hourly Demand</div>
         <div style="display:flex;align-items:end;gap:2px;height:120px;padding-top:8px">
-        ${(d.forecast || []).map(h => { const isPeak = (d.peak_hours || []).includes(h.hour); return `<div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="background:${isPeak ? 'var(--primary)' : 'var(--primary-light)'};width:100%;height:${(h.demand / max) * 100}px;border-radius:2px 2px 0 0;min-height:2px"></div><div style="font-size:8px;color:${isPeak ? 'var(--primary)' : 'var(--text4)'};margin-top:2px">${h.hour}</div></div>`; }).join('')}
+        ${(d.forecast||[]).map(h=>{const pk=(d.peak_hours||[]).includes(h.hour);return`<div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="background:${pk?'var(--amber)':'rgba(245,158,11,.3)'};width:100%;height:${(h.demand/max)*100}px;border-radius:2px 2px 0 0;min-height:2px"></div><div style="font-size:8px;color:${pk?'var(--amber)':'var(--text4)'};margin-top:2px">${h.hour}</div></div>`}).join('')}
         </div></div>`;
   } else if (tab === 'energy') {
     const d = await api('/ai/energy' + zp());
-    if (!d) return;
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
     el.innerHTML = `
       <div class="grid g2" style="margin-bottom:12px">
-        <div class="ai-card"><div class="card-label">Total Energy</div><div class="card-value">${d.total_energy_kwh?.toLocaleString()} kWh</div></div>
-        <div class="ai-card"><div class="card-label">Peak Demand</div><div class="card-value">${d.peak_demand_kw?.toLocaleString()} kW</div></div>
+        <div class="ai-card"><div class="card-label">Energy</div><div class="card-value">${d.total_energy_kwh?.toLocaleString()} kWh</div></div>
+        <div class="ai-card"><div class="card-label">Peak</div><div class="card-value">${d.peak_demand_kw?.toLocaleString()} kW</div></div>
       </div>
-      <div class="card"><div class="card-label" style="margin-bottom:8px">Recommendations</div>
-      <ul style="padding-left:16px">${(d.recommendations || []).map(r => `<li style="margin-bottom:4px;font-size:12px;padding:4px 8px;background:var(--accent-light);border-radius:4px">${r}</li>`).join('')}</ul></div>`;
+      <div class="card glass"><div class="card-label" style="margin-bottom:8px">Recommendations</div>
+      <ul style="padding-left:16px">${(d.recommendations||[]).map(r=>`<li style="margin-bottom:4px;font-size:12px;padding:4px 8px;background:var(--amber-dim);border-radius:6px;color:var(--text2)">${r}</li>`).join('')}</ul></div>`;
   } else if (tab === 'digital-twin') {
     const d = await api('/ai/digital-twin' + zp());
-    if (!d) return;
-    const pct = d.simulated_trains ? ((d.trains_on_time / d.simulated_trains) * 100).toFixed(1) : 0;
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
+    const pct = d.simulated_trains ? ((d.trains_on_time/d.simulated_trains)*100).toFixed(1) : 0;
     el.innerHTML = `
       <div class="grid g4">
         <div class="ai-card"><div class="card-label">Simulated</div><div class="card-value">${d.simulated_trains}</div></div>
-        <div class="ai-card"><div class="card-label">On Time</div><div class="card-value" style="color:var(--green)">${d.trains_on_time} <span style="font-size:12px">(${pct}%)</span></div></div>
-        <div class="ai-card"><div class="card-label">Delayed</div><div class="card-value" style="color:var(--red)">${d.trains_delayed}</div></div>
+        <div class="ai-card ai-green"><div class="card-label">On Time</div><div class="card-value">${d.trains_on_time} <span style="font-size:12px">(${pct}%)</span></div></div>
+        <div class="ai-card" style="border-color:rgba(239,68,68,.2)"><div class="card-label" style="color:var(--red)">Delayed</div><div class="card-value" style="color:var(--red)">${d.trains_delayed}</div></div>
         <div class="ai-card"><div class="card-label">Total Delay</div><div class="card-value">${d.total_delay_minutes}m</div></div>
       </div>`;
   } else if (tab === 'crew-ai') {
     const d = await api('/ai/crew-management' + zp());
-    if (!d) return;
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
     el.innerHTML = `
       <div class="grid g3">
-        <div class="ai-card"><div class="card-label">Total Crew</div><div class="card-value">${d.total_crew}</div></div>
-        <div class="ai-card"><div class="card-label">Utilization</div><div class="card-value">${d.utilization}%</div></div>
+        <div class="ai-card"><div class="card-label">Crew</div><div class="card-value">${d.total_crew}</div></div>
+        <div class="ai-card ai-green"><div class="card-label">Utilization</div><div class="card-value">${d.utilization}%</div></div>
         <div class="ai-card"><div class="card-label">Algorithm</div><div class="card-value" style="font-size:13px">${d.algorithm}</div></div>
       </div>`;
   } else if (tab === 'notifications') {
     const d = await api('/ai/notifications' + zp());
-    if (!d) return;
+    if (!d) return el.innerHTML = '<div class="empty">Unavailable</div>';
     el.innerHTML = `
       <div class="grid g3" style="margin-bottom:12px">
         <div class="ai-card"><div class="card-label">Total</div><div class="card-value">${d.total}</div></div>
-        <div class="ai-card ai-accent"><div class="card-label">Pending</div><div class="card-value">${d.pending_approval}</div></div>
-        <div class="ai-card"><div class="card-label">Sent</div><div class="card-value">${(d.notifications || []).filter(n => n.sent).length}</div></div>
+        <div class="ai-card" style="border-color:rgba(249,115,22,.2)"><div class="card-label" style="color:var(--orange)">Pending</div><div class="card-value" style="color:var(--orange)">${d.pending_approval}</div></div>
+        <div class="ai-card ai-green"><div class="card-label">Sent</div><div class="card-value">${(d.notifications||[]).filter(n=>n.sent).length}</div></div>
       </div>
-      <div class="card"><div class="table-wrap"><table><thead><tr><th>Block</th><th>Dept</th><th>Date</th><th>Status</th><th>Sent</th></tr></thead><tbody>
-      ${(d.notifications || []).slice(0, 20).map(n => `<tr><td style="font-family:'Fira Code',monospace">${n.block_id}</td><td>${n.department}</td><td>${n.date}</td><td>${b(n.status)}</td><td>${n.sent ? '<span class="badge b-green">Yes</span>' : '<span class="badge b-orange">Pending</span>'}</td></tr>`).join('')}
+      <div class="card glass"><div class="table-wrap"><table><thead><tr><th>Block</th><th>Dept</th><th>Date</th><th>Status</th><th>Sent</th></tr></thead><tbody>
+      ${(d.notifications||[]).slice(0,20).map(n=>`<tr><td style="font-family:'JetBrains Mono',monospace;color:var(--amber)">${n.block_id}</td><td>${n.department}</td><td>${n.date}</td><td>${b(n.status)}</td><td>${n.sent?'<span class="badge b-green">Yes</span>':'<span class="badge b-orange">Pending</span>'}</td></tr>`).join('')}
       </tbody></table></div></div>`;
   }
 }
 
 // ── Init ──
-if (token) {
-  api('/auth/me').then(d => { if (d) { user = d; showApp(); } else { doLogout(); } });
-}
+if (token) { api('/auth/me').then(d => { if (d) { user = d; showApp(); } else doLogout(); }); }
 document.getElementById('loginPass')?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 </script>
 </body>
